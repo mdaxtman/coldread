@@ -1,1 +1,27 @@
 ARCHITECTURE.md
+CLAUDE.md
+.claude/
+
+# Frontend
+client/node_modules/
+client/dist/
+client/.env
+
+# Backend
+server/venv/
+server/__pycache__/
+server/**/__pycache__/
+server/.mypy_cache/
+server/.ruff_cache/
+server/.env
+
+# Python
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
