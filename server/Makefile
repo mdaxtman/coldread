@@ -1,4 +1,4 @@
-.PHONY: install dev test lint format format-check typecheck
+.PHONY: install dev test lint format format-check typecheck hooks-install hooks-run
 
 install:
 	uv sync --extra dev
@@ -20,3 +20,9 @@ format-check:
 
 typecheck:
 	uv run mypy .
+
+hooks-install:
+	uv run pre-commit install
+
+hooks-run:
+	uv run pre-commit run --all-files

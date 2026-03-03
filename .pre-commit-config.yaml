@@ -1,0 +1,18 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.10
+    hooks:
+      - id: ruff-format
+        args: [--check]
+        files: ^server/
+      - id: ruff
+        files: ^server/
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: npx eslint
+        language: system
+        files: ^client/src/.*\.[ts|tsx]$
+        types_or: [ts, tsx]
