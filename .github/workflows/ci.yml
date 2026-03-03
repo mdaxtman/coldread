@@ -70,8 +70,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy frontend → Vercel
+      - name: Deploy frontend to Vercel
         run: echo "Vercel deploys via GitHub integration (no action needed)"
 
-      - name: Deploy backend → Railway
-        run: echo "TODO: add Railway CLI action"
+      - name: Deploy backend to Railway
+        run: 'echo "TODO: add Railway CLI action"'
