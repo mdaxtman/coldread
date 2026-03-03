@@ -49,17 +49,22 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: astral-sh/setup-uv@v5
+
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: uv sync --extra dev
 
       - name: Lint
-        run: ruff check .
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
 
       - name: Type check
-        run: mypy .
+        run: uv run mypy .
 
       - name: Test
-        run: pytest
+        run: uv run pytest
 
   deploy:
     name: Deploy
