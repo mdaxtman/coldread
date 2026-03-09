@@ -25,11 +25,13 @@ The other problem ColdRead solves: resumes built from other resumes accumulate d
 - **Gap Detection** — Explicit identification of JD requirements where my experience is missing, adjacent, or inconsistently represented. Gaps remain gaps — ColdRead doesn't paper over them.
 - **Terminology Alignment** — Identifies where I have the right experience but am using different words than the JD. Fixes the words, not the experience.
 - **Coverage Heatmap** — Visual breakdown of my skill domain coverage: which areas are strong, which are thin, and which are dated. Gives me an honest picture of my profile at a glance rather than a flat list of technologies.
+- **Authenticity Check** — After generation, a simulated recruiter perspective evaluates the output for signs of over-processing: voice drift from my narrative, structural monotony, buzzword density, and template feel. Surfaces an authenticity score so I can see how natural the output reads before using it.
 - **Interview Prep Mode** — Generates likely interview questions based on my tailored resume, so I can anticipate what my claims will invite.
 - **Export** — Download tailored resumes as ATS-friendly `.docx` or plain text. PDF coming.
 
 ### For Recruiters & Hiring Managers (Planned)
 - **Recruiter Portal** — Upload a job posting or paste a JD and get a fit assessment against my verified experience, along with a tailored resume variant.
+- **Language Review (Optional)** — After generation, an optional finishing step: review the bullets that changed most from the baseline, with original phrasing alongside suggested revisions. Skippable in one click, useful for recruiters who want to fine-tune language for their team's context.
 - **Honest Q&A** — Ask specific questions about my background and receive accurate, evidence-grounded answers — including honest acknowledgment of gaps.
 - **Coverage Heatmap** — Visual representation of skill domain coverage, strength, and recency. Gives an immediate, honest picture of where my experience is strong, where it's thin, and where it's dated — without wading through bullet points.
 
@@ -46,6 +48,7 @@ Rather than building resumes from other resumes, ColdRead starts from first-pers
 Every resume generation runs through two perspectives:
 - *AI Screener* — evaluates the JD requirements and scores coverage against my narrative
 - *Resume Generator* — produces a tailored variant guided by the screener's coverage report
+- *Authenticity Review* — a simulated recruiter perspective scans the generated output for voice drift, structural monotony, buzzword density, and template feel
 - *Screener Re-evaluation* — validates the generated resume against the original requirements before delivery
 
 **3. Versioned, Branching Variants**
