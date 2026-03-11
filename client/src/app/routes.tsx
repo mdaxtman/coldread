@@ -1,16 +1,36 @@
-import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import { AppShell } from '../components/layout/AppShell'
+import { LandingPage } from '../features/landing/LandingPage'
+import { ResultsDashboard } from '../features/results/ResultsDashboard'
+import { RecruiterPortal } from '../features/recruiter/RecruiterPortal'
 
 const rootRoute = createRootRoute({
-  component: Outlet,
+  component: AppShell,
 })
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: () => <div>ColdRead</div>,
+  component: LandingPage,
 })
 
-const routeTree = rootRoute.addChildren([indexRoute])
+const resultsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/results',
+  component: ResultsDashboard,
+})
+
+const recruiterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/recruiter',
+  component: RecruiterPortal,
+})
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  resultsRoute,
+  recruiterRoute,
+])
 
 export const router = createRouter({ routeTree })
 
