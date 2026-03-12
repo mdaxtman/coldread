@@ -5,12 +5,12 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   showCharCount?: boolean
 }
 
-export function TextArea({
+export const TextArea = ({
   showCharCount = false,
   value,
   className,
   ...props
-}: TextAreaProps) {
+}: TextAreaProps) => {
   const length = typeof value === 'string' ? value.length : 0
 
   return (

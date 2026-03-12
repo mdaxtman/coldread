@@ -11,7 +11,7 @@ interface TabsProps {
   onTabChange: (id: string) => void
 }
 
-export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
+export const Tabs = ({ tabs, activeTab, onTabChange }: TabsProps) => {
   return (
     <div className={styles.tabs} role="tablist">
       {tabs.map((tab) => (

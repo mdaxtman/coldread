@@ -10,7 +10,7 @@ interface AnnotatedJdProps {
  * Renders JD text with keyword highlights — green for covered, red for uncovered.
  * Uses word-boundary regex for case-insensitive matching.
  */
-export function AnnotatedJd({ content, keywordCoverage }: AnnotatedJdProps) {
+export const AnnotatedJd = ({ content, keywordCoverage }: AnnotatedJdProps) => {
   const keywords = Object.keys(keywordCoverage)
   if (keywords.length === 0) {
     return <pre className={styles.jd}>{content}</pre>

@@ -10,7 +10,7 @@ interface DiffViewProps {
   showLineNumbers?: boolean
 }
 
-export function DiffView({ lines, showLineNumbers = true }: DiffViewProps) {
+export const DiffView = ({ lines, showLineNumbers = true }: DiffViewProps) => {
   return (
     <div className={styles.diff} role="region" aria-label="Diff view">
       {lines.map((line, i) => (

@@ -29,7 +29,7 @@ function downloadResume(content: string) {
   setTimeout(() => URL.revokeObjectURL(url), 100)
 }
 
-export function ResumePanel({ resumeVariant, fitLevel }: ResumePanelProps) {
+export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
   const { screenerReport, content } = resumeVariant
   const { keywordCoverage, semanticScore, overallScore } = screenerReport
 

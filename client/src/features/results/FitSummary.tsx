@@ -15,7 +15,7 @@ interface FitSummaryProps {
   report: FitReport
 }
 
-export function FitSummary({ report }: FitSummaryProps) {
+export const FitSummary = ({ report }: FitSummaryProps) => {
   const score = fitScores[report.fitLevel] ?? 50
 
   return (

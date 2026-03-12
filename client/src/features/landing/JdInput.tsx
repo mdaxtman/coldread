@@ -7,7 +7,7 @@ interface JdInputProps {
   disabled?: boolean
 }
 
-export function JdInput({ value, onChange, disabled }: JdInputProps) {
+export const JdInput = ({ value, onChange, disabled }: JdInputProps) => {
   return (
     <div className={styles.wrapper}>
       <label htmlFor="jd-input" className={styles.label}>Paste a job description</label>

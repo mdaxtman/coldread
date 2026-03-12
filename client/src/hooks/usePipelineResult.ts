@@ -14,7 +14,7 @@ export interface PipelineResult {
 
 const QUERY_KEY = ['pipelineResult'] as const
 
-export function usePipelineResult() {
+export const usePipelineResult = () => {
   const queryClient = useQueryClient()
 
   const { data: result = null } = useQuery<PipelineResult | null>({
