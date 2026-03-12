@@ -1,20 +1,39 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useParams } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '../../components/ui/Button'
 import { SplitPanel } from '../../components/layout/SplitPanel'
 import { ResumePanel } from './ResumePanel'
 import { SupportingPanel } from './SupportingPanel'
-import { usePipelineResult } from '../../hooks/usePipelineResult'
+import { getJobDescription, getFitReport, getLatestResume } from '../../api/client'
 import styles from './ResultsDashboard.module.css'
 
 export const ResultsDashboard = () => {
-  const { result } = usePipelineResult()
+  const { jdId } = useParams({ from: '/results/$jdId' })
 
-  if (!result) {
+  const jdQuery = useQuery({ queryKey: ['jd', jdId], queryFn: () => getJobDescription(jdId) })
+  const fitQuery = useQuery({ queryKey: ['fit', jdId], queryFn: () => getFitReport(jdId) })
+  const resumeQuery = useQuery({
+    queryKey: ['resume', jdId],
+    queryFn: () => getLatestResume(jdId),
+  })
+
+  const isLoading = jdQuery.isLoading || fitQuery.isLoading || resumeQuery.isLoading
+  const error = jdQuery.error ?? fitQuery.error ?? resumeQuery.error
+
+  if (isLoading) {
     return (
       <div className={styles.empty}>
-        <h2 className={styles.emptyHeading}>No results yet</h2>
+        <p>Loading results…</p>
+      </div>
+    )
+  }
+
+  if (error || !jdQuery.data || !fitQuery.data || !resumeQuery.data) {
+    return (
+      <div className={styles.empty}>
+        <h2 className={styles.emptyHeading}>Failed to load results</h2>
         <p style={{ marginBottom: 'var(--space-6)' }}>
-          Run an analysis from the landing page to see results here.
+          {error?.message ?? 'Something went wrong.'}
         </p>
         <Link to="/">
           <Button>Go to Home</Button>
@@ -23,7 +42,9 @@ export const ResultsDashboard = () => {
     )
   }
 
-  const { jobDescription, fitReport, resumeVariant } = result
+  const jobDescription = jdQuery.data
+  const fitReport = fitQuery.data
+  const resumeVariant = resumeQuery.data
 
   return (
     <div className={styles.dashboard}>

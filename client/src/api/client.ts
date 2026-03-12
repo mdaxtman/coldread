@@ -17,7 +17,14 @@ export const getJobDescriptions = () => request<JobDescription[]>('/jds')
 export const createJobDescription = (data: Pick<JobDescription, 'title' | 'company' | 'content'>) =>
   request<JobDescription>('/jds', { method: 'POST', body: JSON.stringify(data) })
 
-// Pipeline
+// Single-resource fetchers
+export const getJobDescription = (jdId: string) => request<JobDescription>(`/jds/${jdId}`)
+
+export const getFitReport = (jdId: string) => request<FitReport>(`/jds/${jdId}/fit`)
+
+export const getLatestResume = (jdId: string) => request<ResumeVariant>(`/jds/${jdId}/resume`)
+
+// Pipeline (POST mutations — these run the AI pipeline, not just fetch)
 export const runFitAssessment = (jdId: string) => request<FitReport>(`/jds/${jdId}/fit`)
 
 export const generateResume = (jdId: string) => request<ResumeVariant>(`/jds/${jdId}/resume`)

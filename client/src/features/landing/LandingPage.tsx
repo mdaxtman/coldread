@@ -1,43 +1,37 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useMutation } from '@tanstack/react-query'
 import { Button } from '../../components/ui/Button'
 import { PipelineLog } from '../../components/terminal/PipelineLog'
 import { createJobDescription } from '../../api/client'
 import { usePipeline } from '../../hooks/usePipeline'
-import { usePipelineResult } from '../../hooks/usePipelineResult'
 import { JdInput } from './JdInput'
 import styles from './LandingPage.module.css'
 
 export const LandingPage = () => {
   const [jdText, setJdText] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const createJd = useMutation({ mutationFn: createJobDescription })
   const pipeline = usePipeline()
-  const { setPipelineResult } = usePipelineResult()
   const navigate = useNavigate()
 
-  const isRunning = pipeline.status === 'running'
-  const canRun = jdText.trim().length > 0 && !isRunning && !submitting
+  const isRunning = createJd.isPending || pipeline.isPending
+  const canRun = jdText.trim().length > 0 && !isRunning
+  const error = createJd.error?.message ?? pipeline.error?.message
 
   async function handleRun() {
     if (!canRun) return
-    setSubmitting(true)
 
     try {
-      const jd = await createJobDescription({
+      const jd = await createJd.mutateAsync({
         title: 'Untitled Position',
         company: 'Unknown',
         content: jdText.trim(),
       })
 
-      const result = await pipeline.run(jd.id)
-      if (result) {
-        setPipelineResult({ jobDescription: jd, ...result })
-        navigate({ to: '/results' })
-      }
+      await pipeline.mutateAsync(jd.id)
+      navigate({ to: '/results/$jdId', params: { jdId: jd.id } })
     } catch {
-      // Pipeline hook handles its own errors; this catches JD creation failures
-    } finally {
-      setSubmitting(false)
+      // Errors are captured in createJd.error / pipeline.error
     }
   }
 
@@ -55,7 +49,7 @@ export const LandingPage = () => {
           <Button size="lg" onClick={handleRun} disabled={!canRun}>
             {isRunning ? 'Running...' : 'Run Analysis'}
           </Button>
-          {pipeline.error && <span className={styles.error}>{pipeline.error}</span>}
+          {error && <span className={styles.error}>{error}</span>}
         </div>
       </div>
 

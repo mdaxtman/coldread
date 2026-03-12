@@ -30,6 +30,14 @@ def list_jds() -> list[JobDescriptionResponse]:
     return [JobDescriptionResponse(**r) for r in rows]
 
 
+@router.get("/{jd_id}", response_model=JobDescriptionResponse)
+def get_jd(jd_id: str) -> JobDescriptionResponse:
+    row = job_descriptions.get_jd(jd_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Job description not found")
+    return JobDescriptionResponse(**row)
+
+
 # ---------------------------------------------------------------------------
 # Fit Reports
 # ---------------------------------------------------------------------------
