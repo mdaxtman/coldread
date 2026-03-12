@@ -20,7 +20,7 @@ router = APIRouter(prefix="/jds", tags=["job-descriptions"])
 
 @router.post("", response_model=JobDescriptionResponse, status_code=201)
 def create_jd(body: CreateJdRequest) -> JobDescriptionResponse:
-    row = job_descriptions.create_jd(body.title, body.company, body.content)
+    row = job_descriptions.create_jd(body.content)
     return JobDescriptionResponse(**row)
 
 

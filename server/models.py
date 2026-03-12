@@ -34,8 +34,6 @@ class NarrativeResponse(CamelModel):
 
 
 class CreateJdRequest(CamelModel):
-    title: str
-    company: str
     content: str
 
 
@@ -47,8 +45,8 @@ class CreateJdRequest(CamelModel):
 class JobDescriptionResponse(CamelModel):
     id: str
     user_id: str
-    title: str
-    company: str
+    title: str | None = None
+    company: str | None = None
     content: str
     created_at: datetime
 

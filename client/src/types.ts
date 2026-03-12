@@ -4,8 +4,8 @@
 export interface JobDescription {
   id: string
   userId: string
-  title: string
-  company: string
+  title: string | null
+  company: string | null
   content: string // raw JD text
   createdAt: string
 }

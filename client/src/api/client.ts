@@ -14,7 +14,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 // Job Descriptions
 export const getJobDescriptions = () => request<JobDescription[]>('/jds')
 
-export const createJobDescription = (data: Pick<JobDescription, 'title' | 'company' | 'content'>) =>
+export const createJobDescription = (data: Pick<JobDescription, 'content'>) =>
   request<JobDescription>('/jds', { method: 'POST', body: JSON.stringify(data) })
 
 // Single-resource fetchers

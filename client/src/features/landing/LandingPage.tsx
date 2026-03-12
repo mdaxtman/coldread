@@ -23,8 +23,6 @@ export const LandingPage = () => {
 
     try {
       const jd = await createJd.mutateAsync({
-        title: 'Untitled Position',
-        company: 'Unknown',
         content: jdText.trim(),
       })
 
