@@ -15,7 +15,7 @@ const indexRoute = createRoute({
 
 const resultsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/results',
+  path: '/results/$jdId',
   component: ResultsDashboard,
 })
 

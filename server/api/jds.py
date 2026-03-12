@@ -20,7 +20,7 @@ router = APIRouter(prefix="/jds", tags=["job-descriptions"])
 
 @router.post("", response_model=JobDescriptionResponse, status_code=201)
 def create_jd(body: CreateJdRequest) -> JobDescriptionResponse:
-    row = job_descriptions.create_jd(body.title, body.company, body.content)
+    row = job_descriptions.create_jd(body.content)
     return JobDescriptionResponse(**row)
 
 
@@ -28,6 +28,14 @@ def create_jd(body: CreateJdRequest) -> JobDescriptionResponse:
 def list_jds() -> list[JobDescriptionResponse]:
     rows = job_descriptions.list_jds()
     return [JobDescriptionResponse(**r) for r in rows]
+
+
+@router.get("/{jd_id}", response_model=JobDescriptionResponse)
+def get_jd(jd_id: str) -> JobDescriptionResponse:
+    row = job_descriptions.get_jd(jd_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Job description not found")
+    return JobDescriptionResponse(**row)
 
 
 # ---------------------------------------------------------------------------

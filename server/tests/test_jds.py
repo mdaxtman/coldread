@@ -12,8 +12,8 @@ client = TestClient(app)
 SAMPLE_JD = {
     "id": "00000000-0000-0000-0000-000000000020",
     "user_id": "00000000-0000-0000-0000-000000000001",
-    "title": "Senior Backend Engineer",
-    "company": "Acme Corp",
+    "title": None,
+    "company": None,
     "content": "We are looking for a senior backend engineer...",
     "created_at": "2025-01-01T00:00:00+00:00",
 }
@@ -59,13 +59,13 @@ def test_create_jd(mock_create: Any) -> None:
     mock_create.return_value = SAMPLE_JD
     response = client.post(
         "/jds",
-        json={"title": "Senior Backend Engineer", "company": "Acme Corp", "content": "..."},
+        json={"content": "..."},
     )
     assert response.status_code == 201
     data = response.json()
     assert data["id"] == SAMPLE_JD["id"]
     assert data["userId"] == SAMPLE_JD["user_id"]
-    assert data["company"] == "Acme Corp"
+    assert data["company"] is None
     # Verify camelCase serialization
     assert "user_id" not in data
     assert "created_at" not in data
@@ -83,7 +83,7 @@ def test_list_jds(mock_list: Any) -> None:
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["title"] == "Senior Backend Engineer"
+    assert data[0]["title"] is None
 
 
 @patch("db.job_descriptions.list_jds")

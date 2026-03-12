@@ -9,8 +9,8 @@
 CREATE TABLE job_descriptions (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id     UUID NOT NULL,
-    title       TEXT NOT NULL,
-    company     TEXT NOT NULL,
+    title       TEXT,
+    company     TEXT,
     content     TEXT NOT NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
