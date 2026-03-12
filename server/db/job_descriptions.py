@@ -6,15 +6,13 @@ from config import DEFAULT_USER_ID
 from db.client import get_client
 
 
-def create_jd(title: str, company: str, content: str) -> dict[str, Any]:
+def create_jd(content: str) -> dict[str, Any]:
     response = (
         get_client()
         .table("job_descriptions")
         .insert(
             {
                 "user_id": DEFAULT_USER_ID,
-                "title": title,
-                "company": company,
                 "content": content,
             }
         )

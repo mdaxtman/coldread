@@ -15,7 +15,7 @@ export const PipelineRunner = ({ jdId, onComplete }: PipelineRunnerProps) => {
     if (started.current) return
     started.current = true
 
-    pipeline.run(jdId).then(() => onComplete?.())
+    pipeline.mutateAsync(jdId).then(() => onComplete?.())
   }, [jdId, onComplete, pipeline])
 
   return <PipelineProgress steps={pipeline.steps} />
