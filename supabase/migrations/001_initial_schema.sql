@@ -1,7 +1,6 @@
 -- ColdRead initial schema
--- Only tables needed at runtime: narratives (seeded) and prompts (seeded).
--- Job descriptions, resume variants, and fit reports are pipeline I/O —
--- handled in-memory in ColdRead, persisted in Candor.
+-- Foundational tables: narratives (seeded) and prompts (seeded).
+-- Job descriptions, fit reports, and resume variants live in 002_jd_pipeline_tables.sql.
 
 -- =============================================================================
 -- Tables
