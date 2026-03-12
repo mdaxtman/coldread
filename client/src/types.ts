@@ -1,21 +1,12 @@
 // Core domain types for ColdRead.
 // All records include user_id — populated with DEFAULT_USER_ID server-side.
 
-export interface CanonicalNarrative {
-  id: string
-  userId: string
-  title: string    // e.g. "Senior Engineer at Acme, 2021–2023"
-  content: string  // first-person narrative — ground truth for all resume variants
-  createdAt: string
-  updatedAt: string
-}
-
 export interface JobDescription {
   id: string
   userId: string
   title: string
   company: string
-  content: string  // raw JD text
+  content: string // raw JD text
   createdAt: string
 }
 

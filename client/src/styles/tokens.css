@@ -1,0 +1,87 @@
+/* Design tokens — CSS custom properties for the entire app.
+   Single source of truth for colors, typography, spacing, and radii. */
+
+:root {
+  /* Backgrounds */
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --bg-terminal: #0c0c0e;
+  --bg-input: #27272a;
+  --bg-surface: #1c1c1f;
+
+  /* Text */
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  /* Accents */
+  --accent: #22d3ee;
+  --accent-hover: #06b6d4;
+
+  /* Semantic — fit levels */
+  --fit-strong: #4ade80;
+  --fit-moderate: #facc15;
+  --fit-borderline: #fb923c;
+  --fit-poor: #f87171;
+
+  /* Terminal accents */
+  --terminal-green: #4ade80;
+  --terminal-text: #a1a1aa;
+  --terminal-prompt: #22d3ee;
+
+  /* Borders / surfaces */
+  --border: #27272a;
+  --border-bright: #3f3f46;
+
+  /* Typography */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout */
+  --max-width: 72rem;
+  --nav-height: 3.5rem;
+}
