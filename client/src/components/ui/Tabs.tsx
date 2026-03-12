@@ -1,0 +1,30 @@
+import styles from './Tabs.module.css'
+
+interface Tab {
+  id: string
+  label: string
+}
+
+interface TabsProps {
+  tabs: Tab[]
+  activeTab: string
+  onTabChange: (id: string) => void
+}
+
+export const Tabs = ({ tabs, activeTab, onTabChange }: TabsProps) => {
+  return (
+    <div className={styles.tabs} role="tablist">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          role="tab"
+          aria-selected={activeTab === tab.id}
+          className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+          onClick={() => onTabChange(tab.id)}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  )
+}

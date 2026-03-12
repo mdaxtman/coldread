@@ -1,0 +1,17 @@
+.split {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--space-8);
+  align-items: start;
+  min-width: 0;
+}
+
+.split > * {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}

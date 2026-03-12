@@ -1,0 +1,50 @@
+.log {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background-color: var(--bg-terminal);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  line-height: var(--leading-relaxed);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  animation: fadeInUp var(--duration-normal) var(--ease-default);
+}
+
+.prompt {
+  color: var(--terminal-prompt);
+  user-select: none;
+}
+
+.label {
+  color: var(--terminal-text);
+  flex: 1;
+}
+
+.status {
+  font-size: var(--text-xs);
+  min-width: 5rem;
+  text-align: right;
+}
+
+.done {
+  color: var(--terminal-green);
+}
+
+.running {
+  color: var(--accent);
+  animation: pulse 1.5s var(--ease-default) infinite;
+}
+
+.pending {
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--fit-poor);
+}

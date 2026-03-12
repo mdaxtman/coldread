@@ -1,0 +1,40 @@
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding-top: var(--space-16);
+  animation: fadeInUp var(--duration-normal) var(--ease-default);
+}
+
+.tagline {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  margin-bottom: var(--space-3);
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-10);
+  line-height: var(--leading-relaxed);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.error {
+  color: var(--fit-poor);
+  font-size: var(--text-sm);
+}
+
+.pipelineSection {
+  margin-top: var(--space-8);
+}

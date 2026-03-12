@@ -1,0 +1,27 @@
+.jd {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background-color: var(--bg-terminal);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--terminal-text);
+  line-height: var(--leading-relaxed);
+}
+
+.covered {
+  background-color: color-mix(in srgb, var(--fit-strong) 25%, transparent);
+  color: var(--fit-strong);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-1);
+}
+
+.uncovered {
+  background-color: color-mix(in srgb, var(--fit-poor) 25%, transparent);
+  color: var(--fit-poor);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-1);
+}

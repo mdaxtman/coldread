@@ -1,0 +1,14 @@
+.track {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--bg-input);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-default);
+  animation: fillBar var(--duration-slow) var(--ease-default);
+}
