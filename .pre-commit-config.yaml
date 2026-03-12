@@ -10,9 +10,15 @@ repos:
 
   - repo: local
     hooks:
+      - id: prettier
+        name: prettier
+        entry: npx prettier --check
+        language: system
+        files: ^client/src/
+        types_or: [ts, tsx, css]
       - id: eslint
         name: eslint
         entry: npx eslint
         language: system
-        files: ^client/src/.*\.[ts|tsx]$
+        files: ^client/src/
         types_or: [ts, tsx]

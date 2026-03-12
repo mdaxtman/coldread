@@ -13,7 +13,9 @@ export const ResultsDashboard = () => {
     return (
       <div className={styles.empty}>
         <h2 className={styles.emptyHeading}>No results yet</h2>
-        <p style={{ marginBottom: 'var(--space-6)' }}>Run an analysis from the landing page to see results here.</p>
+        <p style={{ marginBottom: 'var(--space-6)' }}>
+          Run an analysis from the landing page to see results here.
+        </p>
         <Link to="/">
           <Button>Go to Home</Button>
         </Link>

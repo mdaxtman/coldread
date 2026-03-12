@@ -65,11 +65,7 @@ export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
       <CodeBlock>{content}</CodeBlock>
 
       {/* Export button */}
-      <button
-        type="button"
-        className={styles.exportBtn}
-        onClick={() => downloadResume(content)}
-      >
+      <button type="button" className={styles.exportBtn} onClick={() => downloadResume(content)}>
         Download .txt
       </button>
     </div>

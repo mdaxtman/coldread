@@ -25,7 +25,12 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--text-primary);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
@@ -47,13 +52,15 @@ button {
   background: none;
 }
 
-input, textarea {
+input,
+textarea {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
 }
 
-code, pre {
+code,
+pre {
   font-family: var(--font-mono);
 }
 

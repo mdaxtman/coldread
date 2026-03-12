@@ -7,9 +7,5 @@ interface BadgeProps {
 }
 
 export const Badge = ({ level, label }: BadgeProps) => {
-  return (
-    <span className={`${styles.badge} ${styles[level]}`}>
-      {label ?? `${level} fit`}
-    </span>
-  )
+  return <span className={`${styles.badge} ${styles[level]}`}>{label ?? `${level} fit`}</span>
 }

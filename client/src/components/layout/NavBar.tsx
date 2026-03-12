@@ -16,21 +16,18 @@ export const NavBar = () => {
       </Link>
       <ul className={styles.links}>
         {navLinks.map(({ to, label }) => {
-          let isActive = location.pathname === '/';
+          let isActive = location.pathname === '/'
           if (!isActive) {
-            isActive = location.pathname.startsWith(to);
+            isActive = location.pathname.startsWith(to)
           }
 
           return (
             <li key={to}>
-              <Link
-                to={to}
-                className={`${styles.link} ${isActive ? styles.linkActive : ''}`}
-              >
+              <Link to={to} className={`${styles.link} ${isActive ? styles.linkActive : ''}`}>
                 {label}
               </Link>
             </li>
-          );
+          )
         })}
       </ul>
     </nav>

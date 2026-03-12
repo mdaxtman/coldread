@@ -12,7 +12,11 @@ interface SupportingPanelProps {
   keywordCoverage: Record<string, boolean>
 }
 
-export const SupportingPanel = ({ fitReport, jobDescription, keywordCoverage }: SupportingPanelProps) => {
+export const SupportingPanel = ({
+  fitReport,
+  jobDescription,
+  keywordCoverage,
+}: SupportingPanelProps) => {
   return (
     <div className={styles.panel}>
       <FitSummary report={fitReport} />

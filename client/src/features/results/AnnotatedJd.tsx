@@ -37,10 +37,7 @@ export const AnnotatedJd = ({ content, keywordCoverage }: AnnotatedJdProps) => {
     const covered = keywordCoverage[key] ?? false
 
     parts.push(
-      <mark
-        key={match.index}
-        className={covered ? styles.covered : styles.uncovered}
-      >
+      <mark key={match.index} className={covered ? styles.covered : styles.uncovered}>
         {word}
       </mark>,
     )

@@ -19,10 +19,7 @@ const resultsRoute = createRoute({
   component: ResultsDashboard,
 })
 
-const routeTree = rootRoute.addChildren([
-  indexRoute,
-  resultsRoute,
-])
+const routeTree = rootRoute.addChildren([indexRoute, resultsRoute])
 
 export const router = createRouter({ routeTree })
 
