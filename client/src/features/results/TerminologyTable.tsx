@@ -10,7 +10,7 @@ const columns = [
   { key: 'jdTerm' as const, header: 'JD Term' },
 ]
 
-export function TerminologyTable({ terminology }: TerminologyTableProps) {
+export const TerminologyTable = ({ terminology }: TerminologyTableProps) => {
   if (terminology.length === 0) return null
 
   return (

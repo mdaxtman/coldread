@@ -4,7 +4,7 @@ interface MatchesListProps {
   matches: string[]
 }
 
-export function MatchesList({ matches }: MatchesListProps) {
+export const MatchesList = ({ matches }: MatchesListProps) => {
   if (matches.length === 0) return null
 
   return (

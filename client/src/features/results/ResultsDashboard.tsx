@@ -6,7 +6,7 @@ import { SupportingPanel } from './SupportingPanel'
 import { usePipelineResult } from '../../hooks/usePipelineResult'
 import styles from './ResultsDashboard.module.css'
 
-export function ResultsDashboard() {
+export const ResultsDashboard = () => {
   const { result } = usePipelineResult()
 
   if (!result) {

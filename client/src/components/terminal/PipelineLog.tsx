@@ -19,7 +19,7 @@ const statusIcons: Record<StepStatus, string> = {
   error: '\u2717 error',
 }
 
-export function PipelineLog({ steps }: PipelineLogProps) {
+export const PipelineLog = ({ steps }: PipelineLogProps) => {
   return (
     <div className={styles.log} role="log" aria-label="Pipeline progress">
       {steps.map((step) => (

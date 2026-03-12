@@ -20,7 +20,7 @@ function makeSteps(overrides: Partial<Record<string, StepStatus>> = {}): Pipelin
   }))
 }
 
-export function usePipeline() {
+export const usePipeline = () => {
   const [state, setState] = useState<PipelineState>({
     status: 'idle',
     steps: makeSteps(),

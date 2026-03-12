@@ -7,7 +7,7 @@ interface PipelineRunnerProps {
   onComplete?: () => void
 }
 
-export function PipelineRunner({ jdId, onComplete }: PipelineRunnerProps) {
+export const PipelineRunner = ({ jdId, onComplete }: PipelineRunnerProps) => {
   const pipeline = usePipeline()
   const started = useRef(false)
 

@@ -14,7 +14,7 @@ const levelColors: Record<FitLevel, string> = {
   poor: 'var(--fit-poor)',
 }
 
-export function ProgressBar({ value, max = 100, level = 'moderate' }: ProgressBarProps) {
+export const ProgressBar = ({ value, max = 100, level = 'moderate' }: ProgressBarProps) => {
   const pct = Math.min(100, Math.max(0, (value / max) * 100))
 
   return (

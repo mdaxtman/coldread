@@ -6,7 +6,7 @@ interface PipelineProgressProps {
   steps: PipelineStep[]
 }
 
-export function PipelineProgress({ steps }: PipelineProgressProps) {
+export const PipelineProgress = ({ steps }: PipelineProgressProps) => {
   return (
     <div className={styles.wrapper}>
       <p className={styles.heading}>pipeline</p>

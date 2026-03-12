@@ -5,6 +5,6 @@ interface SplitPanelProps {
   children: ReactNode
 }
 
-export function SplitPanel({ children }: SplitPanelProps) {
+export const SplitPanel = ({ children }: SplitPanelProps) => {
   return <div className={styles.split}>{children}</div>
 }

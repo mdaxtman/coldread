@@ -4,7 +4,7 @@ interface CodeBlockProps {
   children: string
 }
 
-export function CodeBlock({ children }: CodeBlockProps) {
+export const CodeBlock = ({ children }: CodeBlockProps) => {
   return (
     <pre className={styles.block}>
       <code>{children}</code>

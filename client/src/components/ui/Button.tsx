@@ -6,12 +6,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'default' | 'lg'
 }
 
-export function Button({
+export const Button = ({
   variant = 'primary',
   size = 'default',
   className,
   ...props
-}: ButtonProps) {
+}: ButtonProps) => {
   const classes = [
     styles.button,
     styles[variant],

@@ -6,7 +6,7 @@ interface GapsListProps {
   gaps: Gap[]
 }
 
-export function GapsList({ gaps }: GapsListProps) {
+export const GapsList = ({ gaps }: GapsListProps) => {
   if (gaps.length === 0) return null
 
   return (

@@ -8,7 +8,7 @@ import { usePipelineResult } from '../../hooks/usePipelineResult'
 import { JdInput } from './JdInput'
 import styles from './LandingPage.module.css'
 
-export function LandingPage() {
+export const LandingPage = () => {
   const [jdText, setJdText] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const pipeline = usePipeline()

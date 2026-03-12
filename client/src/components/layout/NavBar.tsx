@@ -6,7 +6,7 @@ const navLinks = [
   { to: '/results' as const, label: 'Results' },
 ] as const
 
-export function NavBar() {
+export const NavBar = () => {
   const { location } = useRouterState()
 
   return (
@@ -15,24 +15,23 @@ export function NavBar() {
         cold<span className={styles.logoAccent}>read</span>
       </Link>
       <ul className={styles.links}>
-        {navLinks.map(({ to, label }) => (
-          <li key={to}>
-            <Link
-              to={to}
-              className={`${styles.link} ${
-                to === '/'
-                  ? location.pathname === '/'
-                    ? styles.linkActive
-                    : ''
-                  : location.pathname.startsWith(to)
-                    ? styles.linkActive
-                    : ''
-              }`}
-            >
-              {label}
-            </Link>
-          </li>
-        ))}
+        {navLinks.map(({ to, label }) => {
+          let isActive = location.pathname === '/';
+          if (!isActive) {
+            isActive = location.pathname.startsWith(to);
+          }
+
+          return (
+            <li key={to}>
+              <Link
+                to={to}
+                className={`${styles.link} ${isActive ? styles.linkActive : ''}`}
+              >
+                {label}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   )

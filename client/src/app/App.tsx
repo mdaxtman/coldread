@@ -14,7 +14,7 @@ if (USE_MOCK) {
   queryClient.setQueryData(['pipelineResult'], MOCK_PIPELINE_RESULT)
 }
 
-export function App() {
+export const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
