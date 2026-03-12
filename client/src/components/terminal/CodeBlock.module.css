@@ -6,7 +6,8 @@
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   overflow-x: auto;
-  white-space: pre;
+  white-space: pre-wrap;
+  word-wrap: break-word;
   color: var(--terminal-text);
   line-height: var(--leading-relaxed);
 }
