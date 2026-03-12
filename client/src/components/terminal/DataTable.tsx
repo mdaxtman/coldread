@@ -11,7 +11,7 @@ interface DataTableProps<T> {
   data: T[]
 }
 
-export const DataTable = <T>({ columns, data }: DataTableProps<T>) => {
+export function DataTable<T>({ columns, data }: DataTableProps<T>) {
   return (
     <table className={styles.table}>
       <thead>

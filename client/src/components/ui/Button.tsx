@@ -12,12 +12,7 @@ export const Button = ({
   className,
   ...props
 }: ButtonProps) => {
-  const classes = [
-    styles.button,
-    styles[variant],
-    size === 'lg' && styles.lg,
-    className,
-  ]
+  const classes = [styles.button, styles[variant], size === 'lg' && styles.lg, className]
     .filter(Boolean)
     .join(' ')
 

@@ -50,7 +50,8 @@ export const MOCK_FIT_REPORT: FitReport = {
     {
       requirement: 'GraphQL API experience',
       type: 'hard',
-      notes: 'Have REST expertise; GraphQL concepts are transferable. Could ramp up quickly with Apollo Client.',
+      notes:
+        'Have REST expertise; GraphQL concepts are transferable. Could ramp up quickly with Apollo Client.',
     },
     {
       requirement: 'AWS infrastructure (CloudFront, S3, Lambda@Edge)',
@@ -60,7 +61,8 @@ export const MOCK_FIT_REPORT: FitReport = {
     {
       requirement: 'Micro-frontend architecture',
       type: 'soft',
-      notes: 'Experience with monorepo setups and module federation concepts, but not a dedicated micro-frontend deployment.',
+      notes:
+        'Experience with monorepo setups and module federation concepts, but not a dedicated micro-frontend deployment.',
     },
     {
       requirement: 'Native mobile development (React Native)',
@@ -123,21 +125,21 @@ Tools: Git, GitHub Actions, Figma, VS Code
   parentVariantId: null,
   screenerReport: {
     keywordCoverage: {
-      'React': true,
-      'TypeScript': true,
+      React: true,
+      TypeScript: true,
       'component library': true,
-      'GraphQL': false,
+      GraphQL: false,
       'REST API': true,
       'CI/CD': true,
       'performance optimization': true,
-      'AWS': false,
+      AWS: false,
       'responsive design': true,
-      'accessibility': true,
+      accessibility: true,
       'micro-frontend': false,
       'React Native': false,
       'state management': true,
       'code review': true,
-      'Agile': true,
+      Agile: true,
     },
     semanticScore: 0.82,
     terminologyMismatches: [
