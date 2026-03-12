@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Button } from '../../components/ui'
+import { Button } from '../../components/ui/Button'
 import { SplitPanel } from '../../components/layout/SplitPanel'
 import { ResumePanel } from './ResumePanel'
 import { SupportingPanel } from './SupportingPanel'

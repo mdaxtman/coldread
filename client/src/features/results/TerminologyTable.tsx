@@ -1,4 +1,4 @@
-import { DataTable } from '../../components/terminal'
+import { DataTable } from '../../components/terminal/DataTable'
 import type { TerminologyAlignment } from '../../types'
 
 interface TerminologyTableProps {

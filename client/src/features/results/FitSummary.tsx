@@ -1,4 +1,6 @@
-import { Badge, ProgressBar, Card } from '../../components/ui'
+import { Badge } from '../../components/ui/Badge'
+import { ProgressBar } from '../../components/ui/ProgressBar'
+import { Card } from '../../components/ui/Card'
 import type { FitReport } from '../../types'
 import styles from './FitSummary.module.css'
 

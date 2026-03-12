@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Button } from '../../components/ui'
+import { Button } from '../../components/ui/Button'
 import { FitSummary } from '../results/FitSummary'
 import { MatchesList } from '../results/MatchesList'
 import { GapsList } from '../results/GapsList'

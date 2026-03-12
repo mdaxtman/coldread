@@ -1,4 +1,4 @@
-import { PipelineLog } from '../../components/terminal'
+import { PipelineLog } from '../../components/terminal/PipelineLog'
 import type { PipelineStep } from '../../components/terminal/PipelineLog'
 import styles from './PipelineProgress.module.css'
 

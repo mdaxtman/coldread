@@ -1,4 +1,4 @@
-import { Card } from '../../components/ui'
+import { Card } from '../../components/ui/Card'
 import type { Gap } from '../../types'
 import styles from './GapsList.module.css'
 

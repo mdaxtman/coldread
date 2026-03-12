@@ -1,4 +1,4 @@
-import { TextArea } from '../../components/ui'
+import { TextArea } from '../../components/ui/TextArea'
 import styles from './JdInput.module.css'
 
 interface JdInputProps {
