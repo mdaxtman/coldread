@@ -1,5 +1,7 @@
-import { Badge, ProgressBar, Card } from '../../components/ui'
-import { CodeBlock } from '../../components/terminal'
+import { Badge } from '../../components/ui/Badge'
+import { ProgressBar } from '../../components/ui/ProgressBar'
+import { Card } from '../../components/ui/Card'
+import { CodeBlock } from '../../components/terminal/CodeBlock'
 import type { ResumeVariant, FitLevel } from '../../types'
 import styles from './ResumePanel.module.css'
 

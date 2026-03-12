@@ -1,4 +1,4 @@
-import { Card } from '../../components/ui'
+import { Card } from '../../components/ui/Card'
 import { FitSummary } from './FitSummary'
 import { AnnotatedJd } from './AnnotatedJd'
 import { GapsList } from './GapsList'
