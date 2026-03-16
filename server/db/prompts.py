@@ -2,17 +2,16 @@
 
 from typing import Any, cast
 
-from config import DEFAULT_USER_ID
 from db.client import get_client
 
 
-def get_active_prompt(stage: str) -> dict[str, Any] | None:
+def get_active_prompt(stage: str, user_id: str) -> dict[str, Any] | None:
     """Return the latest active prompt for a given pipeline stage, or None."""
     response = (
         get_client()
         .table("prompts")
         .select("*")
-        .eq("user_id", DEFAULT_USER_ID)
+        .eq("user_id", user_id)
         .eq("stage", stage)
         .eq("active", True)
         .order("version", desc=True)

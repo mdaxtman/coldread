@@ -26,4 +26,13 @@ def get_supabase_service_key() -> str:
     return _require("SUPABASE_SERVICE_KEY")
 
 
+def get_supabase_anon_key() -> str:
+    """Return the Supabase anon (public) key.
+
+    Multi-user fork: use this key instead of the service key so that
+    Row Level Security policies are enforced per-request.
+    """
+    return _require("SUPABASE_ANON_KEY")
+
+
 DEFAULT_USER_ID: str = os.environ.get("DEFAULT_USER_ID", "00000000-0000-0000-0000-000000000001")

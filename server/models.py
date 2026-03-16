@@ -14,21 +14,6 @@ class CamelModel(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Response models — Narratives
-# ---------------------------------------------------------------------------
-
-
-class NarrativeResponse(CamelModel):
-    id: str
-    user_id: str
-    title: str
-    content: str
-    category: str | None = None
-    created_at: datetime
-    updated_at: datetime
-
-
-# ---------------------------------------------------------------------------
 # Request models — Job Descriptions
 # ---------------------------------------------------------------------------
 
@@ -49,6 +34,12 @@ class JobDescriptionResponse(CamelModel):
     company: str | None = None
     content: str
     created_at: datetime
+
+
+class MatchModel(CamelModel):
+    requirement: str
+    priority: Literal["required", "preferred", "implied"]
+    notes: str
 
 
 class GapModel(CamelModel):
@@ -74,7 +65,7 @@ class FitReportResponse(CamelModel):
     user_id: str
     job_description_id: str
     fit_level: Literal["strong", "moderate", "borderline", "poor"]
-    matches: list[str]
+    matches: list[MatchModel]
     gaps: list[GapModel]
     terminology: list[TerminologyAlignmentModel]
     reasoning: str

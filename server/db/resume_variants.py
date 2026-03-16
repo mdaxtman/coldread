@@ -2,19 +2,19 @@
 
 from typing import Any, cast
 
-from config import DEFAULT_USER_ID
 from db.client import get_client
 
 
 def create_resume_variant(
     job_description_id: str,
+    user_id: str,
     content: str,
     version: int,
     screener_report: dict[str, Any],
     parent_variant_id: str | None = None,
 ) -> dict[str, Any]:
     row: dict[str, Any] = {
-        "user_id": DEFAULT_USER_ID,
+        "user_id": user_id,
         "job_description_id": job_description_id,
         "content": content,
         "version": version,
@@ -26,13 +26,13 @@ def create_resume_variant(
     return cast(dict[str, Any], response.data[0])
 
 
-def get_latest_variant(job_description_id: str) -> dict[str, Any] | None:
+def get_latest_variant(job_description_id: str, user_id: str) -> dict[str, Any] | None:
     response = (
         get_client()
         .table("resume_variants")
         .select("*")
         .eq("job_description_id", job_description_id)
-        .eq("user_id", DEFAULT_USER_ID)
+        .eq("user_id", user_id)
         .order("version", desc=True)
         .limit(1)
         .execute()
@@ -42,13 +42,13 @@ def get_latest_variant(job_description_id: str) -> dict[str, Any] | None:
     return cast(dict[str, Any], response.data[0])
 
 
-def list_variants(job_description_id: str) -> list[dict[str, Any]]:
+def list_variants(job_description_id: str, user_id: str) -> list[dict[str, Any]]:
     response = (
         get_client()
         .table("resume_variants")
         .select("*")
         .eq("job_description_id", job_description_id)
-        .eq("user_id", DEFAULT_USER_ID)
+        .eq("user_id", user_id)
         .order("version", desc=True)
         .execute()
     )

@@ -14,6 +14,7 @@ server/**/__pycache__/
 server/.mypy_cache/
 server/.ruff_cache/
 server/.env
+server/seeds/
 
 # Python
 *.pyc
