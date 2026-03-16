@@ -25,8 +25,10 @@ export const getFitReport = (jdId: string) => request<FitReport>(`/jds/${jdId}/f
 export const getLatestResume = (jdId: string) => request<ResumeVariant>(`/jds/${jdId}/resume`)
 
 // Pipeline (POST mutations — these run the AI pipeline, not just fetch)
-export const runFitAssessment = (jdId: string) => request<FitReport>(`/jds/${jdId}/fit`)
+export const runFitAssessment = (jdId: string) =>
+  request<FitReport>(`/jds/${jdId}/fit`, { method: 'POST' })
 
+// TODO: add method: 'POST' when POST /jds/{id}/resume endpoint is implemented
 export const generateResume = (jdId: string) => request<ResumeVariant>(`/jds/${jdId}/resume`)
 
 // Resume Variants

@@ -23,7 +23,23 @@ SAMPLE_FIT_REPORT = {
     "user_id": "00000000-0000-0000-0000-000000000001",
     "job_description_id": "00000000-0000-0000-0000-000000000020",
     "fit_level": "strong",
-    "matches": ["Python", "FastAPI", "PostgreSQL"],
+    "matches": [
+        {
+            "requirement": "Python backend development",
+            "priority": "required",
+            "notes": "FastAPI and async Python demonstrated",
+        },
+        {
+            "requirement": "PostgreSQL experience",
+            "priority": "required",
+            "notes": "Primary database at current role",
+        },
+        {
+            "requirement": "RESTful API design",
+            "priority": "preferred",
+            "notes": "Multiple production APIs built",
+        },
+    ],
     "gaps": [{"requirement": "Kubernetes", "type": "soft", "notes": "Some exposure"}],
     "terminology": [{"my_term": "CI/CD", "jd_term": "DevOps"}],
     "reasoning": "Strong match on core requirements.",
@@ -95,24 +111,61 @@ def test_list_jds_empty(mock_list: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
+# POST /jds/{jd_id}/fit
+# ---------------------------------------------------------------------------
+
+
+@patch("api.routes.fit_assessment.run_fit_assessment")
+@patch("db.job_descriptions.get_jd")
+def test_run_fit_assessment(mock_get_jd: Any, mock_run: Any) -> None:
+    mock_get_jd.return_value = SAMPLE_JD  # ownership check passes
+    mock_run.return_value = SAMPLE_FIT_REPORT
+    response = client.post(f"/jds/{JD_ID}/fit")
+    assert response.status_code == 201
+    data = response.json()
+    assert data["fitLevel"] == "strong"
+    assert len(data["matches"]) == 3
+    assert data["matches"][0]["requirement"] == "Python backend development"
+    assert data["matches"][0]["priority"] == "required"
+    assert data["gaps"][0]["requirement"] == "Kubernetes"
+    assert data["terminology"][0]["myTerm"] == "CI/CD"
+    # Verify camelCase serialization
+    assert "fit_level" not in data
+    assert "job_description_id" not in data
+
+
+@patch("db.job_descriptions.get_jd")
+def test_run_fit_assessment_jd_not_found(mock_get_jd: Any) -> None:
+    mock_get_jd.return_value = None  # ownership check rejects
+    response = client.post("/jds/missing-id/fit")
+    assert response.status_code == 404
+    assert "Job description not found" in response.json()["detail"]
+
+
+# ---------------------------------------------------------------------------
 # GET /jds/{jd_id}/fit
 # ---------------------------------------------------------------------------
 
 
 @patch("db.fit_reports.get_latest_fit_report")
-def test_get_fit_report(mock_get: Any) -> None:
+@patch("db.job_descriptions.get_jd")
+def test_get_fit_report(mock_get_jd: Any, mock_get: Any) -> None:
+    mock_get_jd.return_value = SAMPLE_JD  # ownership check passes
     mock_get.return_value = SAMPLE_FIT_REPORT
     response = client.get(f"/jds/{JD_ID}/fit")
     assert response.status_code == 200
     data = response.json()
     assert data["fitLevel"] == "strong"
     assert len(data["matches"]) == 3
+    assert data["matches"][0]["requirement"] == "Python backend development"
     assert data["gaps"][0]["requirement"] == "Kubernetes"
     assert data["terminology"][0]["myTerm"] == "CI/CD"
 
 
 @patch("db.fit_reports.get_latest_fit_report")
-def test_get_fit_report_not_found(mock_get: Any) -> None:
+@patch("db.job_descriptions.get_jd")
+def test_get_fit_report_not_found(mock_get_jd: Any, mock_get: Any) -> None:
+    mock_get_jd.return_value = SAMPLE_JD  # ownership check passes
     mock_get.return_value = None
     response = client.get(f"/jds/{JD_ID}/fit")
     assert response.status_code == 404
@@ -124,7 +177,9 @@ def test_get_fit_report_not_found(mock_get: Any) -> None:
 
 
 @patch("db.resume_variants.get_latest_variant")
-def test_get_latest_resume(mock_get: Any) -> None:
+@patch("db.job_descriptions.get_jd")
+def test_get_latest_resume(mock_get_jd: Any, mock_get: Any) -> None:
+    mock_get_jd.return_value = SAMPLE_JD  # ownership check passes
     mock_get.return_value = SAMPLE_RESUME_VARIANT
     response = client.get(f"/jds/{JD_ID}/resume")
     assert response.status_code == 200
@@ -135,7 +190,9 @@ def test_get_latest_resume(mock_get: Any) -> None:
 
 
 @patch("db.resume_variants.get_latest_variant")
-def test_get_latest_resume_not_found(mock_get: Any) -> None:
+@patch("db.job_descriptions.get_jd")
+def test_get_latest_resume_not_found(mock_get_jd: Any, mock_get: Any) -> None:
+    mock_get_jd.return_value = SAMPLE_JD  # ownership check passes
     mock_get.return_value = None
     response = client.get(f"/jds/{JD_ID}/resume")
     assert response.status_code == 404
@@ -147,7 +204,9 @@ def test_get_latest_resume_not_found(mock_get: Any) -> None:
 
 
 @patch("db.resume_variants.list_variants")
-def test_list_resume_variants(mock_list: Any) -> None:
+@patch("db.job_descriptions.get_jd")
+def test_list_resume_variants(mock_get_jd: Any, mock_list: Any) -> None:
+    mock_get_jd.return_value = SAMPLE_JD  # ownership check passes
     mock_list.return_value = [SAMPLE_RESUME_VARIANT]
     response = client.get(f"/jds/{JD_ID}/resume/variants")
     assert response.status_code == 200
@@ -157,7 +216,9 @@ def test_list_resume_variants(mock_list: Any) -> None:
 
 
 @patch("db.resume_variants.list_variants")
-def test_list_resume_variants_empty(mock_list: Any) -> None:
+@patch("db.job_descriptions.get_jd")
+def test_list_resume_variants_empty(mock_get_jd: Any, mock_list: Any) -> None:
+    mock_get_jd.return_value = SAMPLE_JD  # ownership check passes
     mock_list.return_value = []
     response = client.get(f"/jds/{JD_ID}/resume/variants")
     assert response.status_code == 200

@@ -2,16 +2,15 @@
 
 from typing import Any, cast
 
-from config import DEFAULT_USER_ID
 from db.client import get_client
 
 
-def list_narratives() -> list[dict[str, Any]]:
+def list_narratives(user_id: str) -> list[dict[str, Any]]:
     response = (
         get_client()
         .table("narratives")
         .select("*")
-        .eq("user_id", DEFAULT_USER_ID)
+        .eq("user_id", user_id)
         .order("created_at", desc=True)
         .execute()
     )
