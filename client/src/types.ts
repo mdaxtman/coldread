@@ -12,6 +12,13 @@ export interface JobDescription {
 
 export type FitLevel = 'strong' | 'moderate' | 'borderline' | 'poor'
 export type GapType = 'hard' | 'soft'
+export type MatchPriority = 'required' | 'preferred' | 'implied'
+
+export interface Match {
+  requirement: string
+  priority: MatchPriority
+  notes: string
+}
 
 export interface Gap {
   requirement: string
@@ -29,7 +36,7 @@ export interface FitReport {
   userId: string
   jobDescriptionId: string
   fitLevel: FitLevel
-  matches: string[]
+  matches: Match[]
   gaps: Gap[]
   terminology: TerminologyAlignment[]
   reasoning: string
