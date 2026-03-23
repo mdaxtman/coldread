@@ -1,6 +1,7 @@
 ARCHITECTURE.md
 CLAUDE.md
 .claude/
+docs/
 
 # Frontend
 client/node_modules/
