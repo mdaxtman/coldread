@@ -11,6 +11,7 @@ import anthropic
 from config import get_anthropic_api_key
 from db import fit_reports, job_descriptions, narratives
 from pipeline.prompt_loader import load_prompt
+from security.injection_detection import analyze_jd_for_injection
 
 _client: anthropic.Anthropic | None = None
 
@@ -101,6 +102,9 @@ def run_fit_assessment(jd_id: str, user_id: str) -> dict[str, Any]:
     jd = job_descriptions.get_jd(jd_id, user_id)
     if jd is None:
         raise ValueError(f"Job description not found: {jd_id}")
+
+    # Analyze for suspicious patterns (non-blocking, for monitoring)
+    analyze_jd_for_injection(jd["content"], user_id)
 
     narrative_rows = narratives.list_narratives(user_id)
     narratives_text = _format_narratives(narrative_rows)
