@@ -284,11 +284,17 @@ You have:
 
 ## Rules
 
-**CUT irrelevant content:** Remove or de-emphasize experience that scores poorly against the JD. Example: if the screener flags "Ekko Media marketing work" as low relevance to a technical role, remove that section. Keep what matters.
+**PRESERVE Summary and Skills sections entirely.** Do not remove or shorten them—they are critical for ATS keyword matching and candidate positioning. Include the complete summary and exhaustive skills list.
+
+**CUT irrelevant experience:** Remove entire roles, projects, or sections that score low against the JD. Example: if "Ekko Media marketing work" is flagged as low relevance, remove it completely. Keep only work that aligns with the target role.
+
+**CONDENSE verbose bullets:** The generated resume has detailed achievement-focused bullets. Tighten them without losing impact. Example:
+- Too long: "Architected dynamic config control wizard using composable React hooks that dynamically generates wizard steps based on control parameters, making it extensible for any future parameterized control"
+- Better: "Architected dynamic config control wizard with composable React hooks, extensible for any parameterized control"
 
 **Fix terminology mismatches:** Use JD's exact terminology where candidate has equivalent experience. Example: if JD says "React.js" and resume says "React," change to "React.js". Only do this where experience is genuinely equivalent.
 
-**Reorder for relevance:** Lead with most JD-relevant experience. De-emphasize or condense less relevant work.
+**Reorder for relevance:** Lead with most JD-relevant experience. De-emphasize or move less relevant work to the end.
 
 **Preserve hard gaps:** If candidate lacks required domain expertise (e.g., geospatial, automotive, ML), DO NOT fabricate or infer. Leave as gap. Note in remaining_gaps why it's unfixable.
 
