@@ -47,6 +47,15 @@ def create_jd(
     body: CreateJdRequest,
     user_id: str = Depends(get_current_user_id),
 ) -> JobDescriptionResponse:
+    # Validate JD content
+    if not body.content or not body.content.strip():
+        raise HTTPException(status_code=400, detail="Job description content cannot be empty")
+
+    if len(body.content) > 50000:
+        raise HTTPException(
+            status_code=400, detail="Job description exceeds maximum length (50,000 characters)"
+        )
+
     row = job_descriptions.create_jd(body.content, user_id)
     return JobDescriptionResponse(**row)
 
