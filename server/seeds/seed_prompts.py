@@ -140,6 +140,8 @@ Project / Initiative Name
 
 **Structure Details:**
 - CRITICAL: Remove all role levels (L5, L4, Engineer II, Senior, etc.) from the output — only include company names and project titles
+  - WRONG: "Frontend Engineer L5 at Amazon / AWS"
+  - RIGHT: "Amazon / AWS (5 years 10 months)" then describe projects and work below
 - Include specific technologies mentioned in narratives
 - Show ownership: what did you decide, what did you own end-to-end
 - Group related work under projects rather than isolated bullet points
