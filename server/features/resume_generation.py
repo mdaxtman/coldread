@@ -41,6 +41,17 @@ _GENERATOR_SCHEMA = {
             },
         },
         "skills": {"type": "array", "items": {"type": "string"}},
+        "education": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "degree": {"type": "string"},
+                    "year": {"type": "string"},
+                },
+            },
+        },
         "projects": {
             "type": "array",
             "items": {
@@ -176,16 +187,13 @@ def _run_generator(jd_content: str, narratives_text: str, user_id: str) -> dict[
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
-        tools=cast(
-            Any,
-            [
-                {
-                    "name": "submit_resume_draft",
-                    "description": "Submit the generated resume draft",
-                    "input_schema": _GENERATOR_SCHEMA,
-                }
-            ],
-        ),
+        tools=[
+            {
+                "name": "submit_resume_draft",
+                "description": "Submit the generated resume draft",
+                "input_schema": _GENERATOR_SCHEMA,
+            }
+        ],
         tool_choice={"type": "tool", "name": "submit_resume_draft"},
     )
 
@@ -212,16 +220,13 @@ def _run_screener(jd_content: str, resume_text: str, user_id: str) -> dict[str, 
         max_tokens=2048,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
-        tools=cast(
-            Any,
-            [
-                {
-                    "name": "submit_screener_analysis",
-                    "description": "Submit the ATS screener analysis",
-                    "input_schema": _SCREENER_SCHEMA,
-                }
-            ],
-        ),
+        tools=[
+            {
+                "name": "submit_screener_analysis",
+                "description": "Submit the ATS screener analysis",
+                "input_schema": _SCREENER_SCHEMA,
+            }
+        ],
         tool_choice={"type": "tool", "name": "submit_screener_analysis"},
     )
 
@@ -259,16 +264,13 @@ def _run_refinement(
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
-        tools=cast(
-            Any,
-            [
-                {
-                    "name": "submit_refined_resume",
-                    "description": "Submit the refined resume",
-                    "input_schema": _REFINEMENT_SCHEMA,
-                }
-            ],
-        ),
+        tools=[
+            {
+                "name": "submit_refined_resume",
+                "description": "Submit the refined resume",
+                "input_schema": _REFINEMENT_SCHEMA,
+            }
+        ],
         tool_choice={"type": "tool", "name": "submit_refined_resume"},
     )
 
