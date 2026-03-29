@@ -41,17 +41,6 @@ _GENERATOR_SCHEMA = {
             },
         },
         "skills": {"type": "array", "items": {"type": "string"}},
-        "education": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "degree": {"type": "string"},
-                    "year": {"type": "string"},
-                },
-            },
-        },
         "projects": {
             "type": "array",
             "items": {
