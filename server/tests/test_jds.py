@@ -54,10 +54,25 @@ SAMPLE_RESUME_VARIANT = {
     "version": 1,
     "parent_variant_id": None,
     "screener_report": {
-        "keyword_coverage": {"python": True, "kubernetes": False},
-        "semantic_score": 0.82,
-        "terminology_mismatches": [{"my_term": "CI/CD", "jd_term": "DevOps"}],
-        "overall_score": 0.78,
+        "screener_analysis": {
+            "keyword_coverage": {"python": True, "kubernetes": False},
+            "semantic_score": 0.82,
+            "coverage_gaps": [
+                {
+                    "requirement": "Kubernetes",
+                    "gap_type": "soft",
+                    "impact": "Preferred skill",
+                }
+            ],
+            "terminology_mismatches": [{"my_term": "CI/CD", "jd_term": "DevOps"}],
+            "overall_score": 0.78,
+        },
+        "refinement_changes": {
+            "sections_modified": [],
+            "changes": [],
+            "remaining_gaps": [],
+            "coverage_improvement": 0,
+        },
     },
     "created_at": "2025-01-01T00:00:00+00:00",
 }
@@ -186,7 +201,7 @@ def test_get_latest_resume(mock_get_jd: Any, mock_get: Any) -> None:
     data = response.json()
     assert data["version"] == 1
     assert data["parentVariantId"] is None
-    assert data["screenerReport"]["semanticScore"] == 0.82
+    assert data["screenerReport"]["screenerAnalysis"]["semanticScore"] == 0.82
 
 
 @patch("db.resume_variants.get_latest_variant")
@@ -212,7 +227,7 @@ def test_list_resume_variants(mock_get_jd: Any, mock_list: Any) -> None:
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["screenerReport"]["overallScore"] == 0.78
+    assert data[0]["screenerReport"]["screenerAnalysis"]["overallScore"] == 0.78
 
 
 @patch("db.resume_variants.list_variants")
