@@ -1,7 +1,7 @@
 """Pydantic models for ColdRead API request/response serialization."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -79,5 +79,5 @@ class ResumeVariantResponse(CamelModel):
     content: str
     version: int
     parent_variant_id: str | None = None
-    screener_report: ScreenerReportModel
+    screener_report: dict[str, Any]
     created_at: datetime

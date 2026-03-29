@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from api.dependencies import get_current_user_id
 from db import fit_reports, job_descriptions, resume_variants
-from features import fit_assessment
+from features import fit_assessment, resume_generation
 from models import (
     CreateJdRequest,
     FitReportResponse,
@@ -107,6 +107,48 @@ def get_fit_report(
     if row is None:
         raise HTTPException(status_code=404, detail="No fit report found")
     return FitReportResponse(**row)
+
+
+# ---------------------------------------------------------------------------
+# Resume Generation
+# ---------------------------------------------------------------------------
+
+
+@jds.post("/{jd_id}/resume", response_model=ResumeVariantResponse, status_code=201)
+def generate_resume(
+    jd_id: str,
+    user_id: str = Depends(get_current_user_id),
+) -> ResumeVariantResponse:
+    _verify_jd_ownership(jd_id, user_id)
+    try:
+        row = resume_generation.run_resume_generation(jd_id, user_id, mode="full")
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return ResumeVariantResponse(**row)
+
+
+@jds.post(
+    "/{jd_id}/resume/refine/{variant_id}",
+    response_model=ResumeVariantResponse,
+    status_code=201,
+)
+def refine_resume(
+    jd_id: str,
+    variant_id: str,
+    user_id: str = Depends(get_current_user_id),
+) -> ResumeVariantResponse:
+    _verify_jd_ownership(jd_id, user_id)
+    try:
+        row = resume_generation.run_resume_generation(
+            jd_id, user_id, mode="refine", parent_variant_id=variant_id
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return ResumeVariantResponse(**row)
 
 
 # ---------------------------------------------------------------------------
