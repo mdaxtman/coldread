@@ -9,7 +9,7 @@ from features import resume_generation
 
 
 @pytest.fixture
-def mock_jd():
+def mock_jd() -> dict[str, Any]:
     """Mock job description."""
     return {
         "id": "jd-123",
@@ -20,7 +20,7 @@ def mock_jd():
 
 
 @pytest.fixture
-def mock_narratives():
+def mock_narratives() -> list[dict[str, Any]]:
     """Mock narratives list."""
     return [
         {
@@ -43,7 +43,7 @@ def mock_narratives():
 
 
 @pytest.fixture
-def mock_resume_variant():
+def mock_resume_variant() -> dict[str, Any]:
     """Mock resume variant from database."""
     return {
         "id": "variant-1",
