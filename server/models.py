@@ -1,7 +1,7 @@
 """Pydantic models for ColdRead API request/response serialization."""
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -53,11 +53,30 @@ class TerminologyAlignmentModel(CamelModel):
     jd_term: str
 
 
-class ScreenerReportModel(CamelModel):
+class ScreenerAnalysisModel(CamelModel):
+    """ATS screener analysis: what the resume is missing or could improve."""
+
     keyword_coverage: dict[str, bool]
     semantic_score: float
     terminology_mismatches: list[TerminologyAlignmentModel]
     overall_score: float
+    coverage_gaps: list[dict[str, str]] | None = None
+
+
+class RefinementChangesModel(CamelModel):
+    """Changes made during refinement step to improve the resume."""
+
+    sections_modified: list[str]
+    changes: list[dict[str, str]]
+    remaining_gaps: list[dict[str, str]]
+    coverage_improvement: float
+
+
+class ScreenerReportModel(CamelModel):
+    """Complete screener report: analysis + refinement changes."""
+
+    screener_analysis: ScreenerAnalysisModel
+    refinement_changes: RefinementChangesModel
 
 
 class FitReportResponse(CamelModel):
@@ -79,5 +98,5 @@ class ResumeVariantResponse(CamelModel):
     content: str
     version: int
     parent_variant_id: str | None = None
-    screener_report: dict[str, Any]
+    screener_report: ScreenerReportModel
     created_at: datetime
