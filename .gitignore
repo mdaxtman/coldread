@@ -22,6 +22,9 @@ server/seeds/
 *.pyo
 .pytest_cache/
 
+# Supabase
+supabase/.temp/
+
 # Editor
 .DS_Store
 .vscode/
