@@ -5,6 +5,7 @@ import {
   useGetLatestResume,
 } from '../hooks/useResumeGeneration'
 import { ResumeVariantResponse } from '../types/resume'
+import styles from './ResumeGenerator.module.css'
 
 interface ResumeGeneratorProps {
   jdId: string
@@ -32,11 +33,11 @@ export function ResumeGenerator({ jdId, onSuccess }: ResumeGeneratorProps) {
   const canRefine = latestResume !== null && mode === 'refine'
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg">
-      <h3 className="text-lg font-semibold">Generate Resume</h3>
+    <div className={styles.container}>
+      <h3 className={styles.title}>Generate Resume</h3>
 
-      <div className="space-y-2">
-        <label className="flex items-center space-x-2">
+      <div className={styles.options}>
+        <label className={styles.option}>
           <input
             type="radio"
             value="full"
@@ -46,7 +47,7 @@ export function ResumeGenerator({ jdId, onSuccess }: ResumeGeneratorProps) {
           />
           <span>Full regenerate (all 3 steps)</span>
         </label>
-        <label className="flex items-center space-x-2">
+        <label className={styles.option}>
           <input
             type="radio"
             value="refine"
@@ -55,12 +56,12 @@ export function ResumeGenerator({ jdId, onSuccess }: ResumeGeneratorProps) {
             disabled={!latestResume || isLoading}
           />
           <span>Refine existing variant</span>
-          {!latestResume && <span className="text-sm text-gray-500">(No variant yet)</span>}
+          {!latestResume && <span className={styles.optionLabel}>(No variant yet)</span>}
         </label>
       </div>
 
       {error && (
-        <div className="p-2 bg-red-100 text-red-800 rounded text-sm">
+        <div className={styles.error}>
           {error instanceof Error ? error.message : 'An error occurred'}
         </div>
       )}
@@ -68,7 +69,7 @@ export function ResumeGenerator({ jdId, onSuccess }: ResumeGeneratorProps) {
       <button
         onClick={handleGenerate}
         disabled={isLoading || (mode === 'refine' && !canRefine)}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+        className={styles.button}
       >
         {isLoading ? 'Generating...' : 'Generate'}
       </button>

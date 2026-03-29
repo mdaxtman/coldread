@@ -1,5 +1,6 @@
 import { useListResumeVariants } from '../hooks/useResumeGeneration'
 import { ResumeVariantResponse } from '../types/resume'
+import styles from './ResumeHistory.module.css'
 
 interface ResumeHistoryProps {
   jdId: string
@@ -9,10 +10,10 @@ interface ResumeHistoryProps {
 export function ResumeHistory({ jdId, onSelectVariant }: ResumeHistoryProps) {
   const { data: variants, isLoading, error } = useListResumeVariants(jdId)
 
-  if (isLoading) return <div>Loading variants...</div>
-  if (error) return <div>Error loading variants</div>
+  if (isLoading) return <div className={styles.loadingState}>Loading variants...</div>
+  if (error) return <div className={styles.errorState}>Error loading variants</div>
   if (!variants || variants.length === 0) {
-    return <div className="p-4 text-gray-500">No resume variants yet</div>
+    return <div className={styles.emptyState}>No resume variants yet</div>
   }
 
   // Build lineage tree
@@ -33,10 +34,10 @@ export function ResumeHistory({ jdId, onSelectVariant }: ResumeHistoryProps) {
   const roots = byParent.get('root') || []
 
   return (
-    <div className="p-4 border rounded-lg space-y-4">
-      <h3 className="text-lg font-semibold">Resume Variants</h3>
+    <div className={styles.container}>
+      <h3 className={styles.title}>Resume Variants</h3>
 
-      <div className="space-y-3">
+      <div className={styles.list}>
         {roots.map((variant) => (
           <ResumeVariantNode
             key={variant.id}
@@ -73,20 +74,17 @@ function ResumeVariantNode({
   }
 
   return (
-    <div className="ml-0">
-      <button
-        onClick={() => onSelect?.(variant)}
-        className="block w-full text-left p-3 rounded border hover:bg-blue-50 transition"
-      >
-        <div className="font-semibold">v{variant.version}</div>
-        <div className="text-sm text-gray-600">{formatTimeAgo(variant.createdAt)}</div>
-        <div className="text-sm text-gray-500">
+    <div>
+      <button onClick={() => onSelect?.(variant)} className={styles.variantButton}>
+        <div className={styles.variantVersion}>v{variant.version}</div>
+        <div className={styles.variantTime}>{formatTimeAgo(variant.createdAt)}</div>
+        <div className={styles.variantScore}>
           Score: {(variant.screenerReport.screenerAnalysis.overallScore * 100).toFixed(0)}%
         </div>
       </button>
 
       {children.length > 0 && (
-        <div className="ml-4 border-l-2 border-gray-300 pl-4 space-y-2 mt-2">
+        <div className={styles.childrenContainer}>
           {children.map((child) => (
             <ResumeVariantNode
               key={child.id}
