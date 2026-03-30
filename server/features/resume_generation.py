@@ -169,18 +169,80 @@ def _format_resume_for_screener(resume_data: dict[str, Any]) -> str:
     return "\n\n".join(lines)
 
 
-def _run_generator(jd_content: str, narratives_text: str, user_id: str) -> dict[str, Any]:
-    """Step 1: Generator perspective — create comprehensive resume from narratives only (no JD).
+def _format_fit_report(fit_report: dict[str, Any]) -> str:
+    """Format fit report into structured guidance for the generator.
 
-    The JD is withheld to prevent inference. Screener will identify gaps against JD.
-    Refinement will cut irrelevant content based on screener feedback.
+    Converts the pre-computed fit assessment into readable sections showing:
+    - What requirements are clearly matched
+    - What gaps exist and how to handle them
+    - Which terminology should be used
+    """
+    lines = []
+
+    # MATCHES section
+    matches = fit_report.get("matches", [])
+    if matches:
+        lines.append("MATCHES — requirements you clearly meet (emphasize these):")
+        for match in matches:
+            priority = match.get("priority", "required").upper()
+            req = match.get("requirement", "")
+            notes = match.get("notes", "")
+            notes_str = f" ({notes})" if notes else ""
+            lines.append(f"  - [{priority}] {req}{notes_str}")
+
+    # GAPS section (separated by type)
+    gaps = fit_report.get("gaps", [])
+    soft_gaps = [g for g in gaps if g.get("type") == "soft"]
+    hard_gaps = [g for g in gaps if g.get("type") == "hard"]
+
+    if soft_gaps:
+        lines.append("\nGAPS — soft (position adjacent strengths if relevant):")
+        for gap in soft_gaps:
+            req = gap.get("requirement", "")
+            notes = gap.get("notes", "")
+            notes_str = f" ({notes})" if notes else ""
+            lines.append(f"  - [SOFT] {req}{notes_str}")
+
+    if hard_gaps:
+        lines.append("\nGAPS — hard (leave as gap, do not bridge):")
+        for gap in hard_gaps:
+            req = gap.get("requirement", "")
+            notes = gap.get("notes", "")
+            notes_str = f" ({notes})" if notes else ""
+            lines.append(f"  - [HARD] {req}{notes_str}")
+
+    # TERMINOLOGY section
+    terminology = fit_report.get("terminology", [])
+    if terminology:
+        lines.append("\nTERMINOLOGY — use JD's exact terms where experience matches:")
+        for term in terminology:
+            my_term = term.get("my_term", "")
+            jd_term = term.get("jd_term", "")
+            lines.append(f"  - {my_term} → {jd_term}")
+
+    return "\n".join(lines)
+
+
+def _run_generator(
+    narratives_text: str, fit_report: dict[str, Any], user_id: str
+) -> dict[str, Any]:
+    """Step 1: Generator perspective — create strategic resume guided by fit assessment.
+
+    Receives pre-computed fit report (matches/gaps/terminology) to inform strategic choices:
+    - Emphasize matched requirements
+    - Handle soft gaps by positioning adjacent strengths
+    - Omit hard gaps entirely
+    - Use exact terminology from the JD where applicable
     """
     system_prompt = load_prompt("generator", user_id)
+    fit_guidance = _format_fit_report(fit_report)
     user_message = (
         f"<candidate_background>\n{narratives_text}\n</candidate_background>\n\n"
-        "Create the most comprehensive, exhaustive resume possible from the "
-        "candidate's narratives. Include all relevant experience, projects, and skills "
-        "mentioned. Use the submit_resume_draft tool to submit your output."
+        f"<fit_assessment>\n{fit_guidance}\n</fit_assessment>\n\n"
+        "Create a focused, strategic resume that highlights strengths matching the role. "
+        "Use the fit assessment above to guide emphasis, handle gaps appropriately, and use the "
+        "exact terminology from the JD. "
+        "Use the submit_resume_draft tool to submit your output."
     )
 
     response = _get_anthropic_client().messages.create(
@@ -292,8 +354,11 @@ def _run_refinement(
     return cast(dict[str, Any], tool_block.input)
 
 
-def _run_full_regenerate(jd_id: str, user_id: str) -> dict[str, Any]:
-    """Full regenerate mode: all three steps from scratch."""
+def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -> dict[str, Any]:
+    """Full regenerate mode: all three steps from scratch.
+
+    Uses pre-computed fit report to guide generator's strategic choices.
+    """
     # Load inputs
     jd = job_descriptions.get_jd(jd_id, user_id)
     if jd is None:
@@ -302,9 +367,9 @@ def _run_full_regenerate(jd_id: str, user_id: str) -> dict[str, Any]:
     narrative_rows = narratives.list_narratives(user_id)
     narratives_text = _format_narratives(narrative_rows)
 
-    # Step 1: Generate
+    # Step 1: Generate (guided by fit report)
     try:
-        resume_data = _run_generator(jd["content"], narratives_text, user_id)
+        resume_data = _run_generator(narratives_text, fit_report, user_id)
     except Exception as e:
         raise RuntimeError(f"generator_failed: {str(e)}")
 
@@ -351,8 +416,13 @@ def _run_full_regenerate(jd_id: str, user_id: str) -> dict[str, Any]:
     return result
 
 
-def _run_refine_existing(jd_id: str, user_id: str, parent_variant_id: str) -> dict[str, Any]:
-    """Refine-existing mode: reuse generator + screener, run refinement only."""
+def _run_refine_existing(
+    jd_id: str, user_id: str, parent_variant_id: str, fit_report: dict[str, Any]
+) -> dict[str, Any]:
+    """Refine-existing mode: reuse generator + screener, run refinement only.
+
+    Fit report is threaded through for consistency and future extensibility.
+    """
     # Load inputs
     jd = job_descriptions.get_jd(jd_id, user_id)
     if jd is None:
@@ -408,13 +478,18 @@ def _run_refine_existing(jd_id: str, user_id: str, parent_variant_id: str) -> di
 
 
 def run_resume_generation(
-    jd_id: str, user_id: str, mode: str = "full", parent_variant_id: str | None = None
+    jd_id: str,
+    user_id: str,
+    fit_report: dict[str, Any],
+    mode: str = "full",
+    parent_variant_id: str | None = None,
 ) -> dict[str, Any]:
     """Run resume generation pipeline (generator → screener → refinement).
 
     Args:
         jd_id: Job description ID
         user_id: User ID
+        fit_report: Pre-computed fit assessment (matches/gaps/terminology)
         mode: "full" for full regenerate, "refine" for refine-existing
         parent_variant_id: Variant to refine from (required if mode="refine")
 
@@ -422,14 +497,14 @@ def run_resume_generation(
         Resume variant row from database
 
     Raises:
-        ValueError: If JD or variant not found
+        ValueError: If JD, variant, or fit_report not found
         RuntimeError: If any step fails
     """
     if mode == "full":
-        return _run_full_regenerate(jd_id, user_id)
+        return _run_full_regenerate(jd_id, user_id, fit_report)
     elif mode == "refine":
         if parent_variant_id is None:
             raise ValueError("parent_variant_id required for refine mode")
-        return _run_refine_existing(jd_id, user_id, parent_variant_id)
+        return _run_refine_existing(jd_id, user_id, parent_variant_id, fit_report)
     else:
         raise ValueError(f"Unknown mode: {mode}")

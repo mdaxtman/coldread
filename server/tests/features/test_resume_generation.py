@@ -43,6 +43,29 @@ def mock_narratives() -> list[dict[str, Any]]:
 
 
 @pytest.fixture
+def mock_fit_report() -> dict[str, Any]:
+    """Mock fit assessment report."""
+    return {
+        "id": "fit-123",
+        "user_id": "user-1",
+        "job_description_id": "jd-123",
+        "fit_level": "strong",
+        "matches": [
+            {
+                "requirement": "5+ years React",
+                "priority": "required",
+                "notes": "11 years experience",
+            },
+            {"requirement": "TypeScript", "priority": "required", "notes": "Strong expertise"},
+        ],
+        "gaps": [],
+        "terminology": [],
+        "reasoning": "Strong fit for the role",
+        "created_at": "2026-03-28T00:00:00",
+    }
+
+
+@pytest.fixture
 def mock_resume_variant() -> dict[str, Any]:
     """Mock resume variant from database."""
     return {
@@ -78,6 +101,7 @@ def mock_resume_variant() -> dict[str, Any]:
 def test_full_regenerate_success(
     mock_jd: dict[str, Any],
     mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
     mock_resume_variant: dict[str, Any],
 ) -> None:
     """Test full regenerate mode with all three steps succeeding."""
@@ -116,7 +140,7 @@ def test_full_regenerate_success(
 
                                 # Run
                                 result = resume_generation.run_resume_generation(
-                                    "jd-123", "user-1", mode="full"
+                                    "jd-123", "user-1", mock_fit_report, mode="full"
                                 )
 
                                 # Assert
@@ -131,7 +155,9 @@ def test_full_regenerate_success(
 
 
 def test_full_regenerate_generator_fails(
-    mock_jd: dict[str, Any], mock_narratives: list[dict[str, Any]]
+    mock_jd: dict[str, Any],
+    mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
 ) -> None:
     """Test that generator failure stops pipeline and raises error."""
     with patch("features.resume_generation.job_descriptions.get_jd", return_value=mock_jd):
@@ -143,7 +169,9 @@ def test_full_regenerate_generator_fails(
                 side_effect=RuntimeError("Claude error"),
             ):
                 with pytest.raises(RuntimeError, match="generator_failed"):
-                    resume_generation.run_resume_generation("jd-123", "user-1", mode="full")
+                    resume_generation.run_resume_generation(
+                        "jd-123", "user-1", mock_fit_report, mode="full"
+                    )
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +180,9 @@ def test_full_regenerate_generator_fails(
 
 
 def test_full_regenerate_screener_fails(
-    mock_jd: dict[str, Any], mock_narratives: list[dict[str, Any]]
+    mock_jd: dict[str, Any],
+    mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
 ) -> None:
     """Test that screener failure stops pipeline."""
     with patch("features.resume_generation.job_descriptions.get_jd", return_value=mock_jd):
@@ -170,7 +200,9 @@ def test_full_regenerate_screener_fails(
                         side_effect=RuntimeError("Screener error"),
                     ):
                         with pytest.raises(RuntimeError, match="screener_failed"):
-                            resume_generation.run_resume_generation("jd-123", "user-1", mode="full")
+                            resume_generation.run_resume_generation(
+                                "jd-123", "user-1", mock_fit_report, mode="full"
+                            )
 
 
 # ---------------------------------------------------------------------------
@@ -179,7 +211,9 @@ def test_full_regenerate_screener_fails(
 
 
 def test_full_regenerate_refinement_fails(
-    mock_jd: dict[str, Any], mock_narratives: list[dict[str, Any]]
+    mock_jd: dict[str, Any],
+    mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
 ) -> None:
     """Test that refinement failure stops pipeline."""
     with patch("features.resume_generation.job_descriptions.get_jd", return_value=mock_jd):
@@ -203,7 +237,7 @@ def test_full_regenerate_refinement_fails(
                         ):
                             with pytest.raises(RuntimeError, match="refinement_failed"):
                                 resume_generation.run_resume_generation(
-                                    "jd-123", "user-1", mode="full"
+                                    "jd-123", "user-1", mock_fit_report, mode="full"
                                 )
 
 
@@ -215,6 +249,7 @@ def test_full_regenerate_refinement_fails(
 def test_refine_existing_success(
     mock_jd: dict[str, Any],
     mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
     mock_resume_variant: dict[str, Any],
 ) -> None:
     """Test refine-existing mode (step 3 only)."""
@@ -246,7 +281,11 @@ def test_refine_existing_success(
                         }
 
                         result = resume_generation.run_resume_generation(
-                            "jd-123", "user-1", mode="refine", parent_variant_id="variant-1"
+                            "jd-123",
+                            "user-1",
+                            mock_fit_report,
+                            mode="refine",
+                            parent_variant_id="variant-1",
                         )
 
                         assert result["version"] == 2
