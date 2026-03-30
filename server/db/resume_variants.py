@@ -1,8 +1,37 @@
 """Data access layer for resume variants."""
 
+import json
 from typing import Any, cast
 
 from db.client import get_client
+
+
+def _parse_screener_report(screener_report: Any) -> dict[str, Any]:
+    """Ensure screener_report JSON nested fields are properly parsed.
+
+    Supabase stores nested JSON structures as strings in some cases.
+    This function ensures terminology_mismatches is always a list.
+    """
+    if not isinstance(screener_report, dict):
+        return screener_report
+
+    report = screener_report.copy()
+
+    # Parse screener_analysis.terminology_mismatches if it's a string
+    if "screener_analysis" in report and isinstance(report["screener_analysis"], dict):
+        analysis = report["screener_analysis"].copy()
+        if "terminology_mismatches" in analysis:
+            mismatches = analysis["terminology_mismatches"]
+            # Supabase returns this as a JSON string; parse it if needed
+            if isinstance(mismatches, str):
+                try:
+                    analysis["terminology_mismatches"] = json.loads(mismatches)
+                except json.JSONDecodeError:
+                    # Corrupted data; default to empty list
+                    analysis["terminology_mismatches"] = []
+        report["screener_analysis"] = analysis
+
+    return report
 
 
 def create_resume_variant(
@@ -23,7 +52,10 @@ def create_resume_variant(
     if parent_variant_id is not None:
         row["parent_variant_id"] = parent_variant_id
     response = get_client().table("resume_variants").insert(row).execute()
-    return cast(dict[str, Any], response.data[0])
+    result = cast(dict[str, Any], response.data[0])
+    if "screener_report" in result:
+        result["screener_report"] = _parse_screener_report(result["screener_report"])
+    return result
 
 
 def get_latest_variant(job_description_id: str, user_id: str) -> dict[str, Any] | None:
@@ -39,7 +71,10 @@ def get_latest_variant(job_description_id: str, user_id: str) -> dict[str, Any] 
     )
     if not response.data:
         return None
-    return cast(dict[str, Any], response.data[0])
+    row = cast(dict[str, Any], response.data[0])
+    if "screener_report" in row:
+        row["screener_report"] = _parse_screener_report(row["screener_report"])
+    return row
 
 
 def list_variants(job_description_id: str, user_id: str) -> list[dict[str, Any]]:
@@ -52,4 +87,10 @@ def list_variants(job_description_id: str, user_id: str) -> list[dict[str, Any]]
         .order("version", desc=True)
         .execute()
     )
-    return [cast(dict[str, Any], r) for r in response.data]
+    result = []
+    for r in response.data:
+        row = cast(dict[str, Any], r)
+        if "screener_report" in row:
+            row["screener_report"] = _parse_screener_report(row["screener_report"])
+        result.append(row)
+    return result
