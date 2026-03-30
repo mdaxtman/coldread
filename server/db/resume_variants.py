@@ -13,7 +13,7 @@ def _parse_screener_report(screener_report: Any) -> dict[str, Any]:
     This function ensures terminology_mismatches is always a list.
     """
     if not isinstance(screener_report, dict):
-        return screener_report
+        return cast(dict[str, Any], screener_report)
 
     report = screener_report.copy()
 
