@@ -43,11 +43,24 @@ export interface FitReport {
   createdAt: string
 }
 
-export interface ScreenerReport {
+export interface ScreenerAnalysisData {
   keywordCoverage: Record<string, boolean>
   semanticScore: number
+  coverageGaps: Gap[]
   terminologyMismatches: TerminologyAlignment[]
   overallScore: number
+}
+
+export interface RefinementChangeData {
+  sectionsModified: string[]
+  changes: Array<{ section: string; changeDescription: string }>
+  remainingGaps: Array<{ requirement: string; whyUnfixable: string }>
+  coverageImprovement: number
+}
+
+export interface ScreenerReport {
+  screenerAnalysis: ScreenerAnalysisData
+  refinementChanges: RefinementChangeData
 }
 
 export interface ResumeVariant {

@@ -1,7 +1,7 @@
+import ReactMarkdown from 'react-markdown'
 import { Badge } from '../../components/ui/Badge'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { Card } from '../../components/ui/Card'
-import { CodeBlock } from '../../components/terminal/CodeBlock'
 import type { ResumeVariant, FitLevel } from '../../types'
 import styles from './ResumePanel.module.css'
 
@@ -62,7 +62,9 @@ export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
       </Card>
 
       {/* Resume content */}
-      <CodeBlock>{content}</CodeBlock>
+      <div className={styles.resumeContent}>
+        <ReactMarkdown>{content}</ReactMarkdown>
+      </div>
 
       {/* Export button */}
       <button type="button" className={styles.exportBtn} onClick={() => downloadResume(content)}>
