@@ -284,23 +284,27 @@ You have:
 
 ## Rules
 
-**PRESERVE Summary and Skills sections entirely.** Do not remove or shorten them—they are critical for ATS keyword matching and candidate positioning. Include the complete summary and exhaustive skills list.
+**DRASTICALLY CUT Skills section.** Keep ONLY technical skills (languages, frameworks, tools) that appear in both the narratives AND the JD, or that are market-relevant to the role. Maximum 30-40 skills total. Remove all soft skills ("Leadership", "Critical Thinking", "Collaboration", "Problem Solving", etc.). Remove every skill not explicitly mentioned in the candidate's narratives. Be ruthless—this should read like a focused keyword index, not an exhaustive inventory.
 
-**CUT irrelevant experience:** Remove entire roles, projects, or sections that score low against the JD. Example: if "Ekko Media marketing work" is flagged as low relevance, remove it completely. Keep only work that aligns with the target role.
+**AGGRESSIVELY CONDENSE experience bullets to 1-2 lines.** Each bullet should be: [Action] [Technology/Tool] [Outcome]. If it's more than one sentence, cut it. Example:
+- ❌ TOO LONG: "Architected dynamic config control wizard using composable React hooks that dynamically generates wizard steps based on control parameters, making it extensible for any future parameterized control"
+- ✅ RIGHT: "Built Dynamic Config Control Wizard with composable React hooks for extensible parameterized controls"
 
-**CONDENSE verbose bullets:** The generated resume has detailed achievement-focused bullets. Tighten them without losing impact. Example:
-- Too long: "Architected dynamic config control wizard using composable React hooks that dynamically generates wizard steps based on control parameters, making it extensible for any future parameterized control"
-- Better: "Architected dynamic config control wizard with composable React hooks, extensible for any parameterized control"
+**REMOVE role levels everywhere.** Strip "L5", "Engineer II", "Senior", "Junior", "Principal" from all job titles:
+- ❌ "Frontend Engineer (L5) at Amazon"
+- ✅ "Frontend Engineer at Amazon (5 years 10 months)"
 
-**Fix terminology mismatches:** Use JD's exact terminology where candidate has equivalent experience. Example: if JD says "React.js" and resume says "React," change to "React.js". Only do this where experience is genuinely equivalent.
+**CONSOLIDATE same-company roles into one section.** If candidate had multiple roles at Amazon (Service Catalog, Control Tower, QuickAutomate, OculusRx), create ONE section titled "Frontend Engineer at Amazon (May 2020 – Present)" with projects listed as sub-sections or grouped bullets. Do NOT create separate sections for each product/team.
 
-**Reorder for relevance:** Lead with most JD-relevant experience. De-emphasize or move less relevant work to the end.
+**CUT irrelevant experience:** Remove entire roles, projects, or sections that score low against the JD. Keep only work that aligns with the target role.
 
-**Preserve hard gaps:** If candidate lacks required domain expertise (e.g., geospatial, automotive, ML), DO NOT fabricate or infer. Leave as gap. Note in remaining_gaps why it's unfixable.
+**Fix terminology mismatches:** Use JD's exact terminology where candidate has equivalent experience. Only do this where experience is genuinely equivalent.
 
-**CRITICAL: Do not infer domain expertise.** Never add domain-specific terms unless explicitly in narratives. "Data visualization" ≠ "geospatial data visualization". If screener flags a domain gap and narratives don't mention it, leave it unfixable.
+**Reorder for relevance:** Lead with most JD-relevant experience. De-emphasize less relevant work.
 
-**Preserve authentic voice:** Keep the candidate's original phrasing and tone. Reorder and cut, but don't rewrite their language.
+**Preserve hard gaps:** If candidate lacks required domain expertise, DO NOT fabricate or infer. Note in remaining_gaps why it's unfixable.
+
+**CRITICAL: Do not infer domain expertise.** "Data visualization" ≠ "geospatial data visualization". Leave unfixable gaps as gaps.
 
 ## Output
 
