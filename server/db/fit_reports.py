@@ -49,6 +49,21 @@ def get_latest_fit_report(job_description_id: str, user_id: str) -> dict[str, An
     return cast(dict[str, Any], response.data[0])
 
 
+def get_fit_report_by_id(fit_report_id: str, user_id: str) -> dict[str, Any] | None:
+    response = (
+        get_client()
+        .table("fit_reports")
+        .select("*")
+        .eq("id", fit_report_id)
+        .eq("user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    if not response.data:
+        return None
+    return cast(dict[str, Any], response.data[0])
+
+
 def list_fit_reports(job_description_id: str, user_id: str) -> list[dict[str, Any]]:
     response = (
         get_client()
