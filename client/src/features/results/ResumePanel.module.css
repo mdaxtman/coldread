@@ -55,3 +55,52 @@
   border-color: var(--accent);
   color: var(--accent-hover);
 }
+
+.resumeContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.resumeContent :global(h2) {
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-size: 1.25em;
+  font-weight: var(--weight-semibold);
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0.5em;
+}
+
+.resumeContent :global(h3) {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-size: 1.1em;
+  font-weight: var(--weight-semibold);
+}
+
+.resumeContent :global(p) {
+  margin: 0.5em 0;
+}
+
+.resumeContent :global(ul) {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.resumeContent :global(li) {
+  margin: 0.25em 0;
+}
+
+.resumeContent :global(strong) {
+  font-weight: var(--weight-semibold);
+}
+
+.resumeContent :global(em) {
+  font-style: italic;
+}
