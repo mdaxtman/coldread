@@ -31,7 +31,7 @@ function downloadResume(content: string) {
 
 export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
   const { screenerReport, content } = resumeVariant
-  const { keywordCoverage, semanticScore, overallScore } = screenerReport
+  const { keywordCoverage, semanticScore, overallScore } = screenerReport.screenerAnalysis
 
   const coveredCount = Object.values(keywordCoverage).filter(Boolean).length
   const totalCount = Object.keys(keywordCoverage).length

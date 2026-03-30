@@ -48,7 +48,7 @@ export const ResultsDashboard = () => {
         <SupportingPanel
           fitReport={fitReport}
           jobDescription={jobDescription}
-          keywordCoverage={resumeVariant.screenerReport.keywordCoverage}
+          keywordCoverage={resumeVariant.screenerReport.screenerAnalysis.keywordCoverage}
         />
       </SplitPanel>
     </div>

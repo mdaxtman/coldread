@@ -28,8 +28,8 @@ export const getLatestResume = (jdId: string) => request<ResumeVariant>(`/jds/${
 export const runFitAssessment = (jdId: string) =>
   request<FitReport>(`/jds/${jdId}/fit`, { method: 'POST' })
 
-// TODO: add method: 'POST' when POST /jds/{id}/resume endpoint is implemented
-export const generateResume = (jdId: string) => request<ResumeVariant>(`/jds/${jdId}/resume`)
+export const generateResume = (jdId: string) =>
+  request<ResumeVariant>(`/jds/${jdId}/resume`, { method: 'POST' })
 
 // Resume Variants
 export const getResumeVariants = (jdId: string) =>

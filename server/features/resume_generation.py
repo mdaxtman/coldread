@@ -162,13 +162,17 @@ def _format_resume_for_screener(resume_data: dict[str, Any]) -> str:
 
 
 def _run_generator(jd_content: str, narratives_text: str, user_id: str) -> dict[str, Any]:
-    """Step 1: Generator perspective — create resume from JD + narratives."""
+    """Step 1: Generator perspective — create comprehensive resume from narratives only (no JD).
+
+    The JD is withheld to prevent inference. Screener will identify gaps against JD.
+    Refinement will cut irrelevant content based on screener feedback.
+    """
     system_prompt = load_prompt("generator", user_id)
     user_message = (
-        f"<job_description>\n{jd_content}\n</job_description>\n\n"
         f"<candidate_background>\n{narratives_text}\n</candidate_background>\n\n"
-        "Generate a tailored resume for this candidate and job description. "
-        "Use the submit_resume_draft tool to submit your output."
+        "Create the most comprehensive, exhaustive resume possible from the "
+        "candidate's narratives. Include all relevant experience, projects, and skills "
+        "mentioned. Use the submit_resume_draft tool to submit your output."
     )
 
     response = _get_anthropic_client().messages.create(
