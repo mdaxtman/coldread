@@ -117,18 +117,44 @@ The candidate's narrative text is not just factual input — it is the authorita
 **RESUME OUTPUT FORMAT**
 Generate comprehensive resumes in reverse-chronological format organized as: Summary, Work Experience, Core Skills, and Education.
 
-**Work Experience Structure:**
-For each company, use this nested format (NO role levels like L5, Engineer II, etc.):
-```
-Company Name (Years at company)
-Brief intro: what you worked on and what you owned at this company
+**Work Experience Structure (TOOL OUTPUT FORMAT):**
+The tool expects this JSON structure (do NOT output markdown, structure as JSON):
 
-Project / Initiative Name
-- Bullet describing impact, decisions made, outcomes
-- Bullet showing collaboration or trade-offs navigated
-- Bullet with metrics, business impact, or technical depth
-- ...
+```json
+{
+  "company": "Amazon / AWS",
+  "title": "Frontend Engineer",
+  "dates": "May 2020 – Present",
+  "projects": [
+    {
+      "name": "Git Catalog",
+      "dates": "May 2020 – January 2024",
+      "bullets": [
+        "Built Git Catalog enabling bulk CloudFormation template import via CodeStar Connections",
+        "Led four-phase Cloudscape v2→v3 design system migration across console",
+        "Resolved 150+ WCAG accessibility issues for compliance"
+      ]
+    },
+    {
+      "name": "Control Tower Console",
+      "dates": "January 2024 – November 2024",
+      "bullets": [
+        "Architected Dynamic Config Control Wizard with composable React hooks for extensible parameterized controls",
+        "Built bulk control enablement with async operations monitoring and multi-selection UI"
+      ]
+    }
+  ]
+}
 ```
+
+CRITICAL RULES:
+- Each job/company is ONE entry with company, title, dates, and projects array
+- Projects are separate objects within the projects array (NOT bullets)
+- Each project has: name, optional dates, and bullets array
+- Bullets are concise (exhaustive detail OK, but clear + direct)
+- If multiple roles at same company, consolidate into ONE company entry with multiple projects
+- NO role levels in title (remove "L5", "Engineer II", etc.)
+- Dates are optional for projects if same as job dates
 
 **Bullet Style (Critical):**
 - Lead with impact/outcome, not feature list. Don't say "Built X". Say what X enabled or achieved.
@@ -306,12 +332,49 @@ You have:
 
 **CRITICAL: Do not infer domain expertise.** "Data visualization" ≠ "geospatial data visualization". Leave unfixable gaps as gaps.
 
-## Output
+## Output Format (CRITICAL)
+
+The refined resume output MUST follow this exact markdown structure:
+
+```markdown
+## Summary
+[Concise 2-3 sentence summary]
+
+## Experience
+
+**Job Title at Company Name (Start – End)**
+
+**Project / Initiative Name** (dates if different from job)
+- Impact-focused bullet, one sentence max
+- Another essential achievement
+- Business impact or technical depth
+
+**Next Project Name** (dates)
+- Bullet
+- Bullet
+
+**Next Company Name (Start – End)**
+
+**Project Name**
+- Bullets
+
+## Skills
+Skill1, Skill2, Skill3, ... (comma-separated, only JD-relevant + narratives skills, max 40)
+```
+
+Output rules:
+- Company = main heading (bold) with job title and dates
+- Projects = sub-headings (bold) with optional project-specific dates
+- Each project has 2-4 action-focused bullets ONLY (NO inline descriptions after project name)
+- Each bullet ONE sentence, action-verb focused
+- Skills section: ONLY technical skills from narratives that match JD, max 40 total, no soft skills
+- No role levels in titles (remove L5, Engineer II, etc.)
+- Consolidate multiple roles at same company into ONE company section with multiple projects
 
 Use the submit_refined_resume tool to return:
-- refined_content: Final resume with irrelevant content cut, relevant content emphasized, terminology fixed
+- refined_content: Final resume following above structure exactly
 - changes_made: Array of {section, change_description} explaining what was cut/reordered/fixed
-- remaining_gaps: Array of {requirement, why_unfixable} for gaps that can't be closed (domain knowledge, missing experience)
+- remaining_gaps: Array of {requirement, why_unfixable} for gaps that can't be closed
 - coverage_improvement: Estimated score improvement (0-1)"""
 
 
