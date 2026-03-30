@@ -31,26 +31,27 @@ _GENERATOR_SCHEMA = {
             "type": "array",
             "items": {
                 "type": "object",
-                "required": ["company", "title", "dates", "bullets"],
+                "required": ["company", "title", "dates", "projects"],
                 "properties": {
                     "company": {"type": "string"},
                     "title": {"type": "string"},
                     "dates": {"type": "string"},
-                    "bullets": {"type": "array", "items": {"type": "string"}},
+                    "projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["name", "bullets"],
+                            "properties": {
+                                "name": {"type": "string"},
+                                "dates": {"type": "string"},
+                                "bullets": {"type": "array", "items": {"type": "string"}},
+                            },
+                        },
+                    },
                 },
             },
         },
         "skills": {"type": "array", "items": {"type": "string"}},
-        "projects": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "description": {"type": "string"},
-                },
-            },
-        },
     },
 }
 
@@ -150,8 +151,15 @@ def _format_resume_for_screener(resume_data: dict[str, Any]) -> str:
         lines.append("## Experience")
         for job in resume_data["experience"]:
             lines.append(f"**{job['title']}** at {job['company']} ({job['dates']})")
-            for bullet in job.get("bullets", []):
-                lines.append(f"- {bullet}")
+            for project in job.get("projects", []):
+                project_line = f"**{project['name']}"
+                if project.get("dates"):
+                    project_line += f"** ({project['dates']})"
+                else:
+                    project_line += "**"
+                lines.append(project_line)
+                for bullet in project.get("bullets", []):
+                    lines.append(f"- {bullet}")
     if resume_data.get("skills"):
         lines.append(f"## Skills\n{', '.join(resume_data['skills'])}")
     if resume_data.get("education"):
