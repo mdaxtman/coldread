@@ -112,9 +112,9 @@ def test_full_regenerate_success(
             with patch(
                 "features.resume_generation.resume_variants.get_latest_variant", return_value=None
             ):
-                with patch("features.resume_generation._run_generator") as mock_gen:
-                    with patch("features.resume_generation._run_screener") as mock_scr:
-                        with patch("features.resume_generation._run_refinement") as mock_ref:
+                with patch("features.resume_generation.run_generator") as mock_gen:
+                    with patch("features.resume_generation.run_screener") as mock_scr:
+                        with patch("features.resume_generation.run_refinement") as mock_ref:
                             with patch(
                                 "features.resume_generation.resume_variants.create_resume_variant",
                                 return_value=mock_resume_variant,
@@ -165,7 +165,7 @@ def test_full_regenerate_generator_fails(
             "features.resume_generation.narratives.list_narratives", return_value=mock_narratives
         ):
             with patch(
-                "features.resume_generation._run_generator",
+                "features.resume_generation.run_generator",
                 side_effect=RuntimeError("Claude error"),
             ):
                 with pytest.raises(RuntimeError, match="generator_failed"):
@@ -192,11 +192,9 @@ def test_full_regenerate_screener_fails(
             with patch(
                 "features.resume_generation.resume_variants.get_latest_variant", return_value=None
             ):
-                with patch(
-                    "features.resume_generation._run_generator", return_value={"skills": []}
-                ):
+                with patch("features.resume_generation.run_generator", return_value={"skills": []}):
                     with patch(
-                        "features.resume_generation._run_screener",
+                        "features.resume_generation.run_screener",
                         side_effect=RuntimeError("Screener error"),
                     ):
                         with pytest.raises(RuntimeError, match="screener_failed"):
@@ -224,15 +222,15 @@ def test_full_regenerate_refinement_fails(
                 "features.resume_generation.resume_variants.get_latest_variant", return_value=None
             ):
                 with patch(
-                    "features.resume_generation._run_generator",
+                    "features.resume_generation.run_generator",
                     return_value={"skills": [], "summary": "Senior Engineer"},
                 ):
                     with patch(
-                        "features.resume_generation._run_screener",
+                        "features.resume_generation.run_screener",
                         return_value={"overall_score": 0.8},
                     ):
                         with patch(
-                            "features.resume_generation._run_refinement",
+                            "features.resume_generation.run_refinement",
                             side_effect=RuntimeError("Refinement error"),
                         ):
                             with pytest.raises(RuntimeError, match="refinement_failed"):
@@ -261,7 +259,7 @@ def test_refine_existing_success(
                 "features.resume_generation.resume_variants.get_latest_variant",
                 return_value=mock_resume_variant,
             ):
-                with patch("features.resume_generation._run_refinement") as mock_ref:
+                with patch("features.resume_generation.run_refinement") as mock_ref:
                     with patch(
                         "features.resume_generation.resume_variants.create_resume_variant"
                     ) as mock_create:

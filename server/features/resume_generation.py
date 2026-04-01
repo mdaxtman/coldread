@@ -1,357 +1,14 @@
-"""Resume generation — three-step pipeline (generator → screener → refinement).
+"""Resume generation — orchestrates three-step pipeline (generator → screener → refinement).
 
-Orchestrates three sequential Claude API calls, each with tool use for structured output.
+Coordinates independent pipeline stages and manages database persistence.
 """
 
-from typing import Any, cast
+from typing import Any
 
-import anthropic
-
-from config import get_anthropic_api_key
 from db import job_descriptions, narratives, resume_variants
-from pipeline.prompt_loader import load_prompt
-
-_client: anthropic.Anthropic | None = None
-
-
-def _get_anthropic_client() -> anthropic.Anthropic:
-    global _client  # noqa: PLW0603
-    if _client is None:
-        _client = anthropic.Anthropic(api_key=get_anthropic_api_key())
-    return _client
-
-
-# Tool schemas for Claude tool_use
-_GENERATOR_SCHEMA = {
-    "type": "object",
-    "required": ["experience", "skills"],
-    "properties": {
-        "summary": {"type": "string"},
-        "experience": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["company", "title", "dates", "projects"],
-                "properties": {
-                    "company": {"type": "string"},
-                    "title": {"type": "string"},
-                    "dates": {"type": "string"},
-                    "projects": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "required": ["name", "bullets"],
-                            "properties": {
-                                "name": {"type": "string"},
-                                "dates": {"type": "string"},
-                                "bullets": {"type": "array", "items": {"type": "string"}},
-                            },
-                        },
-                    },
-                },
-            },
-        },
-        "skills": {"type": "array", "items": {"type": "string"}},
-    },
-}
-
-_SCREENER_SCHEMA = {
-    "type": "object",
-    "required": ["keyword_coverage", "semantic_score", "terminology_mismatches", "overall_score"],
-    "properties": {
-        "keyword_coverage": {"type": "object"},
-        "semantic_score": {"type": "number", "minimum": 0, "maximum": 1},
-        "coverage_gaps": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["requirement", "gap_type", "impact"],
-                "properties": {
-                    "requirement": {"type": "string"},
-                    "gap_type": {"enum": ["hard", "soft"], "type": "string"},
-                    "impact": {"type": "string"},
-                },
-            },
-        },
-        "terminology_mismatches": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["my_term", "jd_term"],
-                "properties": {
-                    "my_term": {"type": "string"},
-                    "jd_term": {"type": "string"},
-                },
-            },
-        },
-        "overall_score": {"type": "number", "minimum": 0, "maximum": 1},
-    },
-}
-
-_REFINEMENT_SCHEMA = {
-    "type": "object",
-    "required": ["refined_content"],
-    "properties": {
-        "refined_content": {"type": "string"},
-        "changes_made": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["section", "change_description"],
-                "properties": {
-                    "section": {"type": "string"},
-                    "change_description": {"type": "string"},
-                },
-            },
-        },
-        "remaining_gaps": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["requirement", "why_unfixable"],
-                "properties": {
-                    "requirement": {"type": "string"},
-                    "why_unfixable": {"type": "string"},
-                },
-            },
-        },
-        "coverage_improvement": {"type": "number", "minimum": 0, "maximum": 1},
-    },
-}
-
-
-def _format_narratives(narrative_rows: list[dict[str, Any]]) -> str:
-    """Format narratives into Markdown sections."""
-    if not narrative_rows:
-        return "No candidate background narratives available."
-
-    overview = [n for n in narrative_rows if n.get("category") == "career_overview"]
-    roles = [n for n in narrative_rows if n.get("category") != "career_overview"]
-
-    sections: list[str] = []
-    if overview:
-        sections.append(
-            "## Career Overview\n"
-            + "\n\n".join(f"### {n['title']}\n{n['content']}" for n in overview)
-        )
-    if roles:
-        sections.append(
-            "## Role Narratives\n" + "\n\n".join(f"### {n['title']}\n{n['content']}" for n in roles)
-        )
-
-    return "\n\n".join(sections)
-
-
-def _format_resume_for_screener(resume_data: dict[str, Any]) -> str:
-    """Format generated resume back into text for screener analysis."""
-    lines = []
-    if resume_data.get("summary"):
-        lines.append(f"## Summary\n{resume_data['summary']}")
-    if resume_data.get("experience"):
-        lines.append("## Experience")
-        for job in resume_data["experience"]:
-            lines.append(f"**{job['title']}** at {job['company']} ({job['dates']})")
-            for project in job.get("projects", []):
-                project_line = f"**{project['name']}"
-                if project.get("dates"):
-                    project_line += f"** ({project['dates']})"
-                else:
-                    project_line += "**"
-                lines.append(project_line)
-                for bullet in project.get("bullets", []):
-                    lines.append(f"- {bullet}")
-    if resume_data.get("skills"):
-        lines.append(f"## Skills\n{', '.join(resume_data['skills'])}")
-    if resume_data.get("education"):
-        lines.append("## Education")
-        for edu in resume_data["education"]:
-            lines.append(f"- {edu['name']}: {edu['degree']} ({edu['year']})")
-    return "\n\n".join(lines)
-
-
-def _format_fit_report(fit_report: dict[str, Any]) -> str:
-    """Format fit report into structured guidance for the generator.
-
-    Converts the pre-computed fit assessment into readable sections showing:
-    - What requirements are clearly matched
-    - What gaps exist and how to handle them
-    - Which terminology should be used
-    """
-    lines = []
-
-    # MATCHES section
-    matches = fit_report.get("matches", [])
-    if matches:
-        lines.append("MATCHES — requirements you clearly meet (emphasize these):")
-        for match in matches:
-            priority = match.get("priority", "required").upper()
-            req = match.get("requirement", "")
-            notes = match.get("notes", "")
-            notes_str = f" ({notes})" if notes else ""
-            lines.append(f"  - [{priority}] {req}{notes_str}")
-
-    # GAPS section (separated by type)
-    gaps = fit_report.get("gaps", [])
-    soft_gaps = [g for g in gaps if g.get("type") == "soft"]
-    hard_gaps = [g for g in gaps if g.get("type") == "hard"]
-
-    if soft_gaps:
-        lines.append("\nGAPS — soft (position adjacent strengths if relevant):")
-        for gap in soft_gaps:
-            req = gap.get("requirement", "")
-            notes = gap.get("notes", "")
-            notes_str = f" ({notes})" if notes else ""
-            lines.append(f"  - [SOFT] {req}{notes_str}")
-
-    if hard_gaps:
-        lines.append("\nGAPS — hard (leave as gap, do not bridge):")
-        for gap in hard_gaps:
-            req = gap.get("requirement", "")
-            notes = gap.get("notes", "")
-            notes_str = f" ({notes})" if notes else ""
-            lines.append(f"  - [HARD] {req}{notes_str}")
-
-    # TERMINOLOGY section
-    terminology = fit_report.get("terminology", [])
-    if terminology:
-        lines.append("\nTERMINOLOGY — use JD's exact terms where experience matches:")
-        for term in terminology:
-            my_term = term.get("my_term", "")
-            jd_term = term.get("jd_term", "")
-            lines.append(f"  - {my_term} → {jd_term}")
-
-    return "\n".join(lines)
-
-
-def _run_generator(
-    narratives_text: str, fit_report: dict[str, Any], user_id: str
-) -> dict[str, Any]:
-    """Step 1: Generator perspective — create strategic resume guided by fit assessment.
-
-    Receives pre-computed fit report (matches/gaps/terminology) to inform strategic choices:
-    - Emphasize matched requirements
-    - Handle soft gaps by positioning adjacent strengths
-    - Omit hard gaps entirely
-    - Use exact terminology from the JD where applicable
-    """
-    system_prompt = load_prompt("generator", user_id)
-    fit_guidance = _format_fit_report(fit_report)
-    user_message = (
-        f"<candidate_background>\n{narratives_text}\n</candidate_background>\n\n"
-        f"<fit_assessment>\n{fit_guidance}\n</fit_assessment>\n\n"
-        "Create a focused, strategic resume that highlights strengths matching the role. "
-        "Use the fit assessment above to guide emphasis, handle gaps appropriately, and use the "
-        "exact terminology from the JD. "
-        "Use the submit_resume_draft tool to submit your output."
-    )
-
-    response = _get_anthropic_client().messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4096,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_message}],
-        tools=cast(
-            Any,
-            [
-                {
-                    "name": "submit_resume_draft",
-                    "description": "Submit the generated resume draft",
-                    "input_schema": _GENERATOR_SCHEMA,
-                }
-            ],
-        ),
-        tool_choice={"type": "tool", "name": "submit_resume_draft"},
-    )
-
-    try:
-        tool_block = next(b for b in response.content if b.type == "tool_use")
-    except StopIteration:
-        raise RuntimeError("Generator: No tool_use block in response")
-
-    return cast(dict[str, Any], tool_block.input)
-
-
-def _run_screener(jd_content: str, resume_text: str, user_id: str) -> dict[str, Any]:
-    """Step 2: Screener perspective — analyze resume against JD."""
-    system_prompt = load_prompt("resume_screener", user_id)
-    user_message = (
-        f"<job_description>\n{jd_content}\n</job_description>\n\n"
-        f"<resume>\n{resume_text}\n</resume>\n\n"
-        "Analyze this resume against the job description from an ATS perspective. "
-        "Use the submit_screener_analysis tool to submit your assessment."
-    )
-
-    response = _get_anthropic_client().messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=2048,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_message}],
-        tools=cast(
-            Any,
-            [
-                {
-                    "name": "submit_screener_analysis",
-                    "description": "Submit the ATS screener analysis",
-                    "input_schema": _SCREENER_SCHEMA,
-                }
-            ],
-        ),
-        tool_choice={"type": "tool", "name": "submit_screener_analysis"},
-    )
-
-    try:
-        tool_block = next(b for b in response.content if b.type == "tool_use")
-    except StopIteration:
-        raise RuntimeError("Screener: No tool_use block in response")
-
-    return cast(dict[str, Any], tool_block.input)
-
-
-def _run_refinement(
-    resume_data: dict[str, Any],
-    screener_report: dict[str, Any],
-    narratives_text: str,
-    jd_content: str,
-    user_id: str,
-) -> dict[str, Any]:
-    """Step 3: Refinement perspective — improve resume while preserving voice."""
-    system_prompt = load_prompt("refinement", user_id)
-    resume_text = _format_resume_for_screener(resume_data)
-
-    user_message = (
-        f"<job_description>\n{jd_content}\n</job_description>\n\n"
-        f"<generated_resume>\n{resume_text}\n</generated_resume>\n\n"
-        f"<screener_feedback>\n{screener_report}\n</screener_feedback>\n\n"
-        f"<candidate_narratives>\n{narratives_text}\n</candidate_narratives>\n\n"
-        "Refine the resume using the screener feedback while preserving authentic voice "
-        "from the narratives. "
-        "Use the submit_refined_resume tool to submit the refined resume and changes."
-    )
-
-    response = _get_anthropic_client().messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4096,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_message}],
-        tools=cast(
-            Any,
-            [
-                {
-                    "name": "submit_refined_resume",
-                    "description": "Submit the refined resume",
-                    "input_schema": _REFINEMENT_SCHEMA,
-                }
-            ],
-        ),
-        tool_choice={"type": "tool", "name": "submit_refined_resume"},
-    )
-
-    try:
-        tool_block = next(b for b in response.content if b.type == "tool_use")
-    except StopIteration:
-        raise RuntimeError("Refinement: No tool_use block in response")
-
-    return cast(dict[str, Any], tool_block.input)
+from pipeline.generator import _format_narratives, run_generator
+from pipeline.refinement import _format_resume_for_screener, run_refinement
+from pipeline.screener import run_screener
 
 
 def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -> dict[str, Any]:
@@ -369,7 +26,7 @@ def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -
 
     # Step 1: Generate (guided by fit report)
     try:
-        resume_data = _run_generator(narratives_text, fit_report, user_id)
+        resume_data = run_generator(narratives_text, fit_report, user_id)
     except Exception as e:
         raise RuntimeError(f"generator_failed: {str(e)}")
 
@@ -378,13 +35,13 @@ def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -
 
     # Step 2: Screen
     try:
-        screener_data = _run_screener(jd["content"], resume_text, user_id)
+        screener_data = run_screener(jd["content"], resume_text, user_id)
     except Exception as e:
         raise RuntimeError(f"screener_failed: {str(e)}")
 
     # Step 3: Refine
     try:
-        refinement_data = _run_refinement(
+        refinement_data = run_refinement(
             resume_data, screener_data, narratives_text, jd["content"], user_id
         )
     except Exception as e:
@@ -441,7 +98,7 @@ def _run_refine_existing(
 
     # Step 3: Refine (using previous screener data)
     try:
-        refinement_data = _run_refinement(
+        refinement_data = run_refinement(
             {"summary": "", "experience": [], "skills": []},  # Placeholder, we use text version
             screener_data,
             narratives_text,
