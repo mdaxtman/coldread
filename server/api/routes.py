@@ -92,7 +92,7 @@ def run_fit(
 ) -> FitReportResponse:
     _verify_jd_ownership(jd_id, user_id)
     try:
-        row = fit_assessment.run_fit_assessment(jd_id, user_id)
+        row = fit_assessment.run_fit_assessment_workflow(jd_id, user_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return FitReportResponse(**row)
