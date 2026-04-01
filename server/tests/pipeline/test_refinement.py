@@ -38,6 +38,32 @@ def test_format_resume_for_screener_with_all_sections():
     assert "University: BS Computer Science (2015)" in result
 
 
+def test_format_resume_for_screener_with_missing_sections():
+    """Verify formatting handles resume with only summary and skills."""
+    resume_data = {"summary": "Experienced engineer", "skills": ["Python", "Go"]}
+
+    result = _format_resume_for_screener(resume_data)
+    assert "## Summary" in result
+    assert "Experienced engineer" in result
+    assert "## Skills" in result
+    assert "Python, Go" in result
+    # Should not include Experience or Education sections
+    assert "## Experience" not in result
+    assert "## Education" not in result
+
+
+def test_format_resume_for_screener_with_empty_arrays():
+    """Verify formatting handles resume with empty experience/skills/education."""
+    resume_data = {"summary": "Engineer", "experience": [], "skills": [], "education": []}
+
+    result = _format_resume_for_screener(resume_data)
+    assert "## Summary" in result
+    # Empty arrays should not create section headers
+    assert "## Experience" not in result
+    assert "## Skills" not in result
+    assert "## Education" not in result
+
+
 def test_run_refinement_calls_api_and_returns_refined_content():
     """Verify run_refinement calls Anthropic and returns refinement output."""
     mock_response = MagicMock()
@@ -71,3 +97,10 @@ def test_run_refinement_calls_api_and_returns_refined_content():
         assert result["refined_content"] == "Refined resume text"
         assert len(result["changes_made"]) == 1
         mock_client.messages.create.assert_called_once()
+
+        # Verify API call parameters
+        call_kwargs = mock_client.messages.create.call_args[1]
+        assert call_kwargs["model"] == "claude-sonnet-4-20250514"
+        assert call_kwargs["max_tokens"] == 4096
+        assert "job_description" in call_kwargs["messages"][0]["content"]
+        assert "generated_resume" in call_kwargs["messages"][0]["content"]
