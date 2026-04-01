@@ -256,7 +256,7 @@ def test_refine_existing_success(
             "features.resume_generation.narratives.list_narratives", return_value=mock_narratives
         ):
             with patch(
-                "features.resume_generation.resume_variants.get_latest_variant",
+                "features.resume_generation.resume_variants.get_variant_by_id",
                 return_value=mock_resume_variant,
             ):
                 with patch("features.resume_generation.run_refinement") as mock_ref:
@@ -288,3 +288,67 @@ def test_refine_existing_success(
 
                         assert result["version"] == 2
                         assert result["parent_variant_id"] == "variant-1"
+
+
+# ---------------------------------------------------------------------------
+# Test: JD not found in full mode
+# ---------------------------------------------------------------------------
+
+
+def test_run_resume_generation_jd_not_found_full_mode(
+    mock_fit_report: dict[str, Any],
+) -> None:
+    """Verify ValueError when JD not found in full mode."""
+    with patch("features.resume_generation.job_descriptions.get_jd", return_value=None):
+        with pytest.raises(ValueError, match="Job description not found"):
+            resume_generation.run_resume_generation(
+                jd_id="missing-jd",
+                user_id="user-1",
+                fit_report=mock_fit_report,
+                mode="full",
+            )
+
+
+# ---------------------------------------------------------------------------
+# Test: Parent variant not found in refine mode
+# ---------------------------------------------------------------------------
+
+
+def test_run_resume_generation_parent_variant_not_found(
+    mock_fit_report: dict[str, Any],
+) -> None:
+    """Verify ValueError when parent variant not found in refine mode."""
+    with patch("features.resume_generation.job_descriptions.get_jd") as mock_get_jd:
+        mock_get_jd.return_value = {"id": "jd-1", "content": "JD"}
+
+        with patch(
+            "features.resume_generation.resume_variants.get_variant_by_id"
+        ) as mock_get_variant:
+            mock_get_variant.return_value = None
+
+            with pytest.raises(ValueError, match="Variant not found"):
+                resume_generation.run_resume_generation(
+                    jd_id="jd-1",
+                    user_id="user-1",
+                    fit_report=mock_fit_report,
+                    mode="refine",
+                    parent_variant_id="missing-variant",
+                )
+
+
+# ---------------------------------------------------------------------------
+# Test: Refine requires parent_variant_id
+# ---------------------------------------------------------------------------
+
+
+def test_run_resume_generation_refine_requires_parent_id(
+    mock_fit_report: dict[str, Any],
+) -> None:
+    """Verify ValueError when refine mode called without parent_variant_id."""
+    with pytest.raises(ValueError, match="parent_variant_id required"):
+        resume_generation.run_resume_generation(
+            jd_id="jd-1",
+            user_id="user-1",
+            fit_report=mock_fit_report,
+            mode="refine",
+        )

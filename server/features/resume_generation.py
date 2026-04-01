@@ -85,8 +85,8 @@ def _run_refine_existing(
     if jd is None:
         raise ValueError(f"Job description not found: {jd_id}")
 
-    parent = resume_variants.get_latest_variant(jd_id, user_id)
-    if parent is None or parent["id"] != parent_variant_id:
+    parent = resume_variants.get_variant_by_id(parent_variant_id, user_id)
+    if parent is None:
         raise ValueError(f"Variant not found: {parent_variant_id}")
 
     narrative_rows = narratives.list_narratives(user_id)
@@ -99,7 +99,7 @@ def _run_refine_existing(
     # Step 3: Refine (using previous screener data)
     try:
         refinement_data = run_refinement(
-            {"summary": "", "experience": [], "skills": []},  # Placeholder, we use text version
+            {},  # Resume data not used in refine mode; uses screener_report instead
             screener_data,
             narratives_text,
             jd["content"],

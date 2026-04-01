@@ -77,6 +77,24 @@ def get_latest_variant(job_description_id: str, user_id: str) -> dict[str, Any] 
     return row
 
 
+def get_variant_by_id(variant_id: str, user_id: str) -> dict[str, Any] | None:
+    response = (
+        get_client()
+        .table("resume_variants")
+        .select("*")
+        .eq("id", variant_id)
+        .eq("user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    if not response.data:
+        return None
+    row = cast(dict[str, Any], response.data[0])
+    if "screener_report" in row:
+        row["screener_report"] = _parse_screener_report(row["screener_report"])
+    return row
+
+
 def list_variants(job_description_id: str, user_id: str) -> list[dict[str, Any]]:
     response = (
         get_client()
