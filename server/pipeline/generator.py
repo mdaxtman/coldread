@@ -6,6 +6,8 @@ from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_clie
 from pipeline.prompt_loader import load_prompt
 
 # Tool schema for Claude tool_use
+_TOOL_NAME = "submit_resume_draft"
+
 _GENERATOR_SCHEMA = {
     "type": "object",
     "required": ["experience", "skills"],
@@ -38,6 +40,11 @@ _GENERATOR_SCHEMA = {
         "skills": {"type": "array", "items": {"type": "string"}},
     },
 }
+
+
+def _format_note(notes: str | None) -> str:
+    """Format optional notes as suffix string."""
+    return f" ({notes})" if notes else ""
 
 
 def _format_narratives(narrative_rows: list[dict[str, Any]]) -> str:
@@ -80,7 +87,7 @@ def _format_fit_report(fit_report: dict[str, Any]) -> str:
             priority = match.get("priority", "required").upper()
             req = match.get("requirement", "")
             notes = match.get("notes", "")
-            notes_str = f" ({notes})" if notes else ""
+            notes_str = _format_note(notes)
             lines.append(f"  - [{priority}] {req}{notes_str}")
 
     # GAPS section (separated by type)
@@ -93,7 +100,7 @@ def _format_fit_report(fit_report: dict[str, Any]) -> str:
         for gap in soft_gaps:
             req = gap.get("requirement", "")
             notes = gap.get("notes", "")
-            notes_str = f" ({notes})" if notes else ""
+            notes_str = _format_note(notes)
             lines.append(f"  - [SOFT] {req}{notes_str}")
 
     if hard_gaps:
@@ -101,7 +108,7 @@ def _format_fit_report(fit_report: dict[str, Any]) -> str:
         for gap in hard_gaps:
             req = gap.get("requirement", "")
             notes = gap.get("notes", "")
-            notes_str = f" ({notes})" if notes else ""
+            notes_str = _format_note(notes)
             lines.append(f"  - [HARD] {req}{notes_str}")
 
     # TERMINOLOGY section
@@ -134,7 +141,7 @@ def run_generator(narratives_text: str, fit_report: dict[str, Any], user_id: str
         Structured resume data: {summary, experience, skills, ...}
 
     Raises:
-        RuntimeError: If API call fails or no tool response
+        RuntimeError: If API call fails or no tool response found
     """
     system_prompt = load_prompt("generator", user_id)
     fit_guidance = _format_fit_report(fit_report)
@@ -147,6 +154,7 @@ def run_generator(narratives_text: str, fit_report: dict[str, Any], user_id: str
         "Use the submit_resume_draft tool to submit your output."
     )
 
+    # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints
     response = _get_anthropic_client().messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=4096,
@@ -156,13 +164,13 @@ def run_generator(narratives_text: str, fit_report: dict[str, Any], user_id: str
             Any,
             [
                 {
-                    "name": "submit_resume_draft",
+                    "name": _TOOL_NAME,
                     "description": "Submit the generated resume draft",
                     "input_schema": _GENERATOR_SCHEMA,
                 }
             ],
         ),
-        tool_choice={"type": "tool", "name": "submit_resume_draft"},
+        tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
     return _extract_tool_response(response)
