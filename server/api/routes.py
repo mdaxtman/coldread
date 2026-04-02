@@ -107,7 +107,7 @@ def get_fit_report(
     row = fit_reports.get_latest_fit_report(jd_id, user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="No fit report found")
-    return FitReportResponse(**row)
+    return FitReportResponse(**dict(row))
 
 
 # ---------------------------------------------------------------------------
@@ -126,7 +126,7 @@ def generate_resume(
     if fit_report is None:
         raise HTTPException(status_code=404, detail="Fit report not found")
     try:
-        row = resume_generation.run_resume_generation(jd_id, user_id, fit_report, mode="full")
+        row = resume_generation.run_resume_generation(jd_id, user_id, dict(fit_report), mode="full")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except RuntimeError as e:
@@ -151,7 +151,7 @@ def refine_resume(
         raise HTTPException(status_code=404, detail="Fit report not found")
     try:
         row = resume_generation.run_resume_generation(
-            jd_id, user_id, fit_report, mode="refine", parent_variant_id=variant_id
+            jd_id, user_id, dict(fit_report), mode="refine", parent_variant_id=variant_id
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
