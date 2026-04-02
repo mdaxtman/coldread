@@ -3,7 +3,7 @@ from unittest.mock import patch
 from features.fit_assessment import run_fit_assessment_workflow
 
 
-def test_run_fit_assessment_workflow_full_path():
+def test_run_fit_assessment_workflow_full_path() -> None:
     """Verify fit assessment workflow loads DB, calls pipeline, and saves results."""
     with (
         patch("features.fit_assessment.job_descriptions.get_jd") as mock_get_jd,

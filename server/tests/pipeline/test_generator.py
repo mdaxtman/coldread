@@ -3,13 +3,13 @@ from unittest.mock import MagicMock, patch
 from pipeline.generator import _format_fit_report, _format_narratives, run_generator
 
 
-def test_format_narratives_empty_list():
+def test_format_narratives_empty_list() -> None:
     """Verify formatting handles empty narratives."""
     result = _format_narratives([])
     assert result == "No candidate background narratives available."
 
 
-def test_format_narratives_with_overview_and_roles():
+def test_format_narratives_with_overview_and_roles() -> None:
     """Verify narratives are formatted into sections."""
     narratives = [
         {
@@ -28,7 +28,7 @@ def test_format_narratives_with_overview_and_roles():
     assert "Led team of 5" in result
 
 
-def test_format_fit_report_all_sections():
+def test_format_fit_report_all_sections() -> None:
     """Verify fit report is formatted with all sections."""
     fit_report = {
         "matches": [{"priority": "required", "requirement": "Python", "notes": "primary language"}],
@@ -46,7 +46,7 @@ def test_format_fit_report_all_sections():
     assert "backend → server-side" in result
 
 
-def test_run_generator_calls_api_and_returns_structured_data():
+def test_run_generator_calls_api_and_returns_structured_data() -> None:
     """Verify run_generator calls Anthropic and extracts tool response."""
     mock_response = MagicMock()
     mock_tool_block = MagicMock()

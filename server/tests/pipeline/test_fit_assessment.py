@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from pipeline.fit_assessment import run_fit_assessment
 
 
-def test_run_fit_assessment_calls_api_and_returns_result():
+def test_run_fit_assessment_calls_api_and_returns_result() -> None:
     """Verify fit assessment calls Anthropic and returns structured result."""
     mock_response = MagicMock()
     mock_tool_block = MagicMock()

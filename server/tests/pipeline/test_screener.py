@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from pipeline.screener import run_screener
 
 
-def test_run_screener_calls_api_and_returns_analysis():
+def test_run_screener_calls_api_and_returns_analysis() -> None:
     """Verify run_screener calls Anthropic and returns screener analysis."""
     mock_response = MagicMock()
     mock_tool_block = MagicMock()

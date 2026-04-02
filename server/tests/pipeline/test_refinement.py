@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from pipeline.refinement import _format_resume_for_screener, run_refinement
 
 
-def test_format_resume_for_screener_with_all_sections():
+def test_format_resume_for_screener_with_all_sections() -> None:
     """Verify resume is formatted back to text correctly."""
     resume_data = {
         "summary": "Experienced engineer",
@@ -38,7 +38,7 @@ def test_format_resume_for_screener_with_all_sections():
     assert "University: BS Computer Science (2015)" in result
 
 
-def test_format_resume_for_screener_with_missing_sections():
+def test_format_resume_for_screener_with_missing_sections() -> None:
     """Verify formatting handles resume with only summary and skills."""
     resume_data = {"summary": "Experienced engineer", "skills": ["Python", "Go"]}
 
@@ -52,7 +52,7 @@ def test_format_resume_for_screener_with_missing_sections():
     assert "## Education" not in result
 
 
-def test_format_resume_for_screener_with_empty_arrays():
+def test_format_resume_for_screener_with_empty_arrays() -> None:
     """Verify formatting handles resume with empty experience/skills/education."""
     resume_data = {"summary": "Engineer", "experience": [], "skills": [], "education": []}
 
@@ -64,7 +64,7 @@ def test_format_resume_for_screener_with_empty_arrays():
     assert "## Education" not in result
 
 
-def test_run_refinement_calls_api_and_returns_refined_content():
+def test_run_refinement_calls_api_and_returns_refined_content() -> None:
     """Verify run_refinement calls Anthropic and returns refinement output."""
     mock_response = MagicMock()
     mock_tool_block = MagicMock()
