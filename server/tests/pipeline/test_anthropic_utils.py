@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -7,7 +8,7 @@ from pipeline.anthropic_utils import _get_anthropic_client
 
 
 @pytest.fixture(autouse=True)
-def reset_anthropic_client() -> None:
+def reset_anthropic_client() -> Generator[None, None, None]:
     """Reset the singleton client before each test."""
     pipeline.anthropic_utils._client = None
     yield
