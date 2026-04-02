@@ -17,12 +17,16 @@ def reset_anthropic_client() -> Generator[None, None, None]:
 
 def test_get_anthropic_client_returns_singleton() -> None:
     """Verify that _get_anthropic_client returns the same instance."""
-    with patch("pipeline.anthropic_utils.anthropic.Anthropic") as mock_client:
+    with (
+        patch("pipeline.anthropic_utils.get_anthropic_api_key") as mock_get_key,
+        patch("pipeline.anthropic_utils.anthropic.Anthropic") as mock_client_class,
+    ):
+        mock_get_key.return_value = "test-key"
         client1 = _get_anthropic_client()
         client2 = _get_anthropic_client()
         assert client1 is client2
         # Only called once due to singleton pattern
-        mock_client.assert_called_once()
+        mock_client_class.assert_called_once()
 
 
 def test_get_anthropic_client_initializes_with_api_key() -> None:
