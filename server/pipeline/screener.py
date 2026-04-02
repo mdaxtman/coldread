@@ -1,9 +1,29 @@
 """Screener stage — analyze resume against JD from ATS perspective."""
 
-from typing import Any, cast
+from typing import Any, Literal, NotRequired, TypedDict, cast
 
 from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
 from pipeline.prompt_loader import load_prompt
+
+
+class TerminologyMismatch(TypedDict):
+    my_term: str
+    jd_term: str
+
+
+class CoverageGap(TypedDict):
+    requirement: str
+    gap_type: Literal["hard", "soft"]
+    impact: str
+
+
+class ScreenerReport(TypedDict):
+    keyword_coverage: dict[str, Any]
+    semantic_score: float
+    terminology_mismatches: list[TerminologyMismatch]
+    overall_score: float
+    coverage_gaps: NotRequired[list[CoverageGap]]
+
 
 # Tool schema for Claude tool_use
 _SCREENER_SCHEMA = {
@@ -42,7 +62,7 @@ _SCREENER_SCHEMA = {
 _TOOL_NAME = "submit_screener_analysis"
 
 
-def run_screener(jd_content: str, resume_text: str, user_id: str) -> dict[str, Any]:
+def run_screener(jd_content: str, resume_text: str, user_id: str) -> ScreenerReport:
     """Step 2: Screener perspective — analyze resume against JD.
 
     Args:
@@ -51,7 +71,8 @@ def run_screener(jd_content: str, resume_text: str, user_id: str) -> dict[str, A
         user_id: Current user ID
 
     Returns:
-        Screener analysis: {keyword_coverage, semantic_score, gaps, ...}
+        Screener analysis: {keyword_coverage, semantic_score, terminology_mismatches,
+            overall_score, coverage_gaps?}
 
     Raises:
         RuntimeError: If API call fails or no tool response found
@@ -82,4 +103,4 @@ def run_screener(jd_content: str, resume_text: str, user_id: str) -> dict[str, A
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
-    return _extract_tool_response(response)
+    return cast(ScreenerReport, _extract_tool_response(response))

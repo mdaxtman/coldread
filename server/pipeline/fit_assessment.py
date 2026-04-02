@@ -49,10 +49,11 @@ _FIT_REPORT_SCHEMA: dict[str, object] = {
             "type": "array",
             "items": {
                 "type": "object",
-                "required": ["my_term", "jd_term"],
+                "required": ["my_term", "jd_term", "confidence"],
                 "properties": {
                     "my_term": {"type": "string"},
                     "jd_term": {"type": "string"},
+                    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
                 },
             },
         },
@@ -101,4 +102,12 @@ def run_fit_assessment(jd_content: str, narratives_text: str, user_id: str) -> d
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
-    return _extract_tool_response(response)
+    result = _extract_tool_response(response)
+
+    # Filter terminology mappings: only keep those with confidence >= 0.8
+    if "terminology" in result:
+        result["terminology"] = [
+            term for term in result["terminology"] if term.get("confidence", 0) >= 0.8
+        ]
+
+    return result

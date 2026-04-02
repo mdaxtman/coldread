@@ -1,9 +1,27 @@
 """Refinement stage — improve resume while preserving voice."""
 
-from typing import Any, cast
+from typing import Any, NotRequired, TypedDict, cast
 
 from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
 from pipeline.prompt_loader import load_prompt
+
+
+class ChangeMade(TypedDict):
+    section: str
+    change_description: str
+
+
+class RemainingGap(TypedDict):
+    requirement: str
+    why_unfixable: str
+
+
+class RefinementOutput(TypedDict):
+    refined_content: str
+    changes_made: NotRequired[list[ChangeMade]]
+    remaining_gaps: NotRequired[list[RemainingGap]]
+    coverage_improvement: NotRequired[float]
+
 
 _TOOL_NAME = "submit_refined_resume"
 
@@ -73,7 +91,7 @@ def run_refinement(
     narratives_text: str,
     jd_content: str,
     user_id: str,
-) -> dict[str, Any]:
+) -> RefinementOutput:
     """Step 3: Refinement perspective — improve resume while preserving voice.
 
     Args:
@@ -84,7 +102,7 @@ def run_refinement(
         user_id: Current user ID
 
     Returns:
-        Refinement output: {refined_content, changes_made, remaining_gaps, ...}
+        Refinement output: {refined_content, changes_made?, remaining_gaps?, coverage_improvement?}
 
     Raises:
         RuntimeError: If API call fails or no tool response found
@@ -120,4 +138,4 @@ def run_refinement(
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
-    return _extract_tool_response(response)
+    return cast(RefinementOutput, _extract_tool_response(response))
