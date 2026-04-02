@@ -1,6 +1,6 @@
 """Data access layer for fit reports."""
 
-from typing import Literal, TypedDict, cast
+from typing import Any, Literal, TypedDict, cast
 
 from db.client import get_client
 
@@ -48,15 +48,18 @@ def create_fit_report(
         get_client()
         .table("fit_reports")
         .insert(
-            {
-                "user_id": user_id,
-                "job_description_id": job_description_id,
-                "fit_level": fit_level,
-                "matches": matches,
-                "gaps": gaps,
-                "terminology": terminology,
-                "reasoning": reasoning,
-            }
+            cast(
+                Any,
+                {
+                    "user_id": user_id,
+                    "job_description_id": job_description_id,
+                    "fit_level": fit_level,
+                    "matches": matches,
+                    "gaps": gaps,
+                    "terminology": terminology,
+                    "reasoning": reasoning,
+                },
+            )
         )
         .execute()
     )

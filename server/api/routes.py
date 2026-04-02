@@ -1,5 +1,7 @@
 """ColdRead API routes."""
 
+from typing import Any, cast
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from api.dependencies import get_current_user_id
@@ -107,7 +109,7 @@ def get_fit_report(
     row = fit_reports.get_latest_fit_report(jd_id, user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="No fit report found")
-    return FitReportResponse(**dict(row))
+    return FitReportResponse(**cast(Any, dict(row)))
 
 
 # ---------------------------------------------------------------------------

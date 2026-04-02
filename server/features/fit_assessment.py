@@ -11,7 +11,7 @@ from pipeline.generator import _format_narratives
 from security.injection_detection import analyze_jd_for_injection
 
 
-def run_fit_assessment_workflow(jd_id: str, user_id: str) -> dict[str, Any]:
+def run_fit_assessment_workflow(jd_id: str, user_id: str) -> Any:
     """Run fit assessment pipeline and save results.
 
     Args:

@@ -42,7 +42,7 @@ def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -
     # Step 3: Refine
     try:
         refinement_data = run_refinement(
-            resume_data, screener_data, narratives_text, jd["content"], user_id
+            resume_data, dict(screener_data), narratives_text, jd["content"], user_id
         )
     except Exception as e:
         raise RuntimeError(f"refinement_failed: {str(e)}")
