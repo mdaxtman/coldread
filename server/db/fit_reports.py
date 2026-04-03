@@ -1,39 +1,72 @@
 """Data access layer for fit reports."""
 
-from typing import Any, cast
+from typing import Any, Literal, TypedDict, cast
 
 from db.client import get_client
+
+
+class Match(TypedDict):
+    requirement: str
+    priority: Literal["required", "preferred", "implied"]
+    notes: str
+
+
+class Gap(TypedDict):
+    requirement: str
+    type: Literal["hard", "soft"]
+    notes: str
+
+
+class TerminologyItem(TypedDict):
+    my_term: str
+    jd_term: str
+    confidence: float
+
+
+class FitReport(TypedDict):
+    id: str
+    user_id: str
+    job_description_id: str
+    fit_level: Literal["strong", "moderate", "borderline", "poor"]
+    matches: list[Match]
+    gaps: list[Gap]
+    terminology: list[TerminologyItem]
+    reasoning: str
+    created_at: str
 
 
 def create_fit_report(
     job_description_id: str,
     user_id: str,
     fit_level: str,
-    matches: list[dict[str, Any]],
-    gaps: list[dict[str, Any]],
-    terminology: list[dict[str, Any]],
+    matches: list[Match],
+    gaps: list[Gap],
+    terminology: list[TerminologyItem],
     reasoning: str,
-) -> dict[str, Any]:
+) -> FitReport:
     response = (
         get_client()
         .table("fit_reports")
         .insert(
-            {
-                "user_id": user_id,
-                "job_description_id": job_description_id,
-                "fit_level": fit_level,
-                "matches": matches,
-                "gaps": gaps,
-                "terminology": terminology,
-                "reasoning": reasoning,
-            }
+            cast(
+                Any,
+                {
+                    "user_id": user_id,
+                    "job_description_id": job_description_id,
+                    "fit_level": fit_level,
+                    "matches": matches,
+                    "gaps": gaps,
+                    "terminology": terminology,
+                    "reasoning": reasoning,
+                },
+            )
         )
         .execute()
     )
-    return cast(dict[str, Any], response.data[0])
+    return cast(FitReport, response.data[0])
 
 
-def get_latest_fit_report(job_description_id: str, user_id: str) -> dict[str, Any] | None:
+def get_latest_fit_report(job_description_id: str, user_id: str) -> FitReport | None:
     response = (
         get_client()
         .table("fit_reports")
@@ -46,10 +79,25 @@ def get_latest_fit_report(job_description_id: str, user_id: str) -> dict[str, An
     )
     if not response.data:
         return None
-    return cast(dict[str, Any], response.data[0])
+    return cast(FitReport, response.data[0])
 
 
-def list_fit_reports(job_description_id: str, user_id: str) -> list[dict[str, Any]]:
+def get_fit_report_by_id(fit_report_id: str, user_id: str) -> FitReport | None:
+    response = (
+        get_client()
+        .table("fit_reports")
+        .select("*")
+        .eq("id", fit_report_id)
+        .eq("user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    if not response.data:
+        return None
+    return cast(FitReport, response.data[0])
+
+
+def list_fit_reports(job_description_id: str, user_id: str) -> list[FitReport]:
     response = (
         get_client()
         .table("fit_reports")
@@ -59,4 +107,4 @@ def list_fit_reports(job_description_id: str, user_id: str) -> list[dict[str, An
         .order("created_at", desc=True)
         .execute()
     )
-    return [cast(dict[str, Any], r) for r in response.data]
+    return [cast(FitReport, r) for r in response.data]

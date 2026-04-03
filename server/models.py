@@ -22,6 +22,10 @@ class CreateJdRequest(CamelModel):
     content: str
 
 
+class GenerateResumeRequest(CamelModel):
+    fit_report_id: str
+
+
 # ---------------------------------------------------------------------------
 # Response models — Job Descriptions & Pipeline Results
 # ---------------------------------------------------------------------------

@@ -43,6 +43,29 @@ def mock_narratives() -> list[dict[str, Any]]:
 
 
 @pytest.fixture
+def mock_fit_report() -> dict[str, Any]:
+    """Mock fit assessment report."""
+    return {
+        "id": "fit-123",
+        "user_id": "user-1",
+        "job_description_id": "jd-123",
+        "fit_level": "strong",
+        "matches": [
+            {
+                "requirement": "5+ years React",
+                "priority": "required",
+                "notes": "11 years experience",
+            },
+            {"requirement": "TypeScript", "priority": "required", "notes": "Strong expertise"},
+        ],
+        "gaps": [],
+        "terminology": [],
+        "reasoning": "Strong fit for the role",
+        "created_at": "2026-03-28T00:00:00",
+    }
+
+
+@pytest.fixture
 def mock_resume_variant() -> dict[str, Any]:
     """Mock resume variant from database."""
     return {
@@ -78,6 +101,7 @@ def mock_resume_variant() -> dict[str, Any]:
 def test_full_regenerate_success(
     mock_jd: dict[str, Any],
     mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
     mock_resume_variant: dict[str, Any],
 ) -> None:
     """Test full regenerate mode with all three steps succeeding."""
@@ -88,9 +112,9 @@ def test_full_regenerate_success(
             with patch(
                 "features.resume_generation.resume_variants.get_latest_variant", return_value=None
             ):
-                with patch("features.resume_generation._run_generator") as mock_gen:
-                    with patch("features.resume_generation._run_screener") as mock_scr:
-                        with patch("features.resume_generation._run_refinement") as mock_ref:
+                with patch("features.resume_generation.run_generator") as mock_gen:
+                    with patch("features.resume_generation.run_screener") as mock_scr:
+                        with patch("features.resume_generation.run_refinement") as mock_ref:
                             with patch(
                                 "features.resume_generation.resume_variants.create_resume_variant",
                                 return_value=mock_resume_variant,
@@ -116,7 +140,7 @@ def test_full_regenerate_success(
 
                                 # Run
                                 result = resume_generation.run_resume_generation(
-                                    "jd-123", "user-1", mode="full"
+                                    "jd-123", "user-1", mock_fit_report, mode="full"
                                 )
 
                                 # Assert
@@ -131,7 +155,9 @@ def test_full_regenerate_success(
 
 
 def test_full_regenerate_generator_fails(
-    mock_jd: dict[str, Any], mock_narratives: list[dict[str, Any]]
+    mock_jd: dict[str, Any],
+    mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
 ) -> None:
     """Test that generator failure stops pipeline and raises error."""
     with patch("features.resume_generation.job_descriptions.get_jd", return_value=mock_jd):
@@ -139,11 +165,13 @@ def test_full_regenerate_generator_fails(
             "features.resume_generation.narratives.list_narratives", return_value=mock_narratives
         ):
             with patch(
-                "features.resume_generation._run_generator",
+                "features.resume_generation.run_generator",
                 side_effect=RuntimeError("Claude error"),
             ):
                 with pytest.raises(RuntimeError, match="generator_failed"):
-                    resume_generation.run_resume_generation("jd-123", "user-1", mode="full")
+                    resume_generation.run_resume_generation(
+                        "jd-123", "user-1", mock_fit_report, mode="full"
+                    )
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +180,9 @@ def test_full_regenerate_generator_fails(
 
 
 def test_full_regenerate_screener_fails(
-    mock_jd: dict[str, Any], mock_narratives: list[dict[str, Any]]
+    mock_jd: dict[str, Any],
+    mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
 ) -> None:
     """Test that screener failure stops pipeline."""
     with patch("features.resume_generation.job_descriptions.get_jd", return_value=mock_jd):
@@ -162,15 +192,15 @@ def test_full_regenerate_screener_fails(
             with patch(
                 "features.resume_generation.resume_variants.get_latest_variant", return_value=None
             ):
-                with patch(
-                    "features.resume_generation._run_generator", return_value={"skills": []}
-                ):
+                with patch("features.resume_generation.run_generator", return_value={"skills": []}):
                     with patch(
-                        "features.resume_generation._run_screener",
+                        "features.resume_generation.run_screener",
                         side_effect=RuntimeError("Screener error"),
                     ):
                         with pytest.raises(RuntimeError, match="screener_failed"):
-                            resume_generation.run_resume_generation("jd-123", "user-1", mode="full")
+                            resume_generation.run_resume_generation(
+                                "jd-123", "user-1", mock_fit_report, mode="full"
+                            )
 
 
 # ---------------------------------------------------------------------------
@@ -179,7 +209,9 @@ def test_full_regenerate_screener_fails(
 
 
 def test_full_regenerate_refinement_fails(
-    mock_jd: dict[str, Any], mock_narratives: list[dict[str, Any]]
+    mock_jd: dict[str, Any],
+    mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
 ) -> None:
     """Test that refinement failure stops pipeline."""
     with patch("features.resume_generation.job_descriptions.get_jd", return_value=mock_jd):
@@ -190,20 +222,20 @@ def test_full_regenerate_refinement_fails(
                 "features.resume_generation.resume_variants.get_latest_variant", return_value=None
             ):
                 with patch(
-                    "features.resume_generation._run_generator",
+                    "features.resume_generation.run_generator",
                     return_value={"skills": [], "summary": "Senior Engineer"},
                 ):
                     with patch(
-                        "features.resume_generation._run_screener",
+                        "features.resume_generation.run_screener",
                         return_value={"overall_score": 0.8},
                     ):
                         with patch(
-                            "features.resume_generation._run_refinement",
+                            "features.resume_generation.run_refinement",
                             side_effect=RuntimeError("Refinement error"),
                         ):
                             with pytest.raises(RuntimeError, match="refinement_failed"):
                                 resume_generation.run_resume_generation(
-                                    "jd-123", "user-1", mode="full"
+                                    "jd-123", "user-1", mock_fit_report, mode="full"
                                 )
 
 
@@ -215,6 +247,7 @@ def test_full_regenerate_refinement_fails(
 def test_refine_existing_success(
     mock_jd: dict[str, Any],
     mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
     mock_resume_variant: dict[str, Any],
 ) -> None:
     """Test refine-existing mode (step 3 only)."""
@@ -223,10 +256,10 @@ def test_refine_existing_success(
             "features.resume_generation.narratives.list_narratives", return_value=mock_narratives
         ):
             with patch(
-                "features.resume_generation.resume_variants.get_latest_variant",
+                "features.resume_generation.resume_variants.get_variant_by_id",
                 return_value=mock_resume_variant,
             ):
-                with patch("features.resume_generation._run_refinement") as mock_ref:
+                with patch("features.resume_generation.run_refinement") as mock_ref:
                     with patch(
                         "features.resume_generation.resume_variants.create_resume_variant"
                     ) as mock_create:
@@ -246,8 +279,76 @@ def test_refine_existing_success(
                         }
 
                         result = resume_generation.run_resume_generation(
-                            "jd-123", "user-1", mode="refine", parent_variant_id="variant-1"
+                            "jd-123",
+                            "user-1",
+                            mock_fit_report,
+                            mode="refine",
+                            parent_variant_id="variant-1",
                         )
 
                         assert result["version"] == 2
                         assert result["parent_variant_id"] == "variant-1"
+
+
+# ---------------------------------------------------------------------------
+# Test: JD not found in full mode
+# ---------------------------------------------------------------------------
+
+
+def test_run_resume_generation_jd_not_found_full_mode(
+    mock_fit_report: dict[str, Any],
+) -> None:
+    """Verify ValueError when JD not found in full mode."""
+    with patch("features.resume_generation.job_descriptions.get_jd", return_value=None):
+        with pytest.raises(ValueError, match="Job description not found"):
+            resume_generation.run_resume_generation(
+                jd_id="missing-jd",
+                user_id="user-1",
+                fit_report=mock_fit_report,
+                mode="full",
+            )
+
+
+# ---------------------------------------------------------------------------
+# Test: Parent variant not found in refine mode
+# ---------------------------------------------------------------------------
+
+
+def test_run_resume_generation_parent_variant_not_found(
+    mock_fit_report: dict[str, Any],
+) -> None:
+    """Verify ValueError when parent variant not found in refine mode."""
+    with patch("features.resume_generation.job_descriptions.get_jd") as mock_get_jd:
+        mock_get_jd.return_value = {"id": "jd-1", "content": "JD"}
+
+        with patch(
+            "features.resume_generation.resume_variants.get_variant_by_id"
+        ) as mock_get_variant:
+            mock_get_variant.return_value = None
+
+            with pytest.raises(ValueError, match="Variant not found"):
+                resume_generation.run_resume_generation(
+                    jd_id="jd-1",
+                    user_id="user-1",
+                    fit_report=mock_fit_report,
+                    mode="refine",
+                    parent_variant_id="missing-variant",
+                )
+
+
+# ---------------------------------------------------------------------------
+# Test: Refine requires parent_variant_id
+# ---------------------------------------------------------------------------
+
+
+def test_run_resume_generation_refine_requires_parent_id(
+    mock_fit_report: dict[str, Any],
+) -> None:
+    """Verify ValueError when refine mode called without parent_variant_id."""
+    with pytest.raises(ValueError, match="parent_variant_id required"):
+        resume_generation.run_resume_generation(
+            jd_id="jd-1",
+            user_id="user-1",
+            fit_report=mock_fit_report,
+            mode="refine",
+        )

@@ -1,5 +1,7 @@
 """ColdRead API routes."""
 
+from typing import Any, cast
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from api.dependencies import get_current_user_id
@@ -8,6 +10,7 @@ from features import fit_assessment, resume_generation
 from models import (
     CreateJdRequest,
     FitReportResponse,
+    GenerateResumeRequest,
     JobDescriptionResponse,
     ResumeVariantResponse,
 )
@@ -91,7 +94,7 @@ def run_fit(
 ) -> FitReportResponse:
     _verify_jd_ownership(jd_id, user_id)
     try:
-        row = fit_assessment.run_fit_assessment(jd_id, user_id)
+        row = fit_assessment.run_fit_assessment_workflow(jd_id, user_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return FitReportResponse(**row)
@@ -106,7 +109,7 @@ def get_fit_report(
     row = fit_reports.get_latest_fit_report(jd_id, user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="No fit report found")
-    return FitReportResponse(**row)
+    return FitReportResponse(**cast(Any, dict(row)))
 
 
 # ---------------------------------------------------------------------------
@@ -117,11 +120,15 @@ def get_fit_report(
 @jds.post("/{jd_id}/resume", response_model=ResumeVariantResponse, status_code=201)
 def generate_resume(
     jd_id: str,
+    body: GenerateResumeRequest,
     user_id: str = Depends(get_current_user_id),
 ) -> ResumeVariantResponse:
     _verify_jd_ownership(jd_id, user_id)
+    fit_report = fit_reports.get_fit_report_by_id(body.fit_report_id, user_id)
+    if fit_report is None:
+        raise HTTPException(status_code=404, detail="Fit report not found")
     try:
-        row = resume_generation.run_resume_generation(jd_id, user_id, mode="full")
+        row = resume_generation.run_resume_generation(jd_id, user_id, dict(fit_report), mode="full")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except RuntimeError as e:
@@ -137,12 +144,16 @@ def generate_resume(
 def refine_resume(
     jd_id: str,
     variant_id: str,
+    body: GenerateResumeRequest,
     user_id: str = Depends(get_current_user_id),
 ) -> ResumeVariantResponse:
     _verify_jd_ownership(jd_id, user_id)
+    fit_report = fit_reports.get_fit_report_by_id(body.fit_report_id, user_id)
+    if fit_report is None:
+        raise HTTPException(status_code=404, detail="Fit report not found")
     try:
         row = resume_generation.run_resume_generation(
-            jd_id, user_id, mode="refine", parent_variant_id=variant_id
+            jd_id, user_id, dict(fit_report), mode="refine", parent_variant_id=variant_id
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

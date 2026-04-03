@@ -130,7 +130,7 @@ def test_list_jds_empty(mock_list: Any) -> None:
 # ---------------------------------------------------------------------------
 
 
-@patch("api.routes.fit_assessment.run_fit_assessment")
+@patch("api.routes.fit_assessment.run_fit_assessment_workflow")
 @patch("db.job_descriptions.get_jd")
 def test_run_fit_assessment(mock_get_jd: Any, mock_run: Any) -> None:
     mock_get_jd.return_value = SAMPLE_JD  # ownership check passes
