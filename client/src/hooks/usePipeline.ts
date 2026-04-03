@@ -21,7 +21,7 @@ export const usePipeline = () => {
       const fitReport = await runFitAssessment(jdId)
 
       setSteps(makeSteps({ screener: 'done', generator: 'running' }))
-      const resumeVariant = await generateResume(jdId)
+      const resumeVariant = await generateResume(jdId, fitReport.id)
 
       setSteps(makeSteps({ screener: 'done', generator: 'done' }))
       return { fitReport, resumeVariant }

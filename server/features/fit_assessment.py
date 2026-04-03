@@ -1,104 +1,31 @@
 """Fit assessment — Strong / Moderate / Borderline / Poor with gap detection.
 
-Calls the Anthropic API with the screener prompt and candidate narratives,
-using tool use to guarantee structured JSON output.
+Orchestrates fit assessment pipeline stage and manages database persistence.
 """
 
-from typing import Any, cast
+from typing import Any
 
-import anthropic
-
-from config import get_anthropic_api_key
 from db import fit_reports, job_descriptions, narratives
-from pipeline.prompt_loader import load_prompt
+from pipeline.fit_assessment import run_fit_assessment
+from pipeline.generator import _format_narratives
 from security.injection_detection import analyze_jd_for_injection
 
-_client: anthropic.Anthropic | None = None
 
+def run_fit_assessment_workflow(jd_id: str, user_id: str) -> Any:
+    """Run fit assessment pipeline and save results.
 
-def _get_anthropic_client() -> anthropic.Anthropic:
-    global _client  # noqa: PLW0603
-    if _client is None:
-        _client = anthropic.Anthropic(api_key=get_anthropic_api_key())
-    return _client
+    Args:
+        jd_id: Job description ID
+        user_id: Current user ID
 
+    Returns:
+        Fit report record from database
 
-_FIT_REPORT_SCHEMA: dict[str, object] = {
-    "type": "object",
-    "required": ["fit_level", "matches", "gaps", "terminology", "reasoning"],
-    "properties": {
-        "fit_level": {
-            "type": "string",
-            "enum": ["strong", "moderate", "borderline", "poor"],
-        },
-        "matches": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["requirement", "priority", "notes"],
-                "properties": {
-                    "requirement": {"type": "string"},
-                    "priority": {
-                        "type": "string",
-                        "enum": ["required", "preferred", "implied"],
-                    },
-                    "notes": {"type": "string"},
-                },
-            },
-        },
-        "gaps": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["requirement", "type", "notes"],
-                "properties": {
-                    "requirement": {"type": "string"},
-                    "type": {
-                        "type": "string",
-                        "enum": ["hard", "soft"],
-                    },
-                    "notes": {"type": "string"},
-                },
-            },
-        },
-        "terminology": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["my_term", "jd_term"],
-                "properties": {
-                    "my_term": {"type": "string"},
-                    "jd_term": {"type": "string"},
-                },
-            },
-        },
-        "reasoning": {"type": "string"},
-    },
-}
-
-
-def _format_narratives(narrative_rows: list[dict[str, Any]]) -> str:
-    if not narrative_rows:
-        return "No candidate background narratives available."
-
-    overview = [n for n in narrative_rows if n.get("category") == "career_overview"]
-    roles = [n for n in narrative_rows if n.get("category") != "career_overview"]
-
-    sections: list[str] = []
-    if overview:
-        sections.append(
-            "## Career Overview\n"
-            + "\n\n".join(f"### {n['title']}\n{n['content']}" for n in overview)
-        )
-    if roles:
-        sections.append(
-            "## Role Narratives\n" + "\n\n".join(f"### {n['title']}\n{n['content']}" for n in roles)
-        )
-
-    return "\n\n".join(sections)
-
-
-def run_fit_assessment(jd_id: str, user_id: str) -> dict[str, Any]:
+    Raises:
+        ValueError: If JD not found
+        RuntimeError: If assessment fails
+    """
+    # Load inputs
     jd = job_descriptions.get_jd(jd_id, user_id)
     if jd is None:
         raise ValueError(f"Job description not found: {jd_id}")
@@ -106,41 +33,17 @@ def run_fit_assessment(jd_id: str, user_id: str) -> dict[str, Any]:
     # Analyze for suspicious patterns (non-blocking, for monitoring)
     analyze_jd_for_injection(jd["content"], user_id)
 
+    # Load and format narratives
     narrative_rows = narratives.list_narratives(user_id)
     narratives_text = _format_narratives(narrative_rows)
-    system_prompt = load_prompt("screener", user_id)
 
-    user_message = (
-        f"<job_description>\n{jd['content']}\n</job_description>\n\n"
-        f"<candidate_background>\n{narratives_text}\n</candidate_background>\n\n"
-        "Evaluate the candidate's background against this job description "
-        "and submit your assessment using the submit_fit_report tool."
-    )
-
-    response = _get_anthropic_client().messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4096,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_message}],
-        tools=[
-            {
-                "name": "submit_fit_report",
-                "description": "Submit the structured fit assessment result",
-                "input_schema": _FIT_REPORT_SCHEMA,
-            }
-        ],
-        tool_choice={"type": "tool", "name": "submit_fit_report"},
-    )
-
+    # Run fit assessment
     try:
-        tool_block = next(b for b in response.content if b.type == "tool_use")
-    except StopIteration:
-        content_types = [b.type for b in response.content]
-        raise RuntimeError(
-            f"Anthropic response contained no tool_use block. Content types: {content_types}"
-        )
-    result = cast(dict[str, Any], tool_block.input)
+        result = run_fit_assessment(jd["content"], narratives_text, user_id)
+    except Exception as e:
+        raise RuntimeError(f"fit_assessment_failed: {str(e)}")
 
+    # Save to DB
     return fit_reports.create_fit_report(
         job_description_id=jd_id,
         user_id=user_id,

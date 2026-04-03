@@ -28,8 +28,11 @@ export const getLatestResume = (jdId: string) => request<ResumeVariant>(`/jds/${
 export const runFitAssessment = (jdId: string) =>
   request<FitReport>(`/jds/${jdId}/fit`, { method: 'POST' })
 
-export const generateResume = (jdId: string) =>
-  request<ResumeVariant>(`/jds/${jdId}/resume`, { method: 'POST' })
+export const generateResume = (jdId: string, fitReportId: string) =>
+  request<ResumeVariant>(`/jds/${jdId}/resume`, {
+    method: 'POST',
+    body: JSON.stringify({ fitReportId }),
+  })
 
 // Resume Variants
 export const getResumeVariants = (jdId: string) =>
