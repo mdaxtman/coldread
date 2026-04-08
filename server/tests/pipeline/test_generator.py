@@ -71,6 +71,7 @@ def test_run_generator_calls_api_and_returns_structured_data() -> None:
             narratives_text="Narrative text",
             fit_report={"matches": [], "gaps": [], "terminology": []},
             user_id="user-123",
+            contact_info=None,
         )
 
         assert result["summary"] == "Experienced engineer"
