@@ -2,12 +2,26 @@ import ReactMarkdown from 'react-markdown'
 import { Badge } from '../../components/ui/Badge'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { Card } from '../../components/ui/Card'
-import type { ResumeVariant, FitLevel } from '../../types'
+import type { ResumeVariant, ResumeContact, FitLevel } from '../../types'
 import styles from './ResumePanel.module.css'
 
 interface ResumePanelProps {
   resumeVariant: ResumeVariant
   fitLevel: FitLevel
+}
+
+function formatContactInfo(contact?: ResumeContact): string {
+  if (!contact) return ''
+
+  const parts = []
+  if (contact.email) parts.push(contact.email)
+  if (contact.phone) parts.push(contact.phone)
+  if (contact.location) parts.push(contact.location)
+  if (contact.linkedin) parts.push(contact.linkedin)
+  if (contact.github) parts.push(contact.github)
+  if (contact.website) parts.push(contact.website)
+
+  return parts.filter((p) => p).join(' | ')
 }
 
 function scoreToBucket(score: number): FitLevel {
@@ -30,7 +44,8 @@ function downloadResume(content: string) {
 }
 
 export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
-  const { screenerReport, content } = resumeVariant
+  const { screenerReport, content, contactInfo } = resumeVariant
+  const contactLine = formatContactInfo(contactInfo)
   const { keywordCoverage, semanticScore, overallScore } = screenerReport.screenerAnalysis
 
   const coveredCount = Object.values(keywordCoverage).filter(Boolean).length
@@ -38,6 +53,13 @@ export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
 
   return (
     <div className={styles.panel}>
+      {/* Contact info section */}
+      {contactLine && (
+        <div style={{ marginBottom: '1rem', fontFamily: 'monospace', fontSize: '0.95rem' }}>
+          {contactLine}
+        </div>
+      )}
+
       {/* Screener stats bar */}
       <Card className={styles.statsBar}>
         <div className={styles.stats}>
