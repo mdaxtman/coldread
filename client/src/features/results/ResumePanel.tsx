@@ -21,7 +21,7 @@ function formatContactInfo(contact?: ResumeContact): string {
   if (contact.github) parts.push(contact.github)
   if (contact.website) parts.push(contact.website)
 
-  return parts.filter((p) => p).join(' | ')
+  return parts.join(' | ')
 }
 
 function scoreToBucket(score: number): FitLevel {
@@ -55,7 +55,7 @@ export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
     <div className={styles.panel}>
       {/* Contact info section */}
       {contactLine && (
-        <div style={{ marginBottom: '1rem', fontFamily: 'monospace', fontSize: '0.95rem' }}>
+        <div className={styles.contact} role="region" aria-label="Contact information">
           {contactLine}
         </div>
       )}
