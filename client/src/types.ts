@@ -63,11 +63,21 @@ export interface ScreenerReport {
   refinementChanges: RefinementChangeData
 }
 
+export interface ResumeContact {
+  email?: string
+  phone?: string
+  location?: string
+  linkedin?: string
+  github?: string
+  website?: string
+}
+
 export interface ResumeVariant {
   id: string
   userId: string
   jobDescriptionId: string
   content: string
+  contactInfo?: ResumeContact
   version: number
   parentVariantId: string | null
   screenerReport: ScreenerReport
