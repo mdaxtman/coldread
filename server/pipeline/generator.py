@@ -38,6 +38,17 @@ _GENERATOR_SCHEMA = {
             },
         },
         "skills": {"type": "array", "items": {"type": "string"}},
+        "contact": {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string"},
+                "phone": {"type": "string"},
+                "location": {"type": "string"},
+                "linkedin": {"type": "string"},
+                "github": {"type": "string"},
+                "website": {"type": "string"},
+            },
+        },
     },
 }
 
