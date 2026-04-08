@@ -1,7 +1,7 @@
 """Tests for resume generation pipeline."""
 
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -352,3 +352,334 @@ def test_run_resume_generation_refine_requires_parent_id(
             fit_report=mock_fit_report,
             mode="refine",
         )
+
+
+# ---------------------------------------------------------------------------
+# Test: Generator includes contact_info in output
+# ---------------------------------------------------------------------------
+
+
+def test_generator_includes_contact_in_output(
+    mock_fit_report: dict[str, Any],
+) -> None:
+    """Test that generator includes contact field in output JSON."""
+    from pipeline.generator import run_generator
+
+    narratives_text = "Test background"
+    contact_info = {
+        "email": "test@example.com",
+        "linkedin": "https://linkedin.com/in/test",
+    }
+
+    # Create mock response object with proper structure
+    mock_tool_block = MagicMock()
+    mock_tool_block.type = "tool_use"
+    mock_tool_block.input = {
+        "summary": "Senior Engineer",
+        "experience": [
+            {
+                "company": "TechCorp",
+                "title": "Senior Engineer",
+                "dates": "2020-2026",
+                "projects": [
+                    {
+                        "name": "React Platform",
+                        "dates": "2020-2026",
+                        "bullets": ["Built scalable system"],
+                    }
+                ],
+            }
+        ],
+        "skills": ["React", "TypeScript"],
+        "contact": {
+            "email": "test@example.com",
+            "linkedin": "https://linkedin.com/in/test",
+        },
+    }
+    mock_response = MagicMock()
+    mock_response.content = [mock_tool_block]
+
+    with patch("pipeline.generator._get_anthropic_client") as mock_get_client:
+        with patch("pipeline.generator.load_prompt") as mock_load_prompt:
+            mock_client = MagicMock()
+            mock_client.messages.create.return_value = mock_response
+            mock_get_client.return_value = mock_client
+            mock_load_prompt.return_value = "System prompt"
+
+            result = run_generator(narratives_text, mock_fit_report, contact_info, "user-1")
+
+            assert "contact" in result
+            assert result["contact"]["email"] == "test@example.com"
+            assert result["contact"]["linkedin"] == "https://linkedin.com/in/test"
+
+
+# ---------------------------------------------------------------------------
+# Test: Resume variant persists contact_info
+# ---------------------------------------------------------------------------
+
+
+def test_resume_variant_persists_contact_info() -> None:
+    """Test that contact_info is saved to resume_variants table."""
+    from db import resume_variants
+
+    contact_data = {"email": "test@example.com"}
+
+    with patch("db.resume_variants.get_client") as mock_get_client:
+        # Mock the Supabase client response
+        mock_response = {
+            "data": [
+                {
+                    "id": "variant-1",
+                    "user_id": "user-1",
+                    "job_description_id": "jd-123",
+                    "content": "Test resume",
+                    "version": 1,
+                    "screener_report": {},
+                    "contact_info": contact_data,
+                    "parent_variant_id": None,
+                    "created_at": "2026-03-28T00:00:00",
+                }
+            ]
+        }
+        mock_table = (
+            mock_get_client.return_value.table.return_value.insert.return_value.execute.return_value
+        )
+        mock_table.data = mock_response["data"]
+
+        variant = resume_variants.create_resume_variant(
+            job_description_id="jd-123",
+            user_id="user-1",
+            content="Test resume",
+            version=1,
+            screener_report={},
+            contact_info=contact_data,
+        )
+
+        assert variant["contact_info"] == contact_data
+
+
+# ---------------------------------------------------------------------------
+# Test: Full pipeline preserves contact_info
+# ---------------------------------------------------------------------------
+
+
+def test_resume_generation_with_contact_info(
+    mock_jd: dict[str, Any],
+    mock_narratives: list[dict[str, Any]],
+    mock_fit_report: dict[str, Any],
+    mock_resume_variant: dict[str, Any],
+) -> None:
+    """Test full pipeline: fit assessment → generate resume with contact → screener → refinement."""
+    contact_data = {"email": "test@example.com", "linkedin": "https://linkedin.com/in/test"}
+
+    # Add contact_info to first narrative (career overview)
+    mock_narratives_with_contact = [
+        {**mock_narratives[0], "contact_info": contact_data},
+        mock_narratives[1],
+    ]
+
+    # Add contact_info to the variant response
+    mock_variant_with_contact = {**mock_resume_variant, "contact_info": contact_data}
+
+    with patch("features.resume_generation.job_descriptions.get_jd", return_value=mock_jd):
+        with patch(
+            "features.resume_generation.narratives.list_narratives",
+            return_value=mock_narratives_with_contact,
+        ):
+            with patch(
+                "features.resume_generation.resume_variants.get_latest_variant", return_value=None
+            ):
+                with patch("features.resume_generation.run_generator") as mock_gen:
+                    with patch("features.resume_generation.run_screener") as mock_scr:
+                        with patch("features.resume_generation.run_refinement") as mock_ref:
+                            with patch(
+                                "features.resume_generation.resume_variants.create_resume_variant",
+                                return_value=mock_variant_with_contact,
+                            ) as mock_create:
+                                # Setup mock returns
+                                mock_gen.return_value = {
+                                    "summary": "Senior Engineer",
+                                    "experience": [],
+                                    "skills": ["React", "TypeScript"],
+                                    "contact": contact_data,
+                                }
+                                mock_scr.return_value = {
+                                    "keyword_coverage": {"React": True, "TypeScript": True},
+                                    "semantic_score": 0.85,
+                                    "terminology_mismatches": [],
+                                    "overall_score": 0.85,
+                                }
+                                mock_ref.return_value = {
+                                    "refined_content": "Refined resume...",
+                                    "changes_made": [],
+                                    "remaining_gaps": [],
+                                    "coverage_improvement": 0,
+                                }
+
+                                # Run the pipeline
+                                result = resume_generation.run_resume_generation(
+                                    "jd-123", "user-1", mock_fit_report, mode="full"
+                                )
+
+                                # Verify contact_info was persisted
+                                assert "contact_info" in result
+                                assert result["contact_info"]["email"] == "test@example.com"
+                                # Verify create_resume_variant was called with contact_info
+                                call_kwargs = mock_create.call_args.kwargs
+                                assert "contact_info" in call_kwargs
+                                assert call_kwargs["contact_info"] == contact_data
+
+
+# ---------------------------------------------------------------------------
+# Test: Generator with None contact_info edge case
+# ---------------------------------------------------------------------------
+
+
+def test_generator_with_contact_info_none() -> None:
+    """Test that generator handles None contact_info gracefully."""
+    from pipeline.generator import run_generator
+
+    narratives_text = "Test background"
+    fit_report = {}
+    contact_info = None  # No contact info provided
+
+    # Create mock response object with proper structure
+    mock_tool_block = MagicMock()
+    mock_tool_block.type = "tool_use"
+    mock_tool_block.input = {
+        "summary": "Senior Engineer",
+        "experience": [
+            {
+                "company": "TechCorp",
+                "title": "Senior Engineer",
+                "dates": "2020-2026",
+                "projects": [
+                    {
+                        "name": "React Platform",
+                        "dates": "2020-2026",
+                        "bullets": ["Built scalable system"],
+                    }
+                ],
+            }
+        ],
+        "skills": ["React", "TypeScript"],
+        "contact": {},
+    }
+    mock_response = MagicMock()
+    mock_response.content = [mock_tool_block]
+
+    with patch("pipeline.generator._get_anthropic_client") as mock_get_client:
+        with patch("pipeline.generator.load_prompt") as mock_load_prompt:
+            mock_client = MagicMock()
+            mock_client.messages.create.return_value = mock_response
+            mock_get_client.return_value = mock_client
+            mock_load_prompt.return_value = "System prompt"
+
+            result = run_generator(narratives_text, fit_report, contact_info, "user-1")
+
+            # Should still include contact field, but it will be empty or not present
+            assert "contact" in result or result.get("contact") == {}
+
+
+# ---------------------------------------------------------------------------
+# Test: Generator with empty contact dict edge case
+# ---------------------------------------------------------------------------
+
+
+def test_generator_with_empty_contact_dict() -> None:
+    """Test that generator handles empty contact dict."""
+    from pipeline.generator import run_generator
+
+    narratives_text = "Test background"
+    fit_report = {}
+    contact_info = {}  # Empty dict
+
+    # Create mock response object with proper structure
+    mock_tool_block = MagicMock()
+    mock_tool_block.type = "tool_use"
+    mock_tool_block.input = {
+        "summary": "Senior Engineer",
+        "experience": [
+            {
+                "company": "TechCorp",
+                "title": "Senior Engineer",
+                "dates": "2020-2026",
+                "projects": [
+                    {
+                        "name": "React Platform",
+                        "dates": "2020-2026",
+                        "bullets": ["Built scalable system"],
+                    }
+                ],
+            }
+        ],
+        "skills": ["React", "TypeScript"],
+        "contact": {},
+    }
+    mock_response = MagicMock()
+    mock_response.content = [mock_tool_block]
+
+    with patch("pipeline.generator._get_anthropic_client") as mock_get_client:
+        with patch("pipeline.generator.load_prompt") as mock_load_prompt:
+            mock_client = MagicMock()
+            mock_client.messages.create.return_value = mock_response
+            mock_get_client.return_value = mock_client
+            mock_load_prompt.return_value = "System prompt"
+
+            result = run_generator(narratives_text, fit_report, contact_info, "user-1")
+
+            assert "contact" in result
+            # Empty dict should pass through
+            assert result["contact"] == {} or all(v is None for v in result["contact"].values())
+
+
+# ---------------------------------------------------------------------------
+# Test: Generator with partial contact info edge case
+# ---------------------------------------------------------------------------
+
+
+def test_generator_with_partial_contact_info() -> None:
+    """Test that generator handles partial contact info (only some fields)."""
+    from pipeline.generator import run_generator
+
+    narratives_text = "Test background"
+    fit_report = {}
+    contact_info = {"email": "test@example.com"}  # Only email, no phone/location/etc
+
+    # Create mock response object with proper structure
+    mock_tool_block = MagicMock()
+    mock_tool_block.type = "tool_use"
+    mock_tool_block.input = {
+        "summary": "Senior Engineer",
+        "experience": [
+            {
+                "company": "TechCorp",
+                "title": "Senior Engineer",
+                "dates": "2020-2026",
+                "projects": [
+                    {
+                        "name": "React Platform",
+                        "dates": "2020-2026",
+                        "bullets": ["Built scalable system"],
+                    }
+                ],
+            }
+        ],
+        "skills": ["React", "TypeScript"],
+        "contact": {"email": "test@example.com"},
+    }
+    mock_response = MagicMock()
+    mock_response.content = [mock_tool_block]
+
+    with patch("pipeline.generator._get_anthropic_client") as mock_get_client:
+        with patch("pipeline.generator.load_prompt") as mock_load_prompt:
+            mock_client = MagicMock()
+            mock_client.messages.create.return_value = mock_response
+            mock_get_client.return_value = mock_client
+            mock_load_prompt.return_value = "System prompt"
+
+            result = run_generator(narratives_text, fit_report, contact_info, "user-1")
+
+            assert "contact" in result
+            assert result["contact"]["email"] == "test@example.com"
+            # Other fields might be null or missing
