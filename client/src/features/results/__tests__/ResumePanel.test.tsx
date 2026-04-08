@@ -78,9 +78,9 @@ describe('ResumePanel - Contact Info Rendering', () => {
     // Should render the component
     expect(getByText(/Summary/)).toBeInTheDocument()
 
-    // But contact region should not be visible/present (no contact info)
-    // Contact info should not appear in the rendered output
-    expect(container.textContent).not.toMatch(/email|phone|location|linkedin|github|website/i)
+    // Contact region should not exist
+    const contactRegion = container.querySelector('[aria-label="Contact information"]')
+    expect(contactRegion).not.toBeInTheDocument()
   })
 
   it('handles all contact fields when provided', () => {
@@ -95,14 +95,19 @@ describe('ResumePanel - Contact Info Rendering', () => {
       },
     })
 
-    const { getByText } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
+    const { container } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
 
-    expect(getByText(/john@example\.com/)).toBeInTheDocument()
-    expect(getByText(/\+1-555-9876/)).toBeInTheDocument()
-    expect(getByText(/New York, NY/)).toBeInTheDocument()
-    expect(getByText(/linkedin\.com\/in\/john/)).toBeInTheDocument()
-    expect(getByText(/github\.com\/john/)).toBeInTheDocument()
-    expect(getByText(/johnsmith\.dev/)).toBeInTheDocument()
+    // Verify contact region exists
+    const contactRegion = container.querySelector('[aria-label="Contact information"]')
+    expect(contactRegion).toBeInTheDocument()
+
+    // Verify all fields are in the contact region
+    expect(contactRegion?.textContent).toContain('john@example.com')
+    expect(contactRegion?.textContent).toContain('+1-555-9876')
+    expect(contactRegion?.textContent).toContain('New York, NY')
+    expect(contactRegion?.textContent).toContain('linkedin.com/in/john')
+    expect(contactRegion?.textContent).toContain('github.com/john')
+    expect(contactRegion?.textContent).toContain('johnsmith.dev')
   })
 
   it('renders contact region with proper accessibility label', () => {
@@ -126,6 +131,18 @@ describe('ResumePanel - Contact Info Rendering', () => {
     const { queryByRole } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
 
     const contactRegion = queryByRole('region', { name: /Contact information/i })
+    expect(contactRegion).not.toBeInTheDocument()
+  })
+
+  it('handles empty contact object', () => {
+    const variant = createMockResumeVariant({
+      contactInfo: {}, // All fields undefined/missing
+    })
+
+    const { container } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
+
+    // Contact region should not render if all fields are empty
+    const contactRegion = container.querySelector('[aria-label="Contact information"]')
     expect(contactRegion).not.toBeInTheDocument()
   })
 })
