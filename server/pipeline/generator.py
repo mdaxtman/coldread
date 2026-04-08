@@ -149,7 +149,7 @@ def run_generator(narratives_text: str, fit_report: dict[str, Any], user_id: str
         user_id: Current user ID
 
     Returns:
-        Structured resume data: {summary, experience, skills, ...}
+        Structured resume data: {summary, experience, skills, contact, ...}
 
     Raises:
         RuntimeError: If API call fails or no tool response found
