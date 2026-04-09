@@ -1,0 +1,1 @@
+ALTER TABLE narratives ADD COLUMN contact_info JSONB DEFAULT NULL;

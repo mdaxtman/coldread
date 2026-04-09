@@ -24,9 +24,13 @@ def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -
     narrative_rows = narratives.list_narratives(user_id)
     narratives_text = _format_narratives(narrative_rows)
 
+    # Extract contact info from career overview narrative
+    overview = next((n for n in narrative_rows if n.get("category") == "career_overview"), None)
+    contact_info = overview.get("contact_info") if overview else None
+
     # Step 1: Generate (guided by fit report)
     try:
-        resume_data = run_generator(narratives_text, fit_report, user_id)
+        resume_data = run_generator(narratives_text, fit_report, contact_info, user_id)
     except Exception as e:
         raise RuntimeError(f"generator_failed: {str(e)}")
 
@@ -69,6 +73,7 @@ def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -
         content=refinement_data["refined_content"],
         version=version,
         screener_report=screener_report,
+        contact_info=contact_info,
     )
     return result
 
@@ -91,6 +96,10 @@ def _run_refine_existing(
 
     narrative_rows = narratives.list_narratives(user_id)
     narratives_text = _format_narratives(narrative_rows)
+
+    # Extract contact info from career overview narrative
+    overview = next((n for n in narrative_rows if n.get("category") == "career_overview"), None)
+    contact_info = overview.get("contact_info") if overview else None
 
     # Extract previous screener data from parent variant
     screener_report = parent.get("screener_report", {})
@@ -130,6 +139,7 @@ def _run_refine_existing(
         version=version,
         screener_report=updated_screener_report,
         parent_variant_id=parent_variant_id,
+        contact_info=contact_info,
     )
     return result
 

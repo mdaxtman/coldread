@@ -38,6 +38,17 @@ _GENERATOR_SCHEMA = {
             },
         },
         "skills": {"type": "array", "items": {"type": "string"}},
+        "contact": {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string"},
+                "phone": {"type": "string"},
+                "location": {"type": "string"},
+                "linkedin": {"type": "string"},
+                "github": {"type": "string"},
+                "website": {"type": "string"},
+            },
+        },
     },
 }
 
@@ -123,7 +134,34 @@ def _format_fit_report(fit_report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def run_generator(narratives_text: str, fit_report: dict[str, Any], user_id: str) -> dict[str, Any]:
+def _format_contact_info(contact_info: dict[str, Any] | None) -> str:
+    """Format contact info into readable text for generator prompt."""
+    if not contact_info:
+        return ""
+
+    lines = []
+    if contact_info.get("email"):
+        lines.append(f"Email: {contact_info['email']}")
+    if contact_info.get("phone"):
+        lines.append(f"Phone: {contact_info['phone']}")
+    if contact_info.get("location"):
+        lines.append(f"Location: {contact_info['location']}")
+    if contact_info.get("linkedin"):
+        lines.append(f"LinkedIn: {contact_info['linkedin']}")
+    if contact_info.get("github"):
+        lines.append(f"GitHub: {contact_info['github']}")
+    if contact_info.get("website"):
+        lines.append(f"Website: {contact_info['website']}")
+
+    return "\n".join(lines)
+
+
+def run_generator(
+    narratives_text: str,
+    fit_report: dict[str, Any],
+    contact_info: dict[str, Any] | None,
+    user_id: str,
+) -> dict[str, Any]:
     """Step 1: Generator perspective — create strategic resume guided by fit assessment.
 
     Receives pre-computed fit report (matches/gaps/terminology) to inform strategic choices:
@@ -135,22 +173,33 @@ def run_generator(narratives_text: str, fit_report: dict[str, Any], user_id: str
     Args:
         narratives_text: Formatted candidate narratives
         fit_report: Pre-computed fit assessment
+        contact_info: Optional contact information (email, phone, location,
+            linkedin, github, website)
         user_id: Current user ID
 
     Returns:
-        Structured resume data: {summary, experience, skills, ...}
+        Structured resume data: {summary, experience, skills, contact, ...}
 
     Raises:
         RuntimeError: If API call fails or no tool response found
     """
     system_prompt = load_prompt("generator", user_id)
     fit_guidance = _format_fit_report(fit_report)
+    contact_text = _format_contact_info(contact_info)
+
     user_message = (
         f"<candidate_background>\n{narratives_text}\n</candidate_background>\n\n"
         f"<fit_assessment>\n{fit_guidance}\n</fit_assessment>\n\n"
+    )
+
+    if contact_text:
+        user_message += f"<contact_info>\n{contact_text}\n</contact_info>\n\n"
+
+    user_message += (
         "Create a focused, strategic resume that highlights strengths matching the role. "
         "Use the fit assessment above to guide emphasis, handle gaps appropriately, and use the "
         "exact terminology from the JD. "
+        "Include your contact information in the contact field if provided. "
         "Use the submit_resume_draft tool to submit your output."
     )
 
