@@ -13,15 +13,28 @@ interface ResumePanelProps {
 function formatContactInfo(contact?: ResumeContact): string {
   if (!contact) return ''
 
-  const parts = []
-  if (contact.email) parts.push(contact.email)
-  if (contact.phone) parts.push(contact.phone)
-  if (contact.location) parts.push(contact.location)
-  if (contact.linkedin) parts.push(contact.linkedin)
-  if (contact.github) parts.push(contact.github)
-  if (contact.website) parts.push(contact.website)
+  const lines = []
 
-  return parts.join(' | ')
+  // Name as centered header (markdown center syntax with special formatting)
+  if (contact.name) {
+    lines.push(`# ${contact.name}`)
+    lines.push('') // blank line after name
+  }
+
+  // Contact details on separate line
+  const contactParts = []
+  if (contact.email) contactParts.push(contact.email)
+  if (contact.phone) contactParts.push(contact.phone)
+  if (contact.location) contactParts.push(contact.location)
+  if (contact.linkedin) contactParts.push(contact.linkedin)
+  if (contact.github) contactParts.push(contact.github)
+  if (contact.website) contactParts.push(contact.website)
+
+  if (contactParts.length > 0) {
+    lines.push(contactParts.join(' | '))
+  }
+
+  return lines.join('\n')
 }
 
 function scoreToBucket(score: number): FitLevel {
@@ -51,15 +64,11 @@ export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
   const coveredCount = Object.values(keywordCoverage).filter(Boolean).length
   const totalCount = Object.keys(keywordCoverage).length
 
+  // Prepend contact info to resume content if present
+  const resumeWithContact = contactLine ? `${contactLine}\n\n${content}` : content
+
   return (
     <div className={styles.panel}>
-      {/* Contact info section */}
-      {contactLine && (
-        <div className={styles.contact} role="region" aria-label="Contact information">
-          {contactLine}
-        </div>
-      )}
-
       {/* Screener stats bar */}
       <Card className={styles.statsBar}>
         <div className={styles.stats}>
@@ -83,13 +92,17 @@ export const ResumePanel = ({ resumeVariant, fitLevel }: ResumePanelProps) => {
         </div>
       </Card>
 
-      {/* Resume content */}
+      {/* Resume content with contact info */}
       <div className={styles.resumeContent}>
-        <ReactMarkdown>{content}</ReactMarkdown>
+        <ReactMarkdown>{resumeWithContact}</ReactMarkdown>
       </div>
 
       {/* Export button */}
-      <button type="button" className={styles.exportBtn} onClick={() => downloadResume(content)}>
+      <button
+        type="button"
+        className={styles.exportBtn}
+        onClick={() => downloadResume(resumeWithContact)}
+      >
         Download .txt
       </button>
     </div>

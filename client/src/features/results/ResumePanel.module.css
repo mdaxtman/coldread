@@ -4,12 +4,6 @@
   gap: var(--space-4);
 }
 
-.contact {
-  margin-bottom: 1rem;
-  font-family: monospace;
-  font-size: 0.95rem;
-}
-
 .statsBar {
   padding: var(--space-4);
 }

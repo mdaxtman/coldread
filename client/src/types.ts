@@ -64,6 +64,7 @@ export interface ScreenerReport {
 }
 
 export interface ResumeContact {
+  name?: string
   email?: string
   phone?: string
   location?: string

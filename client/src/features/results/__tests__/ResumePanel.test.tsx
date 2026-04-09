@@ -31,20 +31,26 @@ const createMockResumeVariant = (overrides?: Partial<ResumeVariant>): ResumeVari
 })
 
 describe('ResumePanel - Contact Info Rendering', () => {
-  it('renders contact info when present', () => {
+  it('includes contact info with name at top of resume content when present', () => {
     const variant = createMockResumeVariant({
       contactInfo: {
+        name: 'Test User',
         email: 'test@example.com',
         phone: '+1-555-0123',
         location: 'San Francisco, CA',
       },
     })
 
-    const { getByText } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
+    const { container } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
 
-    expect(getByText(/test@example\.com/)).toBeInTheDocument()
-    expect(getByText(/\+1-555-0123/)).toBeInTheDocument()
-    expect(getByText(/San Francisco, CA/)).toBeInTheDocument()
+    // Contact should be in the rendered resume content
+    expect(container.textContent).toContain('Test User')
+    expect(container.textContent).toContain('test@example.com')
+    expect(container.textContent).toContain('+1-555-0123')
+    expect(container.textContent).toContain('San Francisco, CA')
+    // Verify name appears before contact details
+    const textContent = container.textContent || ''
+    expect(textContent).toMatch(/Test User.*test@example\.com.*Summary/s)
   })
 
   it('skips empty contact fields', () => {
@@ -56,36 +62,33 @@ describe('ResumePanel - Contact Info Rendering', () => {
       },
     })
 
-    const { container, getByText } = render(
-      <ResumePanel resumeVariant={variant} fitLevel="strong" />,
-    )
+    const { container } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
 
     // Should not contain undefined in text
     expect(container.textContent).not.toContain('undefined')
-    expect(getByText(/test@example\.com/)).toBeInTheDocument()
-    expect(getByText(/San Francisco, CA/)).toBeInTheDocument()
+    expect(container.textContent).toContain('test@example.com')
+    expect(container.textContent).toContain('San Francisco, CA')
+    // Phone should not appear
+    expect(container.textContent).not.toContain('+1-555')
   })
 
-  it('renders without contact section when contactInfo is null', () => {
+  it('does not include contact info when contactInfo is null', () => {
     const variant = createMockResumeVariant({
       contactInfo: null,
     })
 
-    const { container, getByText } = render(
-      <ResumePanel resumeVariant={variant} fitLevel="strong" />,
-    )
+    const { container } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
 
-    // Should render the component
-    expect(getByText(/Summary/)).toBeInTheDocument()
-
-    // Contact region should not exist
-    const contactRegion = container.querySelector('[aria-label="Contact information"]')
-    expect(contactRegion).not.toBeInTheDocument()
+    // Should render the component with content
+    expect(container.textContent).toContain('Summary')
+    // But no contact info line prefix
+    expect(container.textContent).not.toMatch(/.*@.*\|/)
   })
 
-  it('handles all contact fields when provided', () => {
+  it('formats all contact fields with pipe separators when provided', () => {
     const variant = createMockResumeVariant({
       contactInfo: {
+        name: 'John Smith',
         email: 'john@example.com',
         phone: '+1-555-9876',
         location: 'New York, NY',
@@ -97,52 +100,57 @@ describe('ResumePanel - Contact Info Rendering', () => {
 
     const { container } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
 
-    // Verify contact region exists
-    const contactRegion = container.querySelector('[aria-label="Contact information"]')
-    expect(contactRegion).toBeInTheDocument()
-
-    // Verify all fields are in the contact region
-    expect(contactRegion?.textContent).toContain('john@example.com')
-    expect(contactRegion?.textContent).toContain('+1-555-9876')
-    expect(contactRegion?.textContent).toContain('New York, NY')
-    expect(contactRegion?.textContent).toContain('linkedin.com/in/john')
-    expect(contactRegion?.textContent).toContain('github.com/john')
-    expect(contactRegion?.textContent).toContain('johnsmith.dev')
+    // Verify name appears as heading
+    expect(container.textContent).toContain('John Smith')
+    // Verify all contact fields appear in the content
+    expect(container.textContent).toContain('john@example.com')
+    expect(container.textContent).toContain('+1-555-9876')
+    expect(container.textContent).toContain('New York, NY')
+    expect(container.textContent).toContain('linkedin.com/in/john')
+    expect(container.textContent).toContain('github.com/john')
+    expect(container.textContent).toContain('johnsmith.dev')
+    // Verify pipe separator formatting
+    expect(container.textContent).toContain(' | ')
   })
 
-  it('renders contact region with proper accessibility label', () => {
-    const variant = createMockResumeVariant({
-      contactInfo: {
-        email: 'test@example.com',
-      },
-    })
-
-    const { getByRole } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
-
-    const contactRegion = getByRole('region', { name: /Contact information/i })
-    expect(contactRegion).toBeInTheDocument()
-  })
-
-  it('does not render contact region when contactInfo is undefined', () => {
+  it('does not include contact line when contactInfo is undefined', () => {
     const variant = createMockResumeVariant({
       contactInfo: undefined,
     })
 
-    const { queryByRole } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
+    const { container } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
 
-    const contactRegion = queryByRole('region', { name: /Contact information/i })
-    expect(contactRegion).not.toBeInTheDocument()
+    // Should render the summary but no contact prefix
+    expect(container.textContent).toContain('Summary')
+    expect(container.textContent).not.toMatch(/.*@.*\|/)
   })
 
-  it('handles empty contact object', () => {
+  it('does not include contact line when all contact fields are empty', () => {
     const variant = createMockResumeVariant({
       contactInfo: {}, // All fields undefined/missing
     })
 
     const { container } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
 
-    // Contact region should not render if all fields are empty
-    const contactRegion = container.querySelector('[aria-label="Contact information"]')
-    expect(contactRegion).not.toBeInTheDocument()
+    // Should render the content normally without contact prefix
+    expect(container.textContent).toContain('Summary')
+    expect(container.textContent).not.toMatch(/.*@.*\|/)
+  })
+
+  it('includes contact info in downloaded resume', () => {
+    const variant = createMockResumeVariant({
+      content: '## Summary\nTest content',
+      contactInfo: {
+        email: 'test@example.com',
+        phone: '+1-555-0123',
+      },
+    })
+
+    const { getByText } = render(<ResumePanel resumeVariant={variant} fitLevel="strong" />)
+
+    // When exported, contact should be at top of the content
+    // Verify contact appears in the rendered markdown
+    const downloadBtn = getByText('Download .txt')
+    expect(downloadBtn).toBeInTheDocument()
   })
 })

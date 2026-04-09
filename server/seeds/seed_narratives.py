@@ -410,6 +410,7 @@ def seed() -> None:
         content=CAREER_OVERVIEW,
         category="career_overview",
         contact_info={
+            "name": "Mike Axtman",
             "email": "axtman@example.com",
             "phone": "+1-555-0123",
             "location": "San Francisco, CA",

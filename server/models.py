@@ -86,6 +86,7 @@ class ScreenerReportModel(CamelModel):
 class ResumeContact(CamelModel):
     """Contact information in resume."""
 
+    name: str | None = None
     email: str | None = None
     phone: str | None = None
     location: str | None = None
