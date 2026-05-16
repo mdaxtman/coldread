@@ -131,8 +131,8 @@ class TestFitAssessmentOutput:
     def test_terminology_mappings(self) -> None:
         """Should support terminology mappings with confidence scores."""
         terminology = [
-            {"my_term": "React", "jd_term": "React.js", "confidence": "0.95"},
-            {"my_term": "REST API", "jd_term": "RESTful API", "confidence": "0.85"},
+            {"my_term": "React", "jd_term": "React.js", "confidence": 0.95},
+            {"my_term": "REST API", "jd_term": "RESTful API", "confidence": 0.85},
         ]
         output = FitAssessmentOutput(
             fit_level="strong",
@@ -172,6 +172,7 @@ class TestResumeGenerationInput:
         )
         assert input_data.narratives_text == "Background text"
         assert input_data.fit_assessment_output.fit_level == "strong"
+        assert input_data.contact_info is not None
         assert input_data.contact_info["email"] == "test@example.com"
         assert input_data.user_id == "user-123"
 
@@ -236,6 +237,7 @@ Experienced engineer with 8+ years in full-stack development
         )
         assert "Resume" in output.content
         assert "Senior Engineer" in output.content
+        assert output.contact_info is not None
         assert output.contact_info["email"] == "test@example.com"
 
     def test_valid_output_with_no_contact_info(self) -> None:
@@ -361,7 +363,7 @@ class TestCrossStageDataFlow:
             fit_level="strong",
             matches=[{"requirement": "Python", "priority": "required", "notes": ""}],
             gaps=[],
-            terminology=[{"my_term": "REST", "jd_term": "REST API", "confidence": "0.9"}],
+            terminology=[{"my_term": "REST", "jd_term": "REST API", "confidence": 0.9}],
             overall_score=0.85,
             semantic_score=0.88,
             keyword_coverage={"Python": True, "REST": True},

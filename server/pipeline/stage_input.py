@@ -43,7 +43,7 @@ class FitAssessmentOutput:
     fit_level: str  # "strong", "moderate", "borderline", "poor"
     matches: list[dict[str, Any]]  # [{requirement, priority, notes}]
     gaps: list[dict[str, Any]]  # [{requirement, type, notes}]
-    terminology: list[dict[str, str]]  # [{my_term, jd_term, confidence}]
+    terminology: list[dict[str, str | float]]  # [{my_term, jd_term, confidence}]
     overall_score: float
     semantic_score: float
     keyword_coverage: dict[str, bool]
