@@ -65,13 +65,18 @@ class TestFitAssessmentOutput:
             matches=[{"requirement": "Python", "priority": "required", "notes": "primary"}],
             gaps=[],
             terminology=[],
-            reasoning="Strong match on core skills",
+            overall_score=0.85,
+            semantic_score=0.88,
+            keyword_coverage={"Python": True, "React": True, "AWS": False},
         )
         assert output.fit_level == "strong"
         assert len(output.matches) == 1
         assert output.matches[0]["requirement"] == "Python"
         assert len(output.gaps) == 0
         assert len(output.terminology) == 0
+        assert output.overall_score == 0.85
+        assert output.semantic_score == 0.88
+        assert output.keyword_coverage["Python"] is True
 
     def test_fit_level_with_enum_values(self) -> None:
         """Should support all valid fit level values."""
@@ -81,7 +86,9 @@ class TestFitAssessmentOutput:
                 matches=[],
                 gaps=[],
                 terminology=[],
-                reasoning="Test",
+                overall_score=0.5,
+                semantic_score=0.5,
+                keyword_coverage={},
             )
             assert output.fit_level == level
 
@@ -96,7 +103,9 @@ class TestFitAssessmentOutput:
             matches=matches,
             gaps=[],
             terminology=[],
-            reasoning="Test",
+            overall_score=0.9,
+            semantic_score=0.92,
+            keyword_coverage={"Python": True, "React": True},
         )
         assert len(output.matches) == 2
 
@@ -111,7 +120,9 @@ class TestFitAssessmentOutput:
             matches=[],
             gaps=gaps,
             terminology=[],
-            reasoning="Test",
+            overall_score=0.65,
+            semantic_score=0.68,
+            keyword_coverage={"AWS": False},
         )
         assert len(output.gaps) == 2
         assert output.gaps[0]["type"] == "hard"
@@ -128,7 +139,9 @@ class TestFitAssessmentOutput:
             matches=[],
             gaps=[],
             terminology=terminology,
-            reasoning="Test",
+            overall_score=0.88,
+            semantic_score=0.90,
+            keyword_coverage={"React": True, "REST": True},
         )
         assert len(output.terminology) == 2
 
@@ -143,7 +156,9 @@ class TestResumeGenerationInput:
             matches=[],
             gaps=[],
             terminology=[],
-            reasoning="Test",
+            overall_score=0.85,
+            semantic_score=0.88,
+            keyword_coverage={},
         )
         input_data = ResumeGenerationInput(
             narratives_text="Background text",
@@ -167,7 +182,9 @@ class TestResumeGenerationInput:
             matches=[],
             gaps=[],
             terminology=[],
-            reasoning="Test",
+            overall_score=0.85,
+            semantic_score=0.88,
+            keyword_coverage={},
         )
         input_data = ResumeGenerationInput(
             narratives_text="Background text",
@@ -184,7 +201,9 @@ class TestResumeGenerationInput:
             matches=[{"requirement": "Python", "priority": "required", "notes": ""}],
             gaps=[{"requirement": "10+ years", "type": "hard", "notes": ""}],
             terminology=[],
-            reasoning="Moderate fit",
+            overall_score=0.65,
+            semantic_score=0.68,
+            keyword_coverage={"Python": True},
         )
         input_data = ResumeGenerationInput(
             narratives_text="Text",
@@ -201,90 +220,68 @@ class TestResumeGenerationOutput:
 
     def test_valid_output_creation(self) -> None:
         """Should accept valid resume generation output."""
-        output = ResumeGenerationOutput(
-            summary="Experienced engineer",
-            experience=[
-                {
-                    "company": "TechCorp",
-                    "title": "Senior Engineer",
-                    "dates": "2020-2024",
-                    "projects": [
-                        {
-                            "name": "Project A",
-                            "dates": "2020-2021",
-                            "bullets": ["Built feature X", "Shipped product Y"],
-                        }
-                    ],
-                }
-            ],
-            skills=["Python", "React", "TypeScript"],
-            contact={"email": "test@example.com", "linkedin": "linkedin.com/in/test"},
-        )
-        assert output.summary == "Experienced engineer"
-        assert len(output.experience) == 1
-        assert len(output.skills) == 3
-        assert output.contact["email"] == "test@example.com"
+        resume_content = """# Resume
 
-    def test_optional_summary_and_contact(self) -> None:
-        """Should accept output with None summary and contact."""
-        output = ResumeGenerationOutput(
-            summary=None,
-            experience=[],
-            skills=["Python"],
-            contact=None,
-        )
-        assert output.summary is None
-        assert output.contact is None
-        assert len(output.skills) == 1
+## Summary
+Experienced engineer with 8+ years in full-stack development
 
-    def test_empty_experience_and_skills(self) -> None:
-        """Should accept output with empty lists."""
+## Experience
+### Senior Engineer at TechCorp (2020-2024)
+- Built and shipped core platform features
+- Led team of 3 engineers
+"""
         output = ResumeGenerationOutput(
-            summary="Test",
-            experience=[],
-            skills=[],
-            contact=None,
+            content=resume_content,
+            contact_info={"email": "test@example.com", "linkedin": "linkedin.com/in/test"},
         )
-        assert len(output.experience) == 0
-        assert len(output.skills) == 0
+        assert "Resume" in output.content
+        assert "Senior Engineer" in output.content
+        assert output.contact_info["email"] == "test@example.com"
+
+    def test_valid_output_with_no_contact_info(self) -> None:
+        """Should accept output with None contact_info."""
+        resume_content = "# Resume\n## Experience\nSome work history"
+        output = ResumeGenerationOutput(
+            content=resume_content,
+            contact_info=None,
+        )
+        assert output.content == resume_content
+        assert output.contact_info is None
+
+    def test_markdown_content_format(self) -> None:
+        """Should support markdown-formatted resume content."""
+        markdown_resume = """# John Doe
+
+## Skills
+- Python, JavaScript, React
+
+## Experience
+### Software Engineer
+2020-2024 at TechCorp
+"""
+        output = ResumeGenerationOutput(
+            content=markdown_resume,
+            contact_info=None,
+        )
+        assert output.content == markdown_resume
+        assert "# John Doe" in output.content
 
 
 class TestRefinementInput:
     """Validate RefinementInput contract."""
 
-    def test_valid_input_with_dict_resume_content(self) -> None:
-        """Should accept structured resume data as dict."""
-        fit_output = FitAssessmentOutput(
-            fit_level="strong",
-            matches=[],
-            gaps=[],
-            terminology=[],
-            reasoning="Test",
-        )
-        resume_content = {
-            "summary": "Experienced",
-            "experience": [],
-            "skills": ["Python"],
-        }
-        input_data = RefinementInput(
-            resume_content=resume_content,
-            fit_assessment_output=fit_output,
-            jd_content="Job description",
-            user_id="user-123",
-        )
-        assert isinstance(input_data.resume_content, dict)
-        assert input_data.resume_content["summary"] == "Experienced"
-
-    def test_valid_input_with_string_resume_content(self) -> None:
+    def test_valid_input_with_markdown_resume_content(self) -> None:
         """Should accept markdown resume content as string."""
         fit_output = FitAssessmentOutput(
             fit_level="strong",
             matches=[],
             gaps=[],
             terminology=[],
-            reasoning="Test",
+            overall_score=0.85,
+            semantic_score=0.88,
+            keyword_coverage={},
         )
-        resume_markdown = "# Resume\n## Experience\n..."
+        resume_markdown = "# Resume\n## Experience\nSome content"
         input_data = RefinementInput(
             resume_content=resume_markdown,
             fit_assessment_output=fit_output,
@@ -301,10 +298,12 @@ class TestRefinementInput:
             matches=[],
             gaps=[{"requirement": "10+ years", "type": "hard", "notes": ""}],
             terminology=[],
-            reasoning="Borderline fit",
+            overall_score=0.55,
+            semantic_score=0.58,
+            keyword_coverage={"experience": False},
         )
         input_data = RefinementInput(
-            resume_content="Resume text",
+            resume_content="# Resume\n## Skills\nPython, JavaScript",
             fit_assessment_output=fit_output,
             jd_content="JD text",
             user_id="user-123",
@@ -316,43 +315,40 @@ class TestRefinementInput:
 class TestRefinementOutput:
     """Validate RefinementOutput contract."""
 
-    def test_valid_output_with_all_fields(self) -> None:
-        """Should accept output with all optional fields."""
+    def test_valid_output_with_changes(self) -> None:
+        """Should accept output with changes_made as list of strings."""
         output = RefinementOutput(
-            refined_content="# Refined Resume\n...",
+            refined_content="# Refined Resume\n## Experience\nUpdated content",
             changes_made=[
-                {"section": "Experience", "change_description": "Added missing detail"},
-                {"section": "Skills", "change_description": "Reordered by relevance"},
-            ],
-            remaining_gaps=[
-                {"requirement": "10+ years", "why_unfixable": "Candidate lacks experience"}
+                "Added missing detail to Experience section",
+                "Reordered skills by relevance to job requirements",
+                "Adjusted phrasing to match job description terminology",
             ],
         )
-        assert output.refined_content == "# Refined Resume\n..."
-        assert len(output.changes_made) == 2
-        assert output.changes_made[0]["section"] == "Experience"
-        assert len(output.remaining_gaps) == 1
+        assert output.refined_content == "# Refined Resume\n## Experience\nUpdated content"
+        assert len(output.changes_made) == 3
+        assert "Added missing detail" in output.changes_made[0]
 
-    def test_output_with_none_optional_fields(self) -> None:
-        """Should accept output with None for optional fields."""
-        output = RefinementOutput(
-            refined_content="Refined content",
-            changes_made=None,
-            remaining_gaps=None,
-        )
-        assert output.refined_content == "Refined content"
-        assert output.changes_made is None
-        assert output.remaining_gaps is None
-
-    def test_output_with_empty_optional_lists(self) -> None:
-        """Should accept output with empty lists for optional fields."""
+    def test_output_with_empty_changes_list(self) -> None:
+        """Should accept output with empty changes_made list."""
         output = RefinementOutput(
             refined_content="Refined content",
             changes_made=[],
-            remaining_gaps=[],
         )
+        assert output.refined_content == "Refined content"
         assert len(output.changes_made) == 0
-        assert len(output.remaining_gaps) == 0
+        assert isinstance(output.changes_made, list)
+
+    def test_output_structure(self) -> None:
+        """Should have exactly the required fields."""
+        output = RefinementOutput(
+            refined_content="# Refined Resume",
+            changes_made=["Change 1", "Change 2"],
+        )
+        assert hasattr(output, "refined_content")
+        assert hasattr(output, "changes_made")
+        assert output.refined_content == "# Refined Resume"
+        assert isinstance(output.changes_made, list)
 
 
 class TestCrossStageDataFlow:
@@ -366,7 +362,9 @@ class TestCrossStageDataFlow:
             matches=[{"requirement": "Python", "priority": "required", "notes": ""}],
             gaps=[],
             terminology=[{"my_term": "REST", "jd_term": "REST API", "confidence": "0.9"}],
-            reasoning="Strong match",
+            overall_score=0.85,
+            semantic_score=0.88,
+            keyword_coverage={"Python": True, "REST": True},
         )
         # Use as input to generation
         gen_input = ResumeGenerationInput(
@@ -385,7 +383,9 @@ class TestCrossStageDataFlow:
             matches=[],
             gaps=[{"requirement": "10+ years", "type": "hard", "notes": ""}],
             terminology=[],
-            reasoning="Moderate fit",
+            overall_score=0.65,
+            semantic_score=0.68,
+            keyword_coverage={"experience": False},
         )
         refinement_input = RefinementInput(
             resume_content="Resume text",
