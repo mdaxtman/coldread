@@ -540,7 +540,7 @@ def test_generator_with_contact_info_none() -> None:
     from pipeline.generator import run_generator
 
     narratives_text = "Test background"
-    fit_report = {}
+    fit_report: dict = {}
     contact_info = None  # No contact info provided
 
     # Create mock response object with proper structure
@@ -591,8 +591,8 @@ def test_generator_with_empty_contact_dict() -> None:
     from pipeline.generator import run_generator
 
     narratives_text = "Test background"
-    fit_report = {}
-    contact_info = {}  # Empty dict
+    fit_report: dict = {}
+    contact_info: dict = {}  # Empty dict
 
     # Create mock response object with proper structure
     mock_tool_block = MagicMock()
@@ -643,7 +643,7 @@ def test_generator_with_partial_contact_info() -> None:
     from pipeline.generator import run_generator
 
     narratives_text = "Test background"
-    fit_report = {}
+    fit_report: dict = {}
     contact_info = {"email": "test@example.com"}  # Only email, no phone/location/etc
 
     # Create mock response object with proper structure
