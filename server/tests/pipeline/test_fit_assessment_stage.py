@@ -6,6 +6,8 @@ calls Anthropic Claude with proper schema, and returns FitAssessmentOutput.
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from pipeline.fit_assessment_stage import run_fit_assessment_stage
 from pipeline.stage_input import FitAssessmentInput, FitAssessmentOutput
 
@@ -227,3 +229,21 @@ class TestFitAssessmentStage:
             assert output.keyword_coverage["java"] is True
             assert "aws" in output.keyword_coverage
             assert output.keyword_coverage["aws"] is False  # In gaps, so False
+
+    def test_handles_missing_tool_output(self) -> None:
+        """Verify stage raises error when API response has no tool_use block."""
+        input_data = FitAssessmentInput(
+            jd_content="React engineer",
+            narratives_text="Senior frontend engineer",
+            user_id="user-123",
+        )
+
+        with patch("pipeline.fit_assessment_stage._get_anthropic_client") as mock_client:
+            # Mock response with no tool_use block
+            mock_response = MagicMock()
+            mock_response.content = []  # Empty, no tool output
+            mock_client.return_value.messages.create.return_value = mock_response
+
+            with patch("pipeline.fit_assessment_stage.load_prompt"):
+                with pytest.raises(RuntimeError, match="No tool_use block in response"):
+                    run_fit_assessment_stage(input_data)

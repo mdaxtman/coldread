@@ -5,17 +5,18 @@ FitAssessmentInput and returns FitAssessmentOutput with structured
 fit analysis from the ATS screener perspective.
 """
 
-from typing import Any, cast
+from typing import Any
 
 from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
 from pipeline.prompt_loader import load_prompt
 from pipeline.stage_input import FitAssessmentInput, FitAssessmentOutput
 
 _TOOL_NAME = "submit_fit_report"
+_TERMINOLOGY_CONFIDENCE_THRESHOLD = 0.8  # Filter terminology to high-confidence matches
 
 _FIT_REPORT_SCHEMA: dict[str, object] = {
     "type": "object",
-    "required": ["fit_level", "matches", "gaps", "terminology", "reasoning"],
+    "required": ["fit_level", "matches", "gaps", "terminology"],
     "properties": {
         "fit_level": {
             "type": "string",
@@ -63,7 +64,6 @@ _FIT_REPORT_SCHEMA: dict[str, object] = {
                 },
             },
         },
-        "reasoning": {"type": "string"},
         "semantic_score": {"type": "number", "minimum": 0, "maximum": 1},
         "overall_score": {"type": "number", "minimum": 0, "maximum": 1},
     },
@@ -149,26 +149,27 @@ def run_fit_assessment_stage(input_data: FitAssessmentInput) -> FitAssessmentOut
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
-        tools=cast(
-            Any,
-            [
-                {
-                    "name": _TOOL_NAME,
-                    "description": "Submit the structured fit assessment result",
-                    "input_schema": _FIT_REPORT_SCHEMA,
-                }
-            ],
-        ),
+        tools=[
+            {
+                "name": _TOOL_NAME,
+                "description": "Submit the structured fit assessment result",
+                "input_schema": _FIT_REPORT_SCHEMA,
+            }
+        ],
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
     # Extract tool response
     result = _extract_tool_response(response)
 
-    # Filter terminology: only keep high-confidence mappings (>= 0.8)
+    # Filter terminology: only keep high-confidence mappings
     terminology = result.get("terminology", [])
     if terminology:
-        result["terminology"] = [term for term in terminology if term.get("confidence", 0) >= 0.8]
+        result["terminology"] = [
+            term
+            for term in terminology
+            if term.get("confidence", 0) >= _TERMINOLOGY_CONFIDENCE_THRESHOLD
+        ]
 
     # Extract scores (API should return these)
     overall_score = result.get("overall_score", 0.5)
