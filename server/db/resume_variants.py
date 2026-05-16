@@ -41,6 +41,7 @@ def create_resume_variant(
     version: int,
     screener_report: dict[str, Any],
     parent_variant_id: str | None = None,
+    contact_info: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     row: dict[str, Any] = {
         "user_id": user_id,
@@ -51,6 +52,8 @@ def create_resume_variant(
     }
     if parent_variant_id is not None:
         row["parent_variant_id"] = parent_variant_id
+    if contact_info:
+        row["contact_info"] = contact_info
     response = get_client().table("resume_variants").insert(row).execute()
     result = cast(dict[str, Any], response.data[0])
     if "screener_report" in result:

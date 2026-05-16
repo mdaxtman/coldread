@@ -83,6 +83,18 @@ class ScreenerReportModel(CamelModel):
     refinement_changes: RefinementChangesModel
 
 
+class ResumeContact(CamelModel):
+    """Contact information in resume."""
+
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    location: str | None = None
+    linkedin: str | None = None
+    github: str | None = None
+    website: str | None = None
+
+
 class FitReportResponse(CamelModel):
     id: str
     user_id: str
@@ -100,6 +112,7 @@ class ResumeVariantResponse(CamelModel):
     user_id: str
     job_description_id: str
     content: str
+    contact_info: ResumeContact | None = None
     version: int
     parent_variant_id: str | None = None
     screener_report: ScreenerReportModel
