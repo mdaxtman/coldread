@@ -14,6 +14,7 @@ from pipeline.resume_generation_stage import run_resume_generation_stage
 from pipeline.screener import run_screener
 from pipeline.stage_input import (
     FitAssessmentInput,
+    FitAssessmentOutput,
     RefinementInput,
     ResumeGenerationInput,
 )
@@ -23,7 +24,7 @@ from pipeline.stage_input import (
 # ============================================================================
 
 
-def _fit_output_to_dict(fit_output) -> dict[str, Any]:
+def _fit_output_to_dict(fit_output: FitAssessmentOutput) -> dict[str, Any]:
     """Convert FitAssessmentOutput to dict for database storage.
 
     Args:
