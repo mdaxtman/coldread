@@ -117,3 +117,18 @@ class ResumeVariantResponse(CamelModel):
     parent_variant_id: str | None = None
     screener_report: ScreenerReportModel
     created_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Job Queue Models
+# ---------------------------------------------------------------------------
+
+
+class JobResponse(CamelModel):
+    """Response for async job endpoints."""
+
+    job_id: str
+    job_type: str
+    status: str
+    created_at: datetime
+    metadata: dict[str, str | int | float | bool | None] | None = None
