@@ -1,4 +1,4 @@
-"""Resume generation — orchestrates three-step pipeline (generator → screener → refinement).
+"""Resume generation — orchestrates three-step pipeline (fit assessment → generation → refinement).
 
 Coordinates independent pipeline stages and manages database persistence.
 """
@@ -6,9 +6,126 @@ Coordinates independent pipeline stages and manages database persistence.
 from typing import Any
 
 from db import job_descriptions, narratives, resume_variants
+from pipeline.fit_assessment_stage import run_fit_assessment_stage
 from pipeline.generator import _format_narratives, run_generator
 from pipeline.refinement import _format_resume_for_screener, run_refinement
+from pipeline.refinement_stage import run_refinement_stage
+from pipeline.resume_generation_stage import run_resume_generation_stage
 from pipeline.screener import run_screener
+from pipeline.stage_input import (
+    FitAssessmentInput,
+    RefinementInput,
+    ResumeGenerationInput,
+)
+
+# ============================================================================
+# New Orchestration Layer: Calling Independent Pipeline Stages
+# ============================================================================
+
+
+def _fit_output_to_dict(fit_output) -> dict[str, Any]:
+    """Convert FitAssessmentOutput to dict for database storage.
+
+    Args:
+        fit_output: FitAssessmentOutput dataclass instance
+
+    Returns:
+        Dictionary representation suitable for database storage
+    """
+    return {
+        "fit_level": fit_output.fit_level,
+        "matches": fit_output.matches,
+        "gaps": fit_output.gaps,
+        "terminology": fit_output.terminology,
+        "overall_score": fit_output.overall_score,
+        "semantic_score": fit_output.semantic_score,
+        "keyword_coverage": fit_output.keyword_coverage,
+    }
+
+
+def run_full_pipeline(
+    jd_content: str,
+    narratives_text: str,
+    contact_info: dict[str, str] | None,
+    user_id: str,
+    refine: bool = True,
+) -> dict[str, Any]:
+    """Orchestrate the full resume generation pipeline.
+
+    Coordinates three independent pipeline stages in sequence:
+    Stage 1: Fit Assessment (ATS perspective) — evaluate candidate against JD
+    Stage 2: Resume Generation (writer perspective) — create tailored resume
+    Stage 3: Refinement (editor perspective, optional) — improve and align
+
+    Args:
+        jd_content: Raw job description text
+        narratives_text: Formatted candidate background narratives
+        contact_info: Optional contact information (email, phone, location, etc.)
+        user_id: Current user ID (scoped for multi-user readiness)
+        refine: Whether to run the refinement stage (default True)
+
+    Returns:
+        Dictionary with keys:
+        - fit_report: Full fit assessment output as dict
+        - resume_content: Final resume markdown string
+        - contact_info: Contact info dict or None
+
+    Raises:
+        RuntimeError: If any stage fails
+        ValueError: If prompts not found
+    """
+    # Stage 1: Fit Assessment (ATS screener perspective)
+    try:
+        fit_input = FitAssessmentInput(
+            jd_content=jd_content,
+            narratives_text=narratives_text,
+            user_id=user_id,
+        )
+        fit_output = run_fit_assessment_stage(fit_input)
+    except Exception as e:
+        raise RuntimeError(f"fit_assessment_failed: {str(e)}")
+
+    # Stage 2: Resume Generation (writer perspective)
+    try:
+        gen_input = ResumeGenerationInput(
+            narratives_text=narratives_text,
+            fit_assessment_output=fit_output,
+            contact_info=contact_info,
+            user_id=user_id,
+        )
+        gen_output = run_resume_generation_stage(gen_input)
+    except Exception as e:
+        raise RuntimeError(f"resume_generation_failed: {str(e)}")
+
+    # Stage 3: Refinement (editor perspective, optional)
+    if refine:
+        try:
+            refine_input = RefinementInput(
+                resume_content=gen_output.content,
+                fit_assessment_output=fit_output,
+                jd_content=jd_content,
+                user_id=user_id,
+            )
+            refine_output = run_refinement_stage(refine_input)
+            final_content = refine_output.refined_content
+        except Exception as e:
+            raise RuntimeError(f"refinement_failed: {str(e)}")
+    else:
+        final_content = gen_output.content
+
+    # Convert fit_output to dict for storage
+    fit_report = _fit_output_to_dict(fit_output)
+
+    return {
+        "fit_report": fit_report,
+        "resume_content": final_content,
+        "contact_info": gen_output.contact_info,
+    }
+
+
+# ============================================================================
+# Legacy Orchestration Functions (for backward compatibility)
+# ============================================================================
 
 
 def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -> dict[str, Any]:

@@ -6,6 +6,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from features import resume_generation
+from pipeline.stage_input import (
+    FitAssessmentOutput,
+    RefinementOutput,
+    ResumeGenerationOutput,
+)
 
 
 @pytest.fixture
@@ -683,3 +688,257 @@ def test_generator_with_partial_contact_info() -> None:
             assert "contact" in result
             assert result["contact"]["email"] == "test@example.com"
             # Other fields might be null or missing
+
+
+# ---------------------------------------------------------------------------
+# Test: New Orchestration Layer (run_full_pipeline)
+# ---------------------------------------------------------------------------
+
+
+def test_run_full_pipeline_success() -> None:
+    """Test full pipeline orchestration: fit assessment → generation → refinement."""
+    jd_content = "Senior Engineer required. 5+ years React. TypeScript expertise needed."
+    narratives_text = "10 years frontend engineering. Built React apps with TypeScript."
+    contact_info = {"email": "test@example.com"}
+    user_id = "user-1"
+
+    # Mock the three stage functions
+    with patch("features.resume_generation.run_fit_assessment_stage") as mock_fit:
+        with patch("features.resume_generation.run_resume_generation_stage") as mock_gen:
+            with patch("features.resume_generation.run_refinement_stage") as mock_refine:
+                # Setup mock returns
+                mock_fit_output = FitAssessmentOutput(
+                    fit_level="strong",
+                    matches=[
+                        {
+                            "requirement": "5+ years React",
+                            "priority": "required",
+                            "notes": "11 years experience",
+                        }
+                    ],
+                    gaps=[],
+                    terminology=[
+                        {"my_term": "component-based", "jd_term": "React", "confidence": 0.9}
+                    ],
+                    overall_score=0.85,
+                    semantic_score=0.88,
+                    keyword_coverage={"react": True, "typescript": True},
+                )
+                mock_fit.return_value = mock_fit_output
+
+                mock_gen_output = ResumeGenerationOutput(
+                    content="# Resume\n## Experience\n- Built React apps",
+                    contact_info=contact_info,
+                )
+                mock_gen.return_value = mock_gen_output
+
+                mock_refine_output = RefinementOutput(
+                    refined_content="# Resume\n## Experience\n- Built scalable React applications",
+                    changes_made=["Enhanced project descriptions", "Added metrics"],
+                )
+                mock_refine.return_value = mock_refine_output
+
+                # Run orchestration
+                result = resume_generation.run_full_pipeline(
+                    jd_content, narratives_text, contact_info, user_id, refine=True
+                )
+
+                # Verify result structure
+                assert "fit_report" in result
+                assert "resume_content" in result
+                assert "contact_info" in result
+
+                # Verify fit_report is converted to dict
+                assert result["fit_report"]["fit_level"] == "strong"
+                assert result["fit_report"]["overall_score"] == 0.85
+                assert result["fit_report"]["semantic_score"] == 0.88
+
+                # Verify refined content is used
+                assert "scalable React applications" in result["resume_content"]
+                assert result["contact_info"] == contact_info
+
+                # Verify all three stages were called
+                mock_fit.assert_called_once()
+                mock_gen.assert_called_once()
+                mock_refine.assert_called_once()
+
+
+def test_run_full_pipeline_without_refinement() -> None:
+    """Test full pipeline skipping refinement when refine=False."""
+    jd_content = "Senior Engineer required."
+    narratives_text = "10 years experience."
+    contact_info = None
+    user_id = "user-1"
+
+    with patch("features.resume_generation.run_fit_assessment_stage") as mock_fit:
+        with patch("features.resume_generation.run_resume_generation_stage") as mock_gen:
+            with patch("features.resume_generation.run_refinement_stage") as mock_refine:
+                # Setup mock returns
+                mock_fit_output = FitAssessmentOutput(
+                    fit_level="moderate",
+                    matches=[],
+                    gaps=[],
+                    terminology=[],
+                    overall_score=0.65,
+                    semantic_score=0.70,
+                    keyword_coverage={},
+                )
+                mock_fit.return_value = mock_fit_output
+
+                mock_gen_output = ResumeGenerationOutput(
+                    content="# Resume\n## Skills\n- Leadership",
+                    contact_info=None,
+                )
+                mock_gen.return_value = mock_gen_output
+
+                # Run orchestration without refinement
+                result = resume_generation.run_full_pipeline(
+                    jd_content, narratives_text, contact_info, user_id, refine=False
+                )
+
+                # Verify result uses generated content (not refined)
+                assert result["resume_content"] == "# Resume\n## Skills\n- Leadership"
+
+                # Verify refinement stage was NOT called
+                mock_fit.assert_called_once()
+                mock_gen.assert_called_once()
+                mock_refine.assert_not_called()
+
+
+def test_run_full_pipeline_fit_assessment_fails() -> None:
+    """Test pipeline failure when fit assessment stage fails."""
+    jd_content = "Senior Engineer required."
+    narratives_text = "10 years experience."
+    user_id = "user-1"
+
+    with patch(
+        "features.resume_generation.run_fit_assessment_stage",
+        side_effect=RuntimeError("Claude API error"),
+    ):
+        with pytest.raises(RuntimeError, match="fit_assessment_failed"):
+            resume_generation.run_full_pipeline(
+                jd_content, narratives_text, None, user_id, refine=True
+            )
+
+
+def test_run_full_pipeline_generation_fails() -> None:
+    """Test pipeline failure when resume generation stage fails."""
+    jd_content = "Senior Engineer required."
+    narratives_text = "10 years experience."
+    user_id = "user-1"
+
+    with patch("features.resume_generation.run_fit_assessment_stage") as mock_fit:
+        with patch(
+            "features.resume_generation.run_resume_generation_stage",
+            side_effect=RuntimeError("Generation error"),
+        ):
+            mock_fit_output = FitAssessmentOutput(
+                fit_level="strong",
+                matches=[],
+                gaps=[],
+                terminology=[],
+                overall_score=0.85,
+                semantic_score=0.88,
+                keyword_coverage={},
+            )
+            mock_fit.return_value = mock_fit_output
+
+            with pytest.raises(RuntimeError, match="resume_generation_failed"):
+                resume_generation.run_full_pipeline(
+                    jd_content, narratives_text, None, user_id, refine=True
+                )
+
+
+def test_run_full_pipeline_refinement_fails() -> None:
+    """Test pipeline failure when refinement stage fails."""
+    jd_content = "Senior Engineer required."
+    narratives_text = "10 years experience."
+    user_id = "user-1"
+
+    with patch("features.resume_generation.run_fit_assessment_stage") as mock_fit:
+        with patch("features.resume_generation.run_resume_generation_stage") as mock_gen:
+            with patch(
+                "features.resume_generation.run_refinement_stage",
+                side_effect=RuntimeError("Refinement error"),
+            ):
+                mock_fit_output = FitAssessmentOutput(
+                    fit_level="strong",
+                    matches=[],
+                    gaps=[],
+                    terminology=[],
+                    overall_score=0.85,
+                    semantic_score=0.88,
+                    keyword_coverage={},
+                )
+                mock_fit.return_value = mock_fit_output
+
+                mock_gen_output = ResumeGenerationOutput(
+                    content="# Resume",
+                    contact_info=None,
+                )
+                mock_gen.return_value = mock_gen_output
+
+                with pytest.raises(RuntimeError, match="refinement_failed"):
+                    resume_generation.run_full_pipeline(
+                        jd_content, narratives_text, None, user_id, refine=True
+                    )
+
+
+def test_run_full_pipeline_preserves_contact_info() -> None:
+    """Test that contact_info is passed through all stages and returned."""
+    jd_content = "Senior Engineer required."
+    narratives_text = "10 years experience."
+    contact_info = {"email": "dev@example.com", "linkedin": "https://linkedin.com/in/dev"}
+    user_id = "user-1"
+
+    with patch("features.resume_generation.run_fit_assessment_stage") as mock_fit:
+        with patch("features.resume_generation.run_resume_generation_stage") as mock_gen:
+            mock_fit_output = FitAssessmentOutput(
+                fit_level="strong",
+                matches=[],
+                gaps=[],
+                terminology=[],
+                overall_score=0.85,
+                semantic_score=0.88,
+                keyword_coverage={},
+            )
+            mock_fit.return_value = mock_fit_output
+
+            mock_gen_output = ResumeGenerationOutput(
+                content="# Resume",
+                contact_info=contact_info,  # Contact passed through
+            )
+            mock_gen.return_value = mock_gen_output
+
+            result = resume_generation.run_full_pipeline(
+                jd_content, narratives_text, contact_info, user_id, refine=False
+            )
+
+            # Verify contact_info is returned
+            assert result["contact_info"] == contact_info
+            assert result["contact_info"]["email"] == "dev@example.com"
+
+
+def test_fit_output_to_dict() -> None:
+    """Test conversion of FitAssessmentOutput to dict for storage."""
+    fit_output = FitAssessmentOutput(
+        fit_level="strong",
+        matches=[{"requirement": "React", "priority": "required", "notes": "5+ years"}],
+        gaps=[{"requirement": "Rust", "type": "hard", "notes": "Not mentioned"}],
+        terminology=[{"my_term": "component", "jd_term": "React", "confidence": 0.9}],
+        overall_score=0.85,
+        semantic_score=0.88,
+        keyword_coverage={"react": True, "rust": False},
+    )
+
+    result = resume_generation._fit_output_to_dict(fit_output)
+
+    # Verify dict structure
+    assert result["fit_level"] == "strong"
+    assert result["overall_score"] == 0.85
+    assert result["semantic_score"] == 0.88
+    assert len(result["matches"]) == 1
+    assert len(result["gaps"]) == 1
+    assert len(result["terminology"]) == 1
+    assert result["keyword_coverage"]["react"] is True
+    assert result["keyword_coverage"]["rust"] is False
