@@ -95,7 +95,12 @@ def _format_fit_context(fit_assessment: dict[str, Any]) -> str:
     hard_gaps = [g for g in gaps if g.get("type") == "hard"]
 
     if soft_gaps:
-        lines.append("\nGAPS - SOFT (position adjacent strengths if relevant):")
+        lines.append(
+            "\nGAPS - SOFT (only address if the candidate's narratives explicitly describe this"
+            " domain, OR if their stated experience definitionally entails it — e.g. a library"
+            " that wraps the gap technology, or the same paradigm under a different API."
+            " Inference and domain-extrapolation are not sufficient. Omit if in doubt):"
+        )
         for gap in soft_gaps:
             req = gap.get("requirement", "")
             lines.append(f"  - {req}")
