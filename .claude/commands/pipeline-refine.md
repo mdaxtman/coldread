@@ -7,7 +7,7 @@ Check these in order. Stop at the first failure.
 1. Read `poc/input/narratives.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 2. Read `poc/prompts/refinement.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 3. Read `poc/jobs/$ARGUMENTS/jd.md`. If it does not exist: print "Create `poc/jobs/$ARGUMENTS/jd.md` first." and stop.
-4. Find the latest run directory under `poc/jobs/$ARGUMENTS/runs/` (alphabetically last). If none exists: print "No run directory found. Run `/pipeline-run $ARGUMENTS` first." and stop.
+4. Use Bash to list `poc/jobs/$ARGUMENTS/runs/` sorted alphabetically descending; take the first result as the latest run directory. If the directory does not exist or is empty: print "No run directory found. Run `/pipeline-run $ARGUMENTS` first to create one." and stop.
 5. Read `poc/jobs/$ARGUMENTS/runs/<latest>/resume_draft.md`. If it does not exist: print "Run `/pipeline-generate $ARGUMENTS` first." and stop.
 6. Read `poc/jobs/$ARGUMENTS/runs/<latest>/screener_report.json`. If it does not exist: print "Run `/pipeline-screen $ARGUMENTS` first." and stop.
 
@@ -34,3 +34,5 @@ Write the refined resume to `poc/jobs/$ARGUMENTS/runs/<latest>/refined_resume.md
 Use the same markdown structure as the draft (Summary → Experience → Skills).
 
 Print one line: `[refine] done — <number of changes> changes, <remaining_gaps count> remaining gaps`
+
+Where: `<remaining_gaps count>` = number of `coverage_gaps` entries from `screener_report.json` that were not addressed in this refinement pass.
