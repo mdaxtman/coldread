@@ -7,7 +7,7 @@ Check these in order. Stop at the first failure.
 1. Read `poc/input/narratives.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 2. Read `poc/prompts/generator.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 3. Read `poc/jobs/$ARGUMENTS/jd.md`. If it does not exist: print "Create `poc/jobs/$ARGUMENTS/jd.md` first." and stop.
-4. Find the latest run directory under `poc/jobs/$ARGUMENTS/runs/` (alphabetically last). If none exists: print "No run directory found. Run `/pipeline-run $ARGUMENTS` first." and stop.
+4. Find the latest run directory under `poc/jobs/$ARGUMENTS/runs/` (alphabetically last). If none exists: print "No run directory found. Run `/pipeline-run $ARGUMENTS` first to create one." and stop.
 5. Read `poc/jobs/$ARGUMENTS/runs/<latest>/fit_assessment.json`. If it does not exist: print "Run `/pipeline-fit $ARGUMENTS` first." and stop.
 
 ## Generation
