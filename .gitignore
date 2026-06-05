@@ -1,6 +1,8 @@
 ARCHITECTURE.md
 CLAUDE.md
 .claude/
+!.claude/commands/
+!.claude/commands/*.md
 docs/
 
 # Frontend

@@ -4,6 +4,8 @@ Set up the POC working directory for the resume pipeline POC.
 
 ### 1. Extract narratives
 
+If `server/seeds/seed_narratives.py` does not exist, stop and print: "`server/seeds/seed_narratives.py` not found — is this the right repo root?" If any `server/prompts/*.md` file listed in Step 2 is missing, stop and print which file is missing and suggest running `git status` to check.
+
 Read `server/seeds/seed_narratives.py`.
 
 Extract the string content of these constants (text between the triple-quote delimiters, stripped of leading/trailing whitespace):
