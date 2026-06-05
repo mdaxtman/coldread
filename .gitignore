@@ -17,6 +17,9 @@ server/.ruff_cache/
 server/.env
 server/seeds/
 
+# POC working directory (contains private narratives and resume content)
+poc/
+
 # Python
 *.pyc
 *.pyo
