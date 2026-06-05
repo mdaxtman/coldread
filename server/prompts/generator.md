@@ -34,8 +34,8 @@ The resume should read like it was written by the candidate themselves—profess
 Your output should be a structured JSON with:
 - `summary` (optional): A 2-3 sentence professional summary emphasizing matched strengths
 - `experience`: Chronological list of roles (ordered by recency)
-  - Each role includes: company, title, dates, and a list of projects
-  - Each project includes: name (no dates), and impact-focused bullet points
+  - Each role includes: `company`, `title`, `dates`, and a list of `projects`
+  - Each project includes: `name` (no dates), and impact-focused `bullets`
   - Bullets emphasize: matched requirements, technical decisions, measurable outcomes, and relevant context
 - `skills`: A list of 5-10 key skills, prioritizing matched requirements over exhaustive lists
 - `education` (if relevant): Degree(s) and year(s)

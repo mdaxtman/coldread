@@ -22,9 +22,9 @@ Flag ONLY genuine equivalent terms used in different contexts. For each candidat
 - **Medium confidence (0.5–0.7)**: Related domains or adjacent capabilities. Java Spring ↔ Node Express (both web frameworks, different ecosystems)
 - **Low confidence (0–0.4)**: Superficial similarity only. React Flow (workflow canvas) ↔ Mapbox GL (geospatial rendering) — different domains entirely
 
-**Only include terminology mappings with confidence ≥ 0.8.** Leave low-confidence similarities unmapped.
+Include only mappings with confidence ≥ 0.8. Leave low-confidence similarities unmapped.
 
-For each mapping, record: { my_term, jd_term, confidence }
+For each mapping, record: { `my_term`, `jd_term`, `confidence` }
 
 ## COVERAGE GAPS
 
@@ -40,5 +40,5 @@ Provide:
 - `keyword_coverage` (object): { "skill_name": true/false, ... }
 - `semantic_score` (0–1): Depth match
 - `overall_score` (0–1): Holistic fit
-- `terminology_mismatches` (array): [{ my_term, jd_term, confidence }, ...] — include only mappings with confidence ≥ 0.8
-- `coverage_gaps` (array): [{ requirement, gap_type, impact }, ...]
+- `terminology_mismatches` (array): [{ `my_term`, `jd_term`, `confidence` }, ...] — include only mappings with confidence ≥ 0.8
+- `coverage_gaps` (array): [{ `requirement`, `gap_type`, `impact` }, ...]

@@ -46,9 +46,9 @@ For each unmet requirement:
 
 Provide:
 - `fit_level` (string): "strong" | "moderate" | "borderline" | "poor"
-- `matches` (array): Requirements clearly met — requirement, priority ("required"|"preferred"|"implied"), notes
-- `gaps` (array): Requirements not met — requirement, type ("hard"|"soft"), notes
-- `terminology` (array): Genuine equivalences — my_term, jd_term, confidence
+- `matches` (array): Requirements clearly met — `requirement`, `priority` ("required"|"preferred"|"implied"), `notes`
+- `gaps` (array): Requirements not met — `requirement`, `type` ("hard"|"soft"), `notes`
+- `terminology` (array): Genuine equivalences — `[{ my_term, jd_term, confidence }, ...]` — include only mappings with confidence ≥ 0.8
 - `overall_score` (0–1)
 - `semantic_score` (0–1)
 - `reasoning` (string): Summary explaining the score, including which differentiating requirements are met or absent

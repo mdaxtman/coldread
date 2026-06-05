@@ -19,6 +19,6 @@ For each gap the screener identified:
 
 Provide:
 - `refined_content` (string): The improved resume (formatted as markdown or text, not JSON)
-- `changes_made` (array): [{ section, change_description }, ...]
-- `remaining_gaps` (array): [{ requirement, why_unfixable }, ...] — gaps the candidate genuinely cannot fill
+- `changes_made` (array): [{ `section`, `change_description` }, ...]
+- `remaining_gaps` (array): [{ `requirement`, `why_unfixable` }, ...] — gaps the candidate genuinely cannot fill
 - `coverage_improvement` (0–1): Estimated improvement in ATS score after refinement
