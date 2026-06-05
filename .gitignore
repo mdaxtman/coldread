@@ -4,6 +4,7 @@ CLAUDE.md
 .claude/settings.json
 .claude/settings.local.json
 .claude/todos/
+.claude/commands/explain.md
 docs/
 
 # Frontend
