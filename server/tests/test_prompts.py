@@ -19,8 +19,17 @@ def test_all_prompt_files_nonempty() -> None:
 
 
 def test_seed_prompts_reads_from_files() -> None:
-    """seed_prompts.py must expose a _read_prompt helper that reads from server/prompts/."""
+    """seed_prompts.py must expose a _read_prompt helper that reads from server/prompts/.
+
+    Skipped when server/seeds/ is absent (gitignored — not present on fresh clone or CI).
+    """
     import sys
+
+    seeds_path = Path(__file__).resolve().parent.parent / "seeds" / "seed_prompts.py"
+    if not seeds_path.exists():
+        import pytest
+
+        pytest.skip("server/seeds/ is gitignored — skipping on CI/fresh clone")
 
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from seeds.seed_prompts import _read_prompt  # noqa: PLC0415
