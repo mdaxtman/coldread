@@ -3,11 +3,11 @@
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class JobStatus(str, Enum):
+class JobStatus(StrEnum):
     """Job execution status."""
 
     PENDING = "pending"
@@ -16,7 +16,7 @@ class JobStatus(str, Enum):
     FAILED = "failed"
 
 
-class JobType(str, Enum):
+class JobType(StrEnum):
     """Pipeline job types."""
 
     FIT_ASSESSMENT = "fit_assessment"
