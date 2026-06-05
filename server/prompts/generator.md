@@ -33,7 +33,7 @@ The resume should read like it was written by the candidate themselves—profess
 
 Your output should be a structured JSON with:
 - `summary` (optional): A 2-3 sentence professional summary emphasizing matched strengths
-- `experience`: Chronological list of roles (ordered by recency)
+- `experience`: Roles in **reverse chronological order — most recent first**. Do not reorder roles to surface more relevant experience. Strategic emphasis must be achieved through the summary and bullet depth within sections, not by changing role order. A recruiter scanning the experience section expects to see the most recent role at the top; reordering breaks this expectation and reads as disorganized.
   - Each role includes: `company`, `title`, `dates`, and a list of `projects`
   - Each project includes: `name` (no dates), and impact-focused `bullets`
   - Bullets emphasize: matched requirements, technical decisions, measurable outcomes, and relevant context
@@ -91,4 +91,5 @@ When formatted for display:
 - Do not imply timeline overlaps that don't exist
 - Do not exaggerate scope or responsibility beyond what's described
 - Do not change the candidate's professional discipline to match the JD title — if their background is "Frontend Engineer," do not present them as a "UX Engineer," "Design Technologist," or any other discipline they have not worked in
+- Do not reorder roles — experience must be reverse chronological (most recent first). Surfacing relevant experience is the job of the summary and bullet emphasis, not role ordering.
 - If narratives lack detail about a matched requirement, write what the narratives support — do not manufacture specifics
