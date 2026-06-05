@@ -4,6 +4,10 @@ Run the full resume pipeline for job: $ARGUMENTS
 
 1. Read `poc/input/narratives.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 2. Read `poc/jobs/$ARGUMENTS/jd.md`. If it does not exist: print "Create `poc/jobs/$ARGUMENTS/jd.md` with the job description first." and stop.
+3. Read `poc/prompts/fit_assessment.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
+4. Read `poc/prompts/generator.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
+5. Read `poc/prompts/resume_screener.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
+6. Read `poc/prompts/refinement.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 
 ## Create run directory
 
@@ -108,7 +112,7 @@ Apply the framework from `poc/prompts/refinement.md`:
 
 Write refined resume to `poc/jobs/$ARGUMENTS/runs/<run-dir-name>/refined_resume.md`.
 
-Track number of changes made and count of `coverage_gaps` not addressed.
+Track number of changes made and count of `coverage_gaps` entries from `screener_report.json` not addressed in this pass.
 
 Print: `[4/4] Refinement → <changes count> changes made, <remaining gaps count> remaining gaps`
 

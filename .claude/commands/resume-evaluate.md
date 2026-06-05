@@ -6,7 +6,7 @@ Check these in order. Stop at the first failure.
 
 1. Read `poc/input/narratives.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 2. Read `poc/jobs/$ARGUMENTS/jd.md`. If it does not exist: print "Create `poc/jobs/$ARGUMENTS/jd.md` first." and stop.
-3. Use Bash to list `poc/jobs/$ARGUMENTS/runs/` sorted alphabetically descending; take the first result as the latest run directory. If the directory does not exist or is empty: print "No run directory found. Run `/pipeline-run $ARGUMENTS` first." and stop.
+3. Use Bash to list `poc/jobs/$ARGUMENTS/runs/` sorted alphabetically descending; take the first result as the latest run directory. Save this name — it is `<latest>` everywhere below. If the directory does not exist or is empty: print "No run directory found. Run `/pipeline-run $ARGUMENTS` first." and stop.
 4. Read `poc/jobs/$ARGUMENTS/runs/<latest>/refined_resume.md`. If it does not exist: print "Run `/pipeline-run $ARGUMENTS` or `/pipeline-refine $ARGUMENTS` first." and stop.
 5. Read `poc/jobs/$ARGUMENTS/runs/<latest>/control_resume.md`. If it does not exist: print "Run `/resume-control $ARGUMENTS` first." and stop.
 6. Read `poc/config.json`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
@@ -41,11 +41,15 @@ Every claim must be traceable to `poc/input/narratives.md`.
 **Composite score:**
 `composite = (jd_alignment × weights.jd_alignment) + (recruiter_readability × weights.recruiter_readability) + (authenticity × weights.authenticity)`
 
+The weight keys in `poc/config.json` are `jd_alignment`, `recruiter_readability`, and `authenticity` (as created by `/pipeline-setup`). Weights sum to 1.0, so the composite is on the same 0–10 scale as the individual scores.
+
 ## Output
 
 Determine `run` from the latest run directory name (the directory basename, e.g. `2026-06-04`).
 
-`delta` = pipeline.composite − control.composite
+`delta` = pipeline.composite − control.composite (signed; positive means pipeline won)
+
+`abs_delta` = absolute value of `delta` (used in the print line below)
 
 `winner`:
 - `"pipeline"` if delta > 0.1
@@ -90,5 +94,5 @@ Print:
 Evaluation complete.
   Pipeline:  <composite> (alignment=<jd_alignment>, readability=<recruiter_readability>, authenticity=<authenticity>)
   Control:   <composite> (alignment=<jd_alignment>, readability=<recruiter_readability>, authenticity=<authenticity>)
-  Winner: <winner> (+<|delta|> points)
+  Winner: <winner> (<abs_delta> points)
 ```
