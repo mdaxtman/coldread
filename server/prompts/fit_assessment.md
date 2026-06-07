@@ -42,6 +42,17 @@ For each unmet requirement:
 - **Hard gap**: Unmet must-have or application requirement. Candidate lacks this entirely.
 - **Soft gap**: Preferred qualification. Candidate might have directly related experience — but only flag as soft if the relationship is definitional (same paradigm, wrapping library) not inferential.
 
+## CULTURAL SIGNALS
+
+After identifying matches and gaps, identify 2–3 behavioral qualities this company explicitly values beyond technical requirements. These are the qualities that separate candidates who clear the bar from candidates who get hired — often surfaced in "you might be a good fit if" or "how we're different" sections of the JD, or implied by the company's product mission and team description.
+
+For each signal:
+- `quality`: The behavioral quality (e.g., "product-oriented mindset," "influence without authority," "0-to-1 ownership")
+- `jd_signal`: The specific JD language that signals this quality
+- `evidence_hint`: A brief direction for where to look in the narratives — not a fabricated example, but a pointer to the type of experience that would demonstrate this quality (e.g., "look for instances of pushing back on decisions, driving product changes from customer feedback, or exercising judgment without formal authority")
+
+Cultural signals are not gaps. They are lenses for selecting which authentic experiences to foreground in the resume. An experience that demonstrates a cultural signal is worth including even if it doesn't address a listed JD requirement.
+
 ## OUTPUT FORMAT
 
 Provide:
@@ -49,6 +60,8 @@ Provide:
 - `matches` (array): Requirements clearly met — `requirement`, `priority` ("required"|"preferred"|"implied"), `notes`
 - `gaps` (array): Requirements not met — `requirement`, `type` ("hard"|"soft"), `notes`
 - `terminology` (array): Genuine equivalences — `[{ my_term, jd_term, confidence }, ...]` — include only mappings with confidence ≥ 0.8
+- `cultural_signals` (array): Behavioral qualities the company values — `[{ quality, jd_signal, evidence_hint }, ...]` — 2–3 entries
+- `product_connection` (string or null): If the candidate's strongest experience has a genuine architectural or product parallel to what this company specifically builds — not just general domain alignment — document it here in one concise sentence. Name the candidate's project, the specific parallel, and the company's named product or product area. Use only when the connection is direct enough to name without argument; if you would need to argue for the parallel, omit this field entirely. Example: "QuickAutomate (AI-generated DSL → AST → interactive rendering layer with async execution monitoring) parallels Databricks's notebook and query execution surfaces (computation → structured output → rendered UI with job monitoring)."
 - `overall_score` (0–1)
 - `semantic_score` (0–1)
 - `reasoning` (string): Summary explaining the score, including which differentiating requirements are met or absent

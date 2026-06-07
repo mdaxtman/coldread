@@ -22,3 +22,5 @@ Provide:
 - `changes_made` (array): [{ `section`, `change_description` }, ...]
 - `remaining_gaps` (array): [{ `requirement`, `why_unfixable` }, ...] — gaps the candidate genuinely cannot fill
 - `coverage_improvement` (0–1): Estimated improvement in ATS score after refinement
+
+**When writing the output file:** Write only `refined_content` to the `.md` file. `changes_made`, `remaining_gaps`, and `coverage_improvement` are internal pipeline metadata — do not append them to the resume document.
