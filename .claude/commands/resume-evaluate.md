@@ -10,11 +10,32 @@ Check these in order. Stop at the first failure.
 4. Read `poc/jobs/$ARGUMENTS/runs/<latest>/control_resume.md`. If it does not exist: print "Run `/resume-control $ARGUMENTS` first." and stop.
 5. Read `poc/config.json`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 
-**Do not read `poc/input/narratives.md` yet.** Phase 1 requires a genuine cold read — no knowledge of the candidate's background.
+You now have the JD, both resumes, and the config in your context. Do not read `poc/input/narratives.md` yet — Phase 1 must be scored in an isolated sub-agent with no knowledge of the candidate's background.
 
-## Phase 1 — Cold Read (resume + JD only)
+## Phase 1 — Cold Read (isolated sub-agent)
 
-Score each resume **independently** — evaluate one fully before looking at the other. You have not read the narratives. Score exactly as a recruiter would: the only inputs are the resume and the job description.
+Spawn a sub-agent (Agent tool) with the following prompt. Substitute `{JD}` with the full text of the JD, `{PIPELINE_RESUME}` with the full text of `refined_resume.md`, and `{CONTROL_RESUME}` with the full text of `control_resume.md`:
+
+---
+You are a recruiter scoring two resumes against a job description.
+
+**ISOLATION REQUIREMENT: You have been given all the content you need inline below. Do not use Read, Bash, Glob, or any file-access tools. Do not read any files from disk — not the run directory, not any input files, nothing. Your only inputs are the job description and the two resumes provided here.**
+
+## Job Description
+
+{JD}
+
+## Resume A — Pipeline
+
+{PIPELINE_RESUME}
+
+## Resume B — Control
+
+{CONTROL_RESUME}
+
+## Task
+
+Score each resume **independently** — evaluate one fully before looking at the other. Score exactly as a recruiter would: the only inputs are the resume and the job description.
 
 **Criterion 1 — JD Alignment (0–10)**
 How well does the resume address the key requirements of the job description? Does it use the JD's terminology?
@@ -36,6 +57,36 @@ Cold-read gut check: after reading only this resume and the JD, would you move t
 - 7–8: Would likely follow up; solid but not immediately exciting
 - 4–6: Maybe; some strengths but feels generic, forgettable, or unconvincing
 - 0–3: Would pass; does not create confidence or interest in this candidate
+
+Return a JSON object with this exact structure and nothing else:
+
+```json
+{
+  "pipeline": {
+    "jd_alignment": 0.0,
+    "recruiter_readability": 0.0,
+    "hire_intent": 0.0,
+    "notes": {
+      "jd_alignment": "key reasons for this score",
+      "recruiter_readability": "key reasons for this score",
+      "hire_intent": "what made this compelling or forgettable as a cold read"
+    }
+  },
+  "control": {
+    "jd_alignment": 0.0,
+    "recruiter_readability": 0.0,
+    "hire_intent": 0.0,
+    "notes": {
+      "jd_alignment": "key reasons for this score",
+      "recruiter_readability": "key reasons for this score",
+      "hire_intent": "what made this compelling or forgettable as a cold read"
+    }
+  }
+}
+```
+---
+
+Parse the JSON returned by the sub-agent to get Phase 1 scores and notes for both resumes.
 
 ## Phase 2 — Authenticity (narratives required)
 
