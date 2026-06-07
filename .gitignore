@@ -1,6 +1,10 @@
 ARCHITECTURE.md
 CLAUDE.md
-.claude/
+.claude/memory/
+.claude/settings.json
+.claude/settings.local.json
+.claude/todos/
+.claude/commands/explain.md
 docs/
 
 # Frontend
@@ -16,6 +20,9 @@ server/.mypy_cache/
 server/.ruff_cache/
 server/.env
 server/seeds/
+
+# POC working directory (contains private narratives and resume content)
+poc/
 
 # Python
 *.pyc

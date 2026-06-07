@@ -33,7 +33,7 @@ class TestFitAssessmentInput:
     def test_missing_required_field_jd_content(self) -> None:
         """Should reject missing jd_content."""
         with pytest.raises(TypeError):
-            FitAssessmentInput(
+            FitAssessmentInput(  # type: ignore[call-arg]
                 narratives_text="text",
                 user_id="user-123",
             )
@@ -41,7 +41,7 @@ class TestFitAssessmentInput:
     def test_missing_required_field_narratives_text(self) -> None:
         """Should reject missing narratives_text."""
         with pytest.raises(TypeError):
-            FitAssessmentInput(
+            FitAssessmentInput(  # type: ignore[call-arg]
                 jd_content="text",
                 user_id="user-123",
             )
@@ -49,7 +49,7 @@ class TestFitAssessmentInput:
     def test_missing_required_field_user_id(self) -> None:
         """Should reject missing user_id."""
         with pytest.raises(TypeError):
-            FitAssessmentInput(
+            FitAssessmentInput(  # type: ignore[call-arg]
                 jd_content="text",
                 narratives_text="text",
             )
@@ -130,7 +130,7 @@ class TestFitAssessmentOutput:
 
     def test_terminology_mappings(self) -> None:
         """Should support terminology mappings with confidence scores."""
-        terminology = [
+        terminology: list[dict[str, str | float]] = [
             {"my_term": "React", "jd_term": "React.js", "confidence": 0.95},
             {"my_term": "REST API", "jd_term": "RESTful API", "confidence": 0.85},
         ]

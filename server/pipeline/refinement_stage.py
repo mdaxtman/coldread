@@ -93,9 +93,9 @@ def run_refinement_stage(input_data: RefinementInput) -> RefinementOutput:
         user_message += f"<coverage_gaps>\n{gaps_summary}\n</coverage_gaps>\n\n"
 
     user_message += (
-        "Refine the resume to improve alignment with the job description and "
-        "strategically address coverage gaps where possible. "
-        "Preserve the candidate's authentic voice and experience. "
+        "Refine the resume's language and terminology to improve alignment with the job "
+        "description. Do not add experience, capabilities, or claims not already present "
+        "in the resume draft. Preserve the candidate's authentic voice and experience. "
         "Use the submit_refined_resume tool to submit your refined resume and the "
         "list of changes you made."
     )
