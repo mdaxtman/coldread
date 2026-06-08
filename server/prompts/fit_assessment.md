@@ -16,6 +16,21 @@ Examples:
 
 List differentiating requirements in your `gaps` analysis and weight them proportionally higher than table-stakes requirements when computing your overall score. Table stakes (React, TypeScript, performance — things any qualified frontend candidate would have) should not carry a role to a strong fit on their own.
 
+## LEVEL GATE
+
+If the job title carries a seniority designation (Staff, Principal, Senior Staff, Director, or equivalent), treat the following as implicit hard requirements — even when the JD body does not enumerate them explicitly as musts:
+
+- **Operating scope**: The candidate has demonstrably operated at that level's scope. For Staff and above, this means cross-team or org-level technical influence — not deep individual ownership within a single team.
+- **Roadmap ownership**: The candidate has *defined and owned* multi-quarter technical roadmaps — not merely contributed to or worked on long-running projects.
+- **Architectural direction**: The candidate has set the technical direction of a system or platform consumed by others — not just made architectural decisions within their own feature area.
+
+Distinguish carefully when assessing these:
+- "Worked on a project that spanned multiple quarters" ≠ "Owned and defined the multi-quarter roadmap"
+- "Made architectural decisions within a feature" ≠ "Set the architectural direction for a platform or team"
+- "Led a small team on a specific project" ≠ "Set technical strategy across multiple teams"
+
+If the candidate's highest-level role title is below the implied level (e.g., Amazon L5/Senior on a Staff role), and the candidate's narratives lack evidence of staff-scope operating patterns, classify the scope gap as **hard** and apply the `overall_score ≤ 0.5` cap from the scoring rules below.
+
 ## SCORING
 
 `overall_score` (0–1): Holistic fit.
