@@ -10,32 +10,30 @@ Check these in order. Stop at the first failure.
 4. Read `poc/jobs/$ARGUMENTS/runs/<latest>/control_resume.md`. If it does not exist: print "Run `/resume-control $ARGUMENTS` first." and stop.
 5. Read `poc/config.json`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 
-You now have the JD, both resumes, and the config in your context. Do not read `poc/input/narratives.md` yet — Phase 1 must be scored in an isolated sub-agent with no knowledge of the candidate's background.
+You now have the JD, both resumes, and the config in your context. Do not read `poc/input/narratives.md` yet — Phase 1 must be scored by isolated sub-agents with no knowledge of the candidate's background.
 
-## Phase 1 — Cold Read (isolated sub-agent)
+## Phase 1 — Cold Read (two isolated sub-agents, run in parallel)
 
-Spawn a sub-agent (Agent tool) with the following prompt. Substitute `{JD}` with the full text of the JD, `{PIPELINE_RESUME}` with the full text of `refined_resume.md`, and `{CONTROL_RESUME}` with the full text of `control_resume.md`:
+Spawn two sub-agents in parallel using the Agent tool — one scores the pipeline resume, one scores the control resume. Each sub-agent receives only the JD and its single assigned resume; neither sees the other resume. This prevents comparative bias: each resume is scored against the JD on an absolute scale, not relative to the other.
+
+Both sub-agents use the same prompt template below. For each, substitute `{JD}` with the full text of the JD and `{RESUME}` with the full text of its assigned resume (`refined_resume.md` for the pipeline sub-agent, `control_resume.md` for the control sub-agent).
 
 ---
-You are a recruiter scoring two resumes against a job description.
+You are a recruiter scoring a resume against a job description.
 
-**ISOLATION REQUIREMENT: You have been given all the content you need inline below. Do not use Read, Bash, Glob, or any file-access tools. Do not read any files from disk — not the run directory, not any input files, nothing. Your only inputs are the job description and the two resumes provided here.**
+**ISOLATION REQUIREMENT: You have been given all the content you need inline below. Do not use Read, Bash, Glob, or any file-access tools. Do not read any files from disk. Your only inputs are the job description and the single resume provided here.**
 
 ## Job Description
 
 {JD}
 
-## Resume A — Pipeline
+## Resume
 
-{PIPELINE_RESUME}
-
-## Resume B — Control
-
-{CONTROL_RESUME}
+{RESUME}
 
 ## Task
 
-Score each resume **independently** — evaluate one fully before looking at the other. Score exactly as a recruiter would: the only inputs are the resume and the job description.
+Score this resume against the job description. Score exactly as a recruiter would seeing this resume for the first time, with no other resumes for comparison — this is the only resume you are evaluating.
 
 **Criterion 1 — JD Alignment (0–10)**
 How well does the resume address the key requirements of the job description? Does it use the JD's terminology?
@@ -62,37 +60,25 @@ Return a JSON object with this exact structure and nothing else:
 
 ```json
 {
-  "pipeline": {
-    "jd_alignment": 0.0,
-    "recruiter_readability": 0.0,
-    "hire_intent": 0.0,
-    "notes": {
-      "jd_alignment": "key reasons for this score",
-      "recruiter_readability": "key reasons for this score",
-      "hire_intent": "what made this compelling or forgettable as a cold read"
-    }
-  },
-  "control": {
-    "jd_alignment": 0.0,
-    "recruiter_readability": 0.0,
-    "hire_intent": 0.0,
-    "notes": {
-      "jd_alignment": "key reasons for this score",
-      "recruiter_readability": "key reasons for this score",
-      "hire_intent": "what made this compelling or forgettable as a cold read"
-    }
+  "jd_alignment": 0.0,
+  "recruiter_readability": 0.0,
+  "hire_intent": 0.0,
+  "notes": {
+    "jd_alignment": "key reasons for this score",
+    "recruiter_readability": "key reasons for this score",
+    "hire_intent": "what made this compelling or forgettable as a cold read"
   }
 }
 ```
 ---
 
-Parse the JSON returned by the sub-agent to get Phase 1 scores and notes for both resumes.
+Collect the JSON returned by each sub-agent. The pipeline sub-agent result is the pipeline Phase 1 scores; the control sub-agent result is the control Phase 1 scores.
 
 ## Phase 2 — Authenticity (narratives required)
 
 Now read `poc/input/narratives.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 
-Score each resume independently:
+Score each resume independently against the narratives. Authenticity is a grounded fact-check — every claim must trace back to the narratives. Score one resume fully before moving to the other.
 
 **Criterion 4 — Authenticity (0–10)**
 Every claim must be traceable to `poc/input/narratives.md`.
