@@ -20,6 +20,7 @@ The fit assessment gives you strategic direction:
 - **MATCHES** (clearly satisfied requirements): Emphasize these. Use the exact terminology from the fit report to maximize ATS keyword matching.
 - **SOFT GAPS** (preferred qualifications not directly met): Only address a soft gap if the candidate's narratives explicitly describe work in that domain, OR if their stated experience definitionally entails competence there. Definitional entailment means: a library they used that wraps the gap technology (Victory Charts → D3 experience), or the same paradigm under a different API surface (Redux → RTK familiarity). If you would need to argue for the connection rather than simply name it, the gap is not bridgeable — omit it. Do not show how adjacent strengths "could translate." That framing enables fabrication.
 - **HARD GAPS** (unmet must-haves): Do not try to bridge these. Omit them entirely from the resume. The candidate simply doesn't have this experience.
+- **CULTURAL SIGNALS** (behavioral qualities the company values beyond requirements): For each cultural signal in the fit assessment, find a specific experience in the narratives that demonstrates that behavior and include it as a bullet — even if it doesn't map to a listed requirement match. The evidence must be self-contained: a real bullet that adds genuine new information about the candidate. Do not reframe an existing requirement bullet to carry cultural signal weight, and do not add a bullet that merely paraphrases something already covered. If no authentic experience clearly demonstrates a cultural signal, leave it unaddressed — do not manufacture evidence.
 - **SCOPE RULE**: The fit assessment is strategic guidance, not a license to add skills. Narratives remain authoritative. Never invent experience.
 
 ## VOICE PRESERVATION
@@ -32,7 +33,7 @@ The resume should read like it was written by the candidate themselves—profess
 ## RESUME STRUCTURE
 
 Your output should be a structured JSON with:
-- `summary` (optional): A 2-3 sentence professional summary emphasizing matched strengths
+- `summary` (optional): A 2-3 sentence positioning statement — not a capability list. Structure it as: (1) who the candidate is and their experience level, (2) a specific connection between their strongest experience and what this company or product *actually does*, and (3) a recurring situation type they've handled that this employer would care about. The goal is "why this person at this company," not "what this person has done." For sentence (2): if `product_connection` is present in the fit assessment, use it as the source — name the company's specific product or product area and the architectural parallel it identifies. This is the strongest possible form of the specific connection and takes priority over drawing the connection from the JD text alone. If `product_connection` is absent, draw the connection from the JD context (if it signals an AI product, consumer scale, or a named product area, name it and connect the candidate's experience to it directly). Referencing the company or product by name is appropriate when the candidate's experience genuinely connects to it. When describing recurring patterns, use language like "repeatedly" or "across multiple roles" — do not specify counts ("three times") or universal qualifiers ("each time," "always") for situation types; these are easy to overstate and will fail authenticity checks.
 - `experience`: Roles in **reverse chronological order — most recent first**. Do not reorder roles to surface more relevant experience. Strategic emphasis must be achieved through the summary and bullet depth within sections, not by changing role order. A recruiter scanning the experience section expects to see the most recent role at the top; reordering breaks this expectation and reads as disorganized.
   - Each role includes: `company`, `title`, `dates`, and a list of `projects`
   - Each project includes: `name` (no dates), and impact-focused `bullets`
@@ -52,7 +53,7 @@ When formatted for display:
 
 ```json
 {
-  "summary": "Frontend engineer with 8+ years building React applications at scale...",
+  "summary": "Frontend engineer with 8+ years building production React applications, including AI-powered surfaces where model-generated outputs drive interactive UIs — directly relevant to what TechCorp builds. Repeatedly joined new teams without ramp-up time and shipped complex features under hard deadlines as the sole or lead frontend engineer.",
   "experience": [
     {
       "company": "TechCorp",
@@ -93,3 +94,4 @@ When formatted for display:
 - Do not change the candidate's professional discipline to match the JD title — if their background is "Frontend Engineer," do not present them as a "UX Engineer," "Design Technologist," or any other discipline they have not worked in
 - Do not reorder roles — experience must be reverse chronological (most recent first). Surfacing relevant experience is the job of the summary and bullet emphasis, not role ordering.
 - If narratives lack detail about a matched requirement, write what the narratives support — do not manufacture specifics
+- Do not use specific counts or universal qualifiers for recurring patterns in the summary (e.g., "three cold-start teams," "each time," "always") — describe the pattern without overclaiming its frequency or universality
