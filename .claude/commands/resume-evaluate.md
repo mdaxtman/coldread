@@ -87,6 +87,8 @@ Every claim must be traceable to `poc/input/narratives.md`.
 - Deduct 1 point per claim that overstates what the narratives support
 - Minimum score: 0
 
+When assessing overstatement, apply the interview test: would this claim cause a problem if the interviewer asked about it directly? Terminology substitutions where the underlying capability is the same do not overstate — e.g., "Redux" when the resume shows RTK (RTK is Redux), or "SpringBoot" when the experience is Spring MVC (same programming model, same annotations, configuration wrapper differs). A substitution *does* overstate if the candidate would be exposed in an interview — e.g., claiming Zustand experience based on Jotai (different APIs, different mental models despite both being atomic state managers).
+
 ## Scoring
 
 Use the weights from `poc/config.json`. The weight keys are `jd_alignment`, `recruiter_readability`, and `authenticity`. Weights sum to 1.0.
