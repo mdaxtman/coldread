@@ -38,12 +38,12 @@ def test_finish_call_records_costs_and_emits_stage_finished() -> None:
     record = ctx.finish_call(
         seq=seq,
         stage="fit",
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-5",
         tokens_in=1000,
         tokens_out=500,
         stop_reason="tool_use",
         latency_ms=2140,
-        request={"model": "claude-sonnet-4-20250514"},
+        request={"model": "claude-sonnet-5"},
         response=[{"type": "tool_use"}],
     )
     assert record.est_cost_usd == (1000 * 3.0 + 500 * 15.0) / 1_000_000
@@ -57,15 +57,15 @@ def test_finish_call_records_costs_and_emits_stage_finished() -> None:
     assert finished["data"]["tokensOut"] == 500
     assert finished["data"]["latencyMs"] == 2140
     assert finished["data"]["stopReason"] == "tool_use"
-    assert finished["data"]["model"] == "claude-sonnet-4-20250514"
+    assert finished["data"]["model"] == "claude-sonnet-5"
 
 
 def test_totals_sums_records() -> None:
     ctx, _ = _make_ctx()
     s1 = ctx.begin_stage("fit")
-    ctx.finish_call(s1, "fit", "claude-sonnet-4-20250514", 1000, 500, "tool_use", 100, {}, [])
+    ctx.finish_call(s1, "fit", "claude-sonnet-5", 1000, 500, "tool_use", 100, {}, [])
     s2 = ctx.begin_stage("generate")
-    ctx.finish_call(s2, "generate", "claude-sonnet-4-20250514", 2000, 700, "tool_use", 200, {}, [])
+    ctx.finish_call(s2, "generate", "claude-sonnet-5", 2000, 700, "tool_use", 200, {}, [])
     totals = ctx.totals()
     assert totals["tokensIn"] == 3000
     assert totals["tokensOut"] == 1200

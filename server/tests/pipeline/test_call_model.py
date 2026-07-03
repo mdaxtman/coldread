@@ -17,7 +17,7 @@ def _fake_response() -> SimpleNamespace:
     tool_block.model_dump = lambda: {"type": "tool_use", "input": {"fit_level": "strong"}}
     return SimpleNamespace(
         content=[tool_block],
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-5",
         stop_reason="tool_use",
         usage=SimpleNamespace(input_tokens=1200, output_tokens=340),
     )
@@ -32,7 +32,7 @@ def fake_client(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
 
 
 def test_returns_tool_input_without_context(fake_client: MagicMock) -> None:
-    result = call_model("fit", model="claude-sonnet-4-20250514", max_tokens=10, messages=[])
+    result = call_model("fit", model="claude-sonnet-5", max_tokens=10, messages=[])
     assert result == {"fit_level": "strong"}
     fake_client.messages.create.assert_called_once()
 
@@ -44,7 +44,7 @@ def test_records_telemetry_with_active_context(fake_client: MagicMock) -> None:
     try:
         call_model(
             "fit",
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-5",
             max_tokens=4096,
             system="be honest",
             messages=[{"role": "user", "content": "hi"}],
@@ -60,7 +60,7 @@ def test_records_telemetry_with_active_context(fake_client: MagicMock) -> None:
     assert rec.stop_reason == "tool_use"
     assert rec.latency_ms >= 0
     assert rec.request["system"] == "be honest"
-    assert rec.request["model"] == "claude-sonnet-4-20250514"
+    assert rec.request["model"] == "claude-sonnet-5"
     assert rec.response == [{"type": "tool_use", "input": {"fit_level": "strong"}}]
     started = events.get_nowait()
     assert started is not None
@@ -79,3 +79,21 @@ def test_raises_when_no_tool_block(fake_client: MagicMock) -> None:
     )
     with pytest.raises(RuntimeError):
         call_model("fit", model="m", max_tokens=10, messages=[])
+
+
+def test_thinking_defaults_to_disabled(fake_client: MagicMock) -> None:
+    call_model("fit", model="claude-sonnet-5", max_tokens=10, messages=[])
+    call_kwargs = fake_client.messages.create.call_args.kwargs
+    assert call_kwargs["thinking"] == {"type": "disabled"}
+
+
+def test_explicit_thinking_is_not_overwritten(fake_client: MagicMock) -> None:
+    call_model(
+        "fit",
+        model="claude-sonnet-5",
+        max_tokens=10,
+        messages=[],
+        thinking={"type": "adaptive"},
+    )
+    call_kwargs = fake_client.messages.create.call_args.kwargs
+    assert call_kwargs["thinking"] == {"type": "adaptive"}

@@ -2,6 +2,7 @@
 
 from typing import Any, NotRequired, TypedDict, cast
 
+from config import PIPELINE_MODEL
 from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
@@ -122,7 +123,7 @@ def run_refinement(
 
     result = call_model(
         "refine",
-        model="claude-sonnet-4-20250514",
+        model=PIPELINE_MODEL,
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],

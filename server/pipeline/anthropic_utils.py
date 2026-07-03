@@ -52,6 +52,12 @@ def call_model(stage: str, **kwargs: Any) -> dict[str, Any]:
     ctx = current_run_context.get()
     seq = ctx.begin_stage(stage) if ctx is not None else 0
 
+    # claude-sonnet-5 runs adaptive thinking by default when `thinking` is
+    # omitted; this pipeline's forced-tool calls with modest max_tokens must
+    # not spend output budget on thinking, so default it off. A caller can
+    # still pass an explicit `thinking` to override.
+    kwargs.setdefault("thinking", {"type": "disabled"})
+
     start = time.perf_counter()
     response = _get_anthropic_client().messages.create(**kwargs)
     latency_ms = int((time.perf_counter() - start) * 1000)

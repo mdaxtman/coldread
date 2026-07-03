@@ -36,3 +36,8 @@ def get_supabase_anon_key() -> str:
 
 
 DEFAULT_USER_ID: str = os.environ.get("DEFAULT_USER_ID", "00000000-0000-0000-0000-000000000001")
+
+# Pipeline model. claude-sonnet-4-20250514 retired 2026-06-15; claude-sonnet-5
+# is Anthropic's documented drop-in replacement (same $3/$15 per-MTok sticker;
+# intro pricing $2/$10 through 2026-08-31).
+PIPELINE_MODEL: str = "claude-sonnet-5"

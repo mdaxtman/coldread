@@ -31,7 +31,7 @@ def test_add_model_call_serializes_record() -> None:
     record = ModelCallRecord(
         stage="fit",
         seq=1,
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-5",
         tokens_in=10,
         tokens_out=5,
         stop_reason="tool_use",

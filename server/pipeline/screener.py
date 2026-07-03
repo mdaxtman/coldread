@@ -2,6 +2,7 @@
 
 from typing import Any, Literal, NotRequired, TypedDict, cast
 
+from config import PIPELINE_MODEL
 from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
@@ -87,7 +88,7 @@ def run_screener(jd_content: str, resume_text: str, user_id: str) -> ScreenerRep
 
     result = call_model(
         "screen",
-        model="claude-sonnet-4-20250514",
+        model=PIPELINE_MODEL,
         max_tokens=2048,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],

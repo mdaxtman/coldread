@@ -11,7 +11,7 @@ describe('StageCards', () => {
             stage: 'fit',
             seq: 1,
             status: 'done',
-            model: 'claude-sonnet-4-20250514',
+            model: 'claude-sonnet-5',
             tokensOut: 1102,
             latencyMs: 2140,
           },

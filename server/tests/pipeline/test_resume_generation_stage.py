@@ -163,7 +163,7 @@ class TestResumeGenerationStage:
             # Verify API was called with correct parameters
             mock_client.messages.create.assert_called_once()
             call_kwargs = mock_client.messages.create.call_args[1]
-            assert call_kwargs["model"] == "claude-sonnet-4-20250514"
+            assert call_kwargs["model"] == "claude-sonnet-5"
             assert call_kwargs["max_tokens"] == 4096
             assert call_kwargs["system"] == "System prompt"
             assert len(call_kwargs["messages"]) == 1

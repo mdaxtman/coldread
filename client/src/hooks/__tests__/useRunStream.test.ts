@@ -18,7 +18,7 @@ describe('runStreamReducer', () => {
       ev('stage_finished', {
         stage: 'fit',
         seq: 1,
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-5',
         tokensIn: 3318,
         tokensOut: 1102,
         latencyMs: 2140,

@@ -7,6 +7,7 @@ fit analysis from the ATS screener perspective.
 
 from typing import Any
 
+from config import PIPELINE_MODEL
 from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 from pipeline.stage_input import FitAssessmentInput, FitAssessmentOutput
@@ -146,7 +147,7 @@ def run_fit_assessment_stage(input_data: FitAssessmentInput) -> FitAssessmentOut
     # Call Anthropic Claude with tool use
     result = call_model(
         "fit",
-        model="claude-sonnet-4-20250514",
+        model=PIPELINE_MODEL,
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],

@@ -6,6 +6,7 @@ and returns RefinementOutput with a refined resume and list of changes made.
 
 from typing import Any, cast
 
+from config import PIPELINE_MODEL
 from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 from pipeline.stage_input import RefinementInput, RefinementOutput
@@ -104,7 +105,7 @@ def run_refinement_stage(input_data: RefinementInput) -> RefinementOutput:
     # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints
     result = call_model(
         "refine",
-        model="claude-sonnet-4-20250514",
+        model=PIPELINE_MODEL,
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],

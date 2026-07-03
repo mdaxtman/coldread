@@ -2,6 +2,7 @@
 
 from typing import Any, cast
 
+from config import PIPELINE_MODEL
 from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
@@ -109,7 +110,7 @@ def run_fit_assessment(jd_content: str, narratives_text: str, user_id: str) -> d
 
     result = call_model(
         "fit",
-        model="claude-sonnet-4-20250514",
+        model=PIPELINE_MODEL,
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],

@@ -27,7 +27,7 @@ def _fake_fit_workflow(jd_id: str, user_id: str) -> dict[str, Any]:
     ctx = current_run_context.get()
     assert ctx is not None, "workflow must run inside a RunContext"
     seq = ctx.begin_stage("fit")
-    ctx.finish_call(seq, "fit", "claude-sonnet-4-20250514", 1000, 400, "tool_use", 50, {}, [])
+    ctx.finish_call(seq, "fit", "claude-sonnet-5", 1000, 400, "tool_use", 50, {}, [])
     return {"id": "fit-report-1"}
 
 

@@ -30,4 +30,4 @@ def test_run_screener_calls_api_and_returns_analysis() -> None:
         assert result["overall_score"] == 0.85
         mock_client.messages.create.assert_called_once()
         call_kwargs = mock_client.messages.create.call_args[1]
-        assert call_kwargs["model"] == "claude-sonnet-4-20250514"
+        assert call_kwargs["model"] == "claude-sonnet-5"

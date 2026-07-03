@@ -2,6 +2,7 @@
 
 from typing import Any, cast
 
+from config import PIPELINE_MODEL
 from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
@@ -206,7 +207,7 @@ def run_generator(
     # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints
     return call_model(
         "generate",
-        model="claude-sonnet-4-20250514",
+        model=PIPELINE_MODEL,
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],

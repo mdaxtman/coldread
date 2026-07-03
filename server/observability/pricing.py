@@ -2,8 +2,12 @@
 
 # USD per million tokens. Update as models/prices change; historical
 # model_calls rows keep the cost computed at record time.
+#
+# claude-sonnet-5 has intro pricing of $2/$10 per MTok through 2026-08-31;
+# we keep the durable $3/$15 sticker rate here, so estimates slightly
+# overstate actual cost until intro pricing ends.
 PRICING: dict[str, dict[str, float]] = {
-    "claude-sonnet-4-20250514": {"input_per_mtok": 3.0, "output_per_mtok": 15.0},
+    "claude-sonnet-5": {"input_per_mtok": 3.0, "output_per_mtok": 15.0},
 }
 
 

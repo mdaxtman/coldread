@@ -34,5 +34,5 @@ def test_run_fit_assessment_calls_api_and_returns_result() -> None:
         assert len(result["matches"]) == 1
         mock_client.messages.create.assert_called_once()
         call_kwargs = mock_client.messages.create.call_args[1]
-        assert call_kwargs["model"] == "claude-sonnet-4-20250514"
+        assert call_kwargs["model"] == "claude-sonnet-5"
         assert call_kwargs["max_tokens"] == 4096

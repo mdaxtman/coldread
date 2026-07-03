@@ -7,6 +7,7 @@ resume guided by fit assessment context.
 
 from typing import Any, cast
 
+from config import PIPELINE_MODEL
 from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 from pipeline.stage_input import ResumeGenerationInput, ResumeGenerationOutput
@@ -293,7 +294,7 @@ def run_resume_generation_stage(input_data: ResumeGenerationInput) -> ResumeGene
     # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints
     resume_data = call_model(
         "generate",
-        model="claude-sonnet-4-20250514",
+        model=PIPELINE_MODEL,
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
