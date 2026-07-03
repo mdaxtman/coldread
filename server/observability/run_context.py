@@ -38,7 +38,7 @@ class RunContext:
     jd_id: str
     kind: str
     user_id: str
-    events: "queue.Queue[dict[str, Any]]"
+    events: "queue.Queue[dict[str, Any] | None]"
     on_call: Callable[[ModelCallRecord], None] | None = None
     records: list[ModelCallRecord] = field(default_factory=list)
     _seq: int = 0

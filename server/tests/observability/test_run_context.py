@@ -9,8 +9,8 @@ from observability.run_context import ModelCallRecord, RunContext, current_run_c
 
 def _make_ctx(
     on_call: Callable[[ModelCallRecord], None] | None = None,
-) -> tuple[RunContext, queue.Queue[dict[str, Any]]]:
-    events: queue.Queue[dict[str, Any]] = queue.Queue()
+) -> tuple[RunContext, "queue.Queue[dict[str, Any] | None]"]:
+    events: queue.Queue[dict[str, Any] | None] = queue.Queue()
     ctx = RunContext(
         run_id="run-1",
         jd_id="jd-1",
@@ -50,6 +50,7 @@ def test_finish_call_records_costs_and_emits_stage_finished() -> None:
     assert seen == [record]
     assert ctx.records == [record]
     finished = events.get_nowait()
+    assert finished is not None
     assert finished["event"] == "stage_finished"
     assert finished["data"]["stage"] == "fit"
     assert finished["data"]["tokensIn"] == 1000
