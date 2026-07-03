@@ -1,11 +1,13 @@
 """Shared Anthropic integration utilities."""
 
+import time
 from typing import Any, cast
 
 import anthropic
 from anthropic.types import Message
 
 from config import get_anthropic_api_key
+from observability.run_context import current_run_context
 
 _client: anthropic.Anthropic | None = None
 
@@ -36,3 +38,36 @@ def _extract_tool_response(response: Message) -> dict[str, Any]:
         raise RuntimeError("No tool_use block in response")
 
     return cast(dict[str, Any], tool_block.input)
+
+
+def call_model(stage: str, **kwargs: Any) -> dict[str, Any]:
+    """Call the Anthropic API and extract the forced-tool response.
+
+    The single chokepoint for every pipeline model call. When a RunContext
+    is active (set by a streaming endpoint or, later, a job worker), the
+    full response envelope — usage, model, stop reason, latency, request
+    and response snapshots — is recorded and emitted as events. With no
+    active context this behaves exactly like the old inline pattern.
+    """
+    ctx = current_run_context.get()
+    seq = ctx.begin_stage(stage) if ctx is not None else 0
+
+    start = time.perf_counter()
+    response = _get_anthropic_client().messages.create(**kwargs)
+    latency_ms = int((time.perf_counter() - start) * 1000)
+
+    result = _extract_tool_response(response)
+
+    if ctx is not None:
+        ctx.finish_call(
+            seq=seq,
+            stage=stage,
+            model=response.model,
+            tokens_in=response.usage.input_tokens,
+            tokens_out=response.usage.output_tokens,
+            stop_reason=response.stop_reason,
+            latency_ms=latency_ms,
+            request={k: v for k, v in kwargs.items()},
+            response=[b.model_dump() for b in response.content],
+        )
+    return result

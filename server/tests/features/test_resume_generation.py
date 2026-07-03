@@ -404,7 +404,7 @@ def test_generator_includes_contact_in_output(
     mock_response = MagicMock()
     mock_response.content = [mock_tool_block]
 
-    with patch("pipeline.generator._get_anthropic_client") as mock_get_client:
+    with patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client:
         with patch("pipeline.generator.load_prompt") as mock_load_prompt:
             mock_client = MagicMock()
             mock_client.messages.create.return_value = mock_response
@@ -573,7 +573,7 @@ def test_generator_with_contact_info_none() -> None:
     mock_response = MagicMock()
     mock_response.content = [mock_tool_block]
 
-    with patch("pipeline.generator._get_anthropic_client") as mock_get_client:
+    with patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client:
         with patch("pipeline.generator.load_prompt") as mock_load_prompt:
             mock_client = MagicMock()
             mock_client.messages.create.return_value = mock_response
@@ -624,7 +624,7 @@ def test_generator_with_empty_contact_dict() -> None:
     mock_response = MagicMock()
     mock_response.content = [mock_tool_block]
 
-    with patch("pipeline.generator._get_anthropic_client") as mock_get_client:
+    with patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client:
         with patch("pipeline.generator.load_prompt") as mock_load_prompt:
             mock_client = MagicMock()
             mock_client.messages.create.return_value = mock_response
@@ -676,7 +676,7 @@ def test_generator_with_partial_contact_info() -> None:
     mock_response = MagicMock()
     mock_response.content = [mock_tool_block]
 
-    with patch("pipeline.generator._get_anthropic_client") as mock_get_client:
+    with patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client:
         with patch("pipeline.generator.load_prompt") as mock_load_prompt:
             mock_client = MagicMock()
             mock_client.messages.create.return_value = mock_response

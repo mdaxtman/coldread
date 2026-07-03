@@ -18,7 +18,7 @@ def test_run_fit_assessment_calls_api_and_returns_result() -> None:
     mock_response.content = [mock_tool_block]
 
     with (
-        patch("pipeline.fit_assessment._get_anthropic_client") as mock_get_client,
+        patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
         patch("pipeline.fit_assessment.load_prompt") as mock_load_prompt,
     ):
         mock_client = MagicMock()

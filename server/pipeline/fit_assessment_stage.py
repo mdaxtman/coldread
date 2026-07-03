@@ -7,7 +7,7 @@ fit analysis from the ATS screener perspective.
 
 from typing import Any
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 from pipeline.stage_input import FitAssessmentInput, FitAssessmentOutput
 
@@ -144,7 +144,8 @@ def run_fit_assessment_stage(input_data: FitAssessmentInput) -> FitAssessmentOut
     )
 
     # Call Anthropic Claude with tool use
-    response = _get_anthropic_client().messages.create(
+    result = call_model(
+        "fit",
         model="claude-sonnet-4-20250514",
         max_tokens=4096,
         system=system_prompt,
@@ -158,9 +159,6 @@ def run_fit_assessment_stage(input_data: FitAssessmentInput) -> FitAssessmentOut
         ],
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
-
-    # Extract tool response
-    result = _extract_tool_response(response)
 
     # Filter terminology: only keep high-confidence mappings
     terminology = result.get("terminology", [])

@@ -2,7 +2,7 @@
 
 from typing import Any, cast
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
 # Tool schema for Claude tool_use
@@ -204,7 +204,8 @@ def run_generator(
     )
 
     # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints
-    response = _get_anthropic_client().messages.create(
+    return call_model(
+        "generate",
         model="claude-sonnet-4-20250514",
         max_tokens=4096,
         system=system_prompt,
@@ -221,5 +222,3 @@ def run_generator(
         ),
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
-
-    return _extract_tool_response(response)

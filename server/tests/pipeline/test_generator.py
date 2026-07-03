@@ -59,7 +59,7 @@ def test_run_generator_calls_api_and_returns_structured_data() -> None:
     mock_response.content = [mock_tool_block]
 
     with (
-        patch("pipeline.generator._get_anthropic_client") as mock_get_client,
+        patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
         patch("pipeline.generator.load_prompt") as mock_load_prompt,
     ):
         mock_client = MagicMock()

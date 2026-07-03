@@ -2,7 +2,7 @@
 
 from typing import Any, Literal, NotRequired, TypedDict, cast
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
 
@@ -85,7 +85,8 @@ def run_screener(jd_content: str, resume_text: str, user_id: str) -> ScreenerRep
         "Use the submit_screener_analysis tool to submit your assessment."
     )
 
-    response = _get_anthropic_client().messages.create(
+    result = call_model(
+        "screen",
         model="claude-sonnet-4-20250514",
         max_tokens=2048,
         system=system_prompt,
@@ -103,4 +104,4 @@ def run_screener(jd_content: str, resume_text: str, user_id: str) -> ScreenerRep
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
-    return cast(ScreenerReport, _extract_tool_response(response))
+    return cast(ScreenerReport, result)

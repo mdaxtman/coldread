@@ -6,7 +6,7 @@ and returns RefinementOutput with a refined resume and list of changes made.
 
 from typing import Any, cast
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 from pipeline.stage_input import RefinementInput, RefinementOutput
 
@@ -102,7 +102,8 @@ def run_refinement_stage(input_data: RefinementInput) -> RefinementOutput:
 
     # Call Anthropic Claude with tool use
     # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints
-    response = _get_anthropic_client().messages.create(
+    result = call_model(
+        "refine",
         model="claude-sonnet-4-20250514",
         max_tokens=4096,
         system=system_prompt,
@@ -119,9 +120,6 @@ def run_refinement_stage(input_data: RefinementInput) -> RefinementOutput:
         ),
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
-
-    # Extract tool response (refined resume and changes)
-    result = _extract_tool_response(response)
 
     # Ensure changes_made is a list
     changes_made = result.get("changes", [])

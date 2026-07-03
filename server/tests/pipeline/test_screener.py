@@ -17,7 +17,7 @@ def test_run_screener_calls_api_and_returns_analysis() -> None:
     mock_response.content = [mock_tool_block]
 
     with (
-        patch("pipeline.screener._get_anthropic_client") as mock_get_client,
+        patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
         patch("pipeline.screener.load_prompt") as mock_load_prompt,
     ):
         mock_client = MagicMock()

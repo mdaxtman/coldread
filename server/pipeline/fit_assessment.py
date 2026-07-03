@@ -2,7 +2,7 @@
 
 from typing import Any, cast
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
 _TOOL_NAME = "submit_fit_report"
@@ -84,7 +84,8 @@ def run_fit_assessment(jd_content: str, narratives_text: str, user_id: str) -> d
         "and submit your assessment using the submit_fit_report tool."
     )
 
-    response = _get_anthropic_client().messages.create(
+    result = call_model(
+        "fit",
         model="claude-sonnet-4-20250514",
         max_tokens=4096,
         system=system_prompt,
@@ -101,8 +102,6 @@ def run_fit_assessment(jd_content: str, narratives_text: str, user_id: str) -> d
         ),
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
-
-    result = _extract_tool_response(response)
 
     # Filter terminology mappings: only keep those with confidence >= 0.8
     if "terminology" in result:

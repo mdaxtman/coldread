@@ -60,7 +60,7 @@ class TestResumeGenerationStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.resume_generation_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.resume_generation_stage.load_prompt") as mock_load_prompt,
         ):
             mock_client = MagicMock()
@@ -108,7 +108,7 @@ class TestResumeGenerationStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.resume_generation_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.resume_generation_stage.load_prompt"),
         ):
             mock_client = MagicMock()
@@ -150,7 +150,7 @@ class TestResumeGenerationStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.resume_generation_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.resume_generation_stage.load_prompt") as mock_load_prompt,
         ):
             mock_client = MagicMock()
@@ -188,7 +188,7 @@ class TestResumeGenerationStage:
             user_id="user-123",
         )
 
-        with patch("pipeline.resume_generation_stage._get_anthropic_client") as mock_client:
+        with patch("pipeline.anthropic_utils._get_anthropic_client") as mock_client:
             # Mock response with no tool_use block
             mock_response = MagicMock()
             mock_response.content = []  # Empty, no tool output
@@ -228,7 +228,7 @@ class TestResumeGenerationStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.resume_generation_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.resume_generation_stage.load_prompt"),
         ):
             mock_client = MagicMock()
@@ -287,7 +287,7 @@ class TestResumeGenerationStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.resume_generation_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.resume_generation_stage.load_prompt"),
         ):
             mock_client = MagicMock()

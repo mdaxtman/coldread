@@ -7,7 +7,7 @@ resume guided by fit assessment context.
 
 from typing import Any, cast
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 from pipeline.stage_input import ResumeGenerationInput, ResumeGenerationOutput
 
@@ -291,7 +291,8 @@ def run_resume_generation_stage(input_data: ResumeGenerationInput) -> ResumeGene
 
     # Call Anthropic Claude with tool use
     # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints
-    response = _get_anthropic_client().messages.create(
+    resume_data = call_model(
+        "generate",
         model="claude-sonnet-4-20250514",
         max_tokens=4096,
         system=system_prompt,
@@ -308,9 +309,6 @@ def run_resume_generation_stage(input_data: ResumeGenerationInput) -> ResumeGene
         ),
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
-
-    # Extract tool response (structured resume data)
-    resume_data = _extract_tool_response(response)
 
     # Convert structured resume to markdown
     markdown_content = _build_resume_markdown(resume_data)

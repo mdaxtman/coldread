@@ -2,7 +2,7 @@
 
 from typing import Any, NotRequired, TypedDict, cast
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
 
@@ -120,7 +120,8 @@ def run_refinement(
         "Use the submit_refined_resume tool to submit the refined resume and changes."
     )
 
-    response = _get_anthropic_client().messages.create(
+    result = call_model(
+        "refine",
         model="claude-sonnet-4-20250514",
         max_tokens=4096,
         system=system_prompt,
@@ -138,4 +139,4 @@ def run_refinement(
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
-    return cast(RefinementOutput, _extract_tool_response(response))
+    return cast(RefinementOutput, result)
