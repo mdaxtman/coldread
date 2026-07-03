@@ -1,8 +1,8 @@
 import { Card } from '../../components/ui/Card'
 import { FitSummary } from './FitSummary'
-import { AnnotatedJd } from './AnnotatedJd'
-import { GapsList } from './GapsList'
-import { TerminologyTable } from './TerminologyTable'
+import { AnnotatedJd } from '../analyze/AnnotatedJd'
+import { GapsList } from '../analyze/GapsList'
+import { TerminologyTable } from '../analyze/TerminologyTable'
 import type { FitReport, JobDescription } from '../../types'
 import styles from './SupportingPanel.module.css'
 
