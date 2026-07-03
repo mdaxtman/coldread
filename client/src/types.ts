@@ -31,6 +31,12 @@ export interface TerminologyAlignment {
   jdTerm: string
 }
 
+export interface CulturalSignal {
+  quality: string
+  jdSignal: string
+  evidenceHint: string
+}
+
 export interface FitReport {
   id: string
   userId: string
@@ -40,6 +46,10 @@ export interface FitReport {
   gaps: Gap[]
   terminology: TerminologyAlignment[]
   reasoning: string
+  overallScore: number | null
+  semanticScore: number | null
+  culturalSignals: CulturalSignal[]
+  productConnection: string | null
   createdAt: string
 }
 
@@ -83,4 +93,59 @@ export interface ResumeVariant {
   parentVariantId: string | null
   screenerReport: ScreenerReport
   createdAt: string
+}
+
+export type RunKind = 'fit' | 'generate' | 'refine'
+export type RunStatus = 'running' | 'completed' | 'failed'
+
+export interface PipelineRun {
+  id: string
+  jobDescriptionId: string
+  kind: RunKind
+  status: RunStatus
+  error: string | null
+  startedAt: string
+  finishedAt: string | null
+  durationMs: number | null
+  tokensIn: number
+  tokensOut: number
+  estCostUsd: number
+  jdTitle: string | null
+  jdCompany: string | null
+}
+
+export interface ModelCall {
+  id: string
+  stage: string
+  seq: number
+  model: string
+  latencyMs: number
+  tokensIn: number
+  tokensOut: number
+  stopReason: string | null
+  estCostUsd: number
+  request: Record<string, unknown>
+  response: unknown[]
+  createdAt: string
+}
+
+export interface RunDetail {
+  run: PipelineRun
+  calls: ModelCall[]
+}
+
+export interface Prompt {
+  id: string
+  stage: string
+  name: string
+  version: number
+  active: boolean
+  template: string
+}
+
+export interface UsageSummary {
+  tokensIn: number
+  tokensOut: number
+  estCostUsd: number
+  runCount: number
 }

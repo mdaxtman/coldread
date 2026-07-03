@@ -1,4 +1,12 @@
-import type { FitReport, JobDescription, ResumeVariant } from '../types'
+import type {
+  FitReport,
+  JobDescription,
+  PipelineRun,
+  Prompt,
+  ResumeVariant,
+  RunDetail,
+  UsageSummary,
+} from '../types'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
@@ -37,3 +45,18 @@ export const generateResume = (jdId: string, fitReportId: string) =>
 // Resume Variants
 export const getResumeVariants = (jdId: string) =>
   request<ResumeVariant[]>(`/jds/${jdId}/resume/variants`)
+
+// Runs, Prompts, and Usage
+export const getRuns = () => request<PipelineRun[]>('/runs')
+
+export const getRunDetail = (runId: string) => request<RunDetail>(`/runs/${runId}`)
+
+export const getPrompts = () => request<Prompt[]>('/prompts')
+
+export const getUsageSummary = () => request<UsageSummary>('/usage/summary')
+
+export const refineResume = (jdId: string, variantId: string, fitReportId: string) =>
+  request<ResumeVariant>(`/jds/${jdId}/resume/refine/${variantId}`, {
+    method: 'POST',
+    body: JSON.stringify({ fitReportId }),
+  })
