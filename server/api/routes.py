@@ -5,7 +5,8 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException
 
 from api.dependencies import get_current_user_id
-from db import fit_reports, job_descriptions, resume_variants
+from db import fit_reports, job_descriptions, pipeline_runs, resume_variants
+from db import prompts as prompts_db
 from features import fit_assessment, resume_generation
 from jobs.models import Job, JobQueue, JobType
 from models import (
@@ -14,7 +15,12 @@ from models import (
     GenerateResumeRequest,
     JobDescriptionResponse,
     JobResponse,
+    ModelCallResponse,
+    PipelineRunResponse,
+    PromptResponse,
     ResumeVariantResponse,
+    RunDetailResponse,
+    UsageSummaryResponse,
 )
 
 router = APIRouter()
@@ -385,8 +391,50 @@ def get_job(
     )
 
 
+# ---------------------------------------------------------------------------
+# Observability (Runs / Prompts / Usage)
+# ---------------------------------------------------------------------------
+
+observability_router = APIRouter(tags=["observability"])
+
+
+def _run_response(row: dict[str, Any]) -> PipelineRunResponse:
+    jd = row.get("job_descriptions") or {}
+    fields = cast(dict[str, Any], {k: v for k, v in row.items() if k != "job_descriptions"})
+    return PipelineRunResponse(
+        **fields,
+        jd_title=jd.get("title"),
+        jd_company=jd.get("company"),
+    )
+
+
+@observability_router.get("/runs", response_model=list[PipelineRunResponse])
+def list_runs(user_id: str = Depends(get_current_user_id)) -> list[PipelineRunResponse]:
+    return [_run_response(r) for r in pipeline_runs.list_runs(user_id)]
+
+
+@observability_router.get("/runs/{run_id}", response_model=RunDetailResponse)
+def get_run(run_id: str, user_id: str = Depends(get_current_user_id)) -> RunDetailResponse:
+    row = pipeline_runs.get_run(run_id, user_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Run not found")
+    calls = [ModelCallResponse(**c) for c in pipeline_runs.list_calls(run_id, user_id)]
+    return RunDetailResponse(run=_run_response(row), calls=calls)
+
+
+@observability_router.get("/prompts", response_model=list[PromptResponse])
+def list_prompts(user_id: str = Depends(get_current_user_id)) -> list[PromptResponse]:
+    return [PromptResponse(**p) for p in prompts_db.list_active_prompts(user_id)]
+
+
+@observability_router.get("/usage/summary", response_model=UsageSummaryResponse)
+def usage_summary(user_id: str = Depends(get_current_user_id)) -> UsageSummaryResponse:
+    return UsageSummaryResponse(**pipeline_runs.month_summary(user_id))
+
+
 router.include_router(jds)
 router.include_router(jobs_router)
+router.include_router(observability_router)
 
 from api.streaming import streaming_router  # noqa: E402 — avoids circular import at module load
 

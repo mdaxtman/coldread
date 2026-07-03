@@ -1,7 +1,7 @@
 """Pydantic models for ColdRead API request/response serialization."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -142,3 +142,60 @@ class JobResponse(CamelModel):
     status: str
     created_at: datetime
     metadata: dict[str, str | int | float | bool | None] | None = None
+
+
+# ---------------------------------------------------------------------------
+# Response models — Observability (Runs / Prompts / Usage)
+# ---------------------------------------------------------------------------
+
+
+class PipelineRunResponse(CamelModel):
+    id: str
+    job_description_id: str
+    kind: str
+    status: str
+    error: str | None = None
+    started_at: datetime
+    finished_at: datetime | None = None
+    duration_ms: int | None = None
+    tokens_in: int
+    tokens_out: int
+    est_cost_usd: float
+    jd_title: str | None = None
+    jd_company: str | None = None
+
+
+class ModelCallResponse(CamelModel):
+    id: str
+    stage: str
+    seq: int
+    model: str
+    latency_ms: int
+    tokens_in: int
+    tokens_out: int
+    stop_reason: str | None = None
+    est_cost_usd: float
+    request: dict[str, Any]
+    response: list[Any]
+    created_at: datetime
+
+
+class RunDetailResponse(CamelModel):
+    run: PipelineRunResponse
+    calls: list[ModelCallResponse]
+
+
+class PromptResponse(CamelModel):
+    id: str
+    stage: str
+    name: str
+    version: int
+    active: bool
+    template: str
+
+
+class UsageSummaryResponse(CamelModel):
+    tokens_in: int
+    tokens_out: int
+    est_cost_usd: float
+    run_count: int
