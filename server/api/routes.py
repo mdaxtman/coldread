@@ -387,3 +387,7 @@ def get_job(
 
 router.include_router(jds)
 router.include_router(jobs_router)
+
+from api.streaming import streaming_router  # noqa: E402 — avoids circular import at module load
+
+router.include_router(streaming_router)
