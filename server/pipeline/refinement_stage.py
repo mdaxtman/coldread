@@ -124,6 +124,16 @@ def run_refinement_stage(input_data: RefinementInput) -> RefinementOutput:
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
+    # claude-sonnet-5 occasionally drifts the key name despite the schema
+    # (tool schemas are not strictly enforced without strict mode, which
+    # our min/max constraints preclude for now). Normalize before use.
+    if "refined_content" not in result and "refined_resume" in result:
+        result["refined_content"] = result.pop("refined_resume")
+    if "refined_content" not in result:
+        raise RuntimeError(
+            f"refinement returned no refined_content (keys: {sorted(result.keys())})"
+        )
+
     # Ensure changes_made is a list
     changes_made = result.get("changes", [])
     if not isinstance(changes_made, list):

@@ -142,4 +142,14 @@ def run_refinement(
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
+    # claude-sonnet-5 occasionally drifts the key name despite the schema
+    # (tool schemas are not strictly enforced without strict mode, which
+    # our min/max constraints preclude for now). Normalize before use.
+    if "refined_content" not in result and "refined_resume" in result:
+        result["refined_content"] = result.pop("refined_resume")
+    if "refined_content" not in result:
+        raise RuntimeError(
+            f"refinement returned no refined_content (keys: {sorted(result.keys())})"
+        )
+
     return cast(RefinementOutput, result)
