@@ -1,26 +1,29 @@
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import type { FitReport, ResumeVariant } from '../../types'
+import type { FitReport, JobDescription, ResumeVariant } from '../../types'
+import { AnnotatedJd } from './AnnotatedJd'
 import { MatchesList } from './MatchesList'
 import { GapsList } from './GapsList'
 import { TerminologyTable } from './TerminologyTable'
 import styles from './FitReportView.module.css'
-
-// Note: AnnotatedJd was moved into this feature alongside the other leaf
-// components per the task's move instructions, but it isn't wired in here —
-// it needs the raw JD text plus a keyword-coverage map, and neither is part
-// of this view's prop contract (jdId is an identifier only; FitReport carries
-// no keywordCoverage field). Fetching the JD independently here would also
-// break this component's "no query client required" test setup.
 
 interface FitReportViewProps {
   jdId: string
   fitReport: FitReport
   resume: ResumeVariant | null
   onGenerate: () => void
+  // Optional so the frozen 4-prop contract (and existing callers/tests) keep
+  // working; when provided, the annotated JD rail renders (design spec §4).
+  jobDescription?: JobDescription | null
 }
 
-export const FitReportView = ({ jdId, fitReport, resume, onGenerate }: FitReportViewProps) => {
+export const FitReportView = ({
+  jdId,
+  fitReport,
+  resume,
+  onGenerate,
+  jobDescription,
+}: FitReportViewProps) => {
   const hardGaps = fitReport.gaps.filter((g) => g.type === 'hard').length
   const softGaps = fitReport.gaps.length - hardGaps
   const blocked = hardGaps > 0 || fitReport.fitLevel === 'poor'
@@ -85,6 +88,16 @@ export const FitReportView = ({ jdId, fitReport, resume, onGenerate }: FitReport
       </div>
 
       {fitReport.terminology.length > 0 && <TerminologyTable terminology={fitReport.terminology} />}
+
+      {jobDescription && (
+        <section className={styles.panel}>
+          <h3 className={styles.panelTitle}>Annotated JD</h3>
+          <AnnotatedJd
+            content={jobDescription.content}
+            keywordCoverage={resume?.screenerReport.screenerAnalysis.keywordCoverage ?? {}}
+          />
+        </section>
+      )}
 
       {fitReport.culturalSignals.length > 0 && (
         <section className={styles.panel}>

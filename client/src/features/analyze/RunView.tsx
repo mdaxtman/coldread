@@ -74,6 +74,7 @@ export const RunView = () => {
           fitReport={fit.data}
           resume={resume.data ?? null}
           onGenerate={() => void start(`/jds/${jdId}/resume/stream`, { fitReportId: fit.data.id })}
+          jobDescription={jd.data ?? null}
         />
       )}
 
