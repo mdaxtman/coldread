@@ -57,6 +57,12 @@ class TerminologyAlignmentModel(CamelModel):
     jd_term: str
 
 
+class CulturalSignalModel(CamelModel):
+    quality: str
+    jd_signal: str
+    evidence_hint: str
+
+
 class ScreenerAnalysisModel(CamelModel):
     """ATS screener analysis: what the resume is missing or could improve."""
 
@@ -105,6 +111,10 @@ class FitReportResponse(CamelModel):
     terminology: list[TerminologyAlignmentModel]
     reasoning: str
     created_at: datetime
+    overall_score: float | None = None
+    semantic_score: float | None = None
+    cultural_signals: list[CulturalSignalModel] = []
+    product_connection: str | None = None
 
 
 class ResumeVariantResponse(CamelModel):

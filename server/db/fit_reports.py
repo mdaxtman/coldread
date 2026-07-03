@@ -1,6 +1,6 @@
 """Data access layer for fit reports."""
 
-from typing import Any, Literal, TypedDict, cast
+from typing import Any, Literal, NotRequired, TypedDict, cast
 
 from db.client import get_client
 
@@ -33,6 +33,10 @@ class FitReport(TypedDict):
     terminology: list[TerminologyItem]
     reasoning: str
     created_at: str
+    overall_score: NotRequired[float | None]
+    semantic_score: NotRequired[float | None]
+    cultural_signals: NotRequired[list[dict[str, str]]]
+    product_connection: NotRequired[str | None]
 
 
 def create_fit_report(
@@ -43,6 +47,10 @@ def create_fit_report(
     gaps: list[Gap],
     terminology: list[TerminologyItem],
     reasoning: str,
+    overall_score: float | None = None,
+    semantic_score: float | None = None,
+    cultural_signals: list[dict[str, str]] | None = None,
+    product_connection: str | None = None,
 ) -> FitReport:
     response = (
         get_client()
@@ -58,6 +66,10 @@ def create_fit_report(
                     "gaps": gaps,
                     "terminology": terminology,
                     "reasoning": reasoning,
+                    "overall_score": overall_score,
+                    "semantic_score": semantic_score,
+                    "cultural_signals": cultural_signals or [],
+                    "product_connection": product_connection,
                 },
             )
         )

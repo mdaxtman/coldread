@@ -7,9 +7,17 @@ from pipeline.prompt_loader import load_prompt
 
 _TOOL_NAME = "submit_fit_report"
 
-_FIT_REPORT_SCHEMA: dict[str, object] = {
+_FIT_REPORT_SCHEMA: dict[str, Any] = {
     "type": "object",
-    "required": ["fit_level", "matches", "gaps", "terminology", "reasoning"],
+    "required": [
+        "fit_level",
+        "matches",
+        "gaps",
+        "terminology",
+        "reasoning",
+        "overall_score",
+        "semantic_score",
+    ],
     "properties": {
         "fit_level": {
             "type": "string",
@@ -58,6 +66,21 @@ _FIT_REPORT_SCHEMA: dict[str, object] = {
             },
         },
         "reasoning": {"type": "string"},
+        "overall_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "semantic_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "cultural_signals": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["quality", "jd_signal", "evidence_hint"],
+                "properties": {
+                    "quality": {"type": "string"},
+                    "jd_signal": {"type": "string"},
+                    "evidence_hint": {"type": "string"},
+                },
+            },
+        },
+        "product_connection": {"type": ["string", "null"]},
     },
 }
 
