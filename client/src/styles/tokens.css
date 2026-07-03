@@ -1,41 +1,49 @@
-/* Design tokens — CSS custom properties for the entire app.
-   Single source of truth for colors, typography, spacing, and radii. */
+/* Design tokens — warm-dark palette with portfolio DNA.
+   Two accents with semantic jobs:
+   --accent (bronze)  = human things: actions, links, focus, editorial labels
+   --machine (cyan)   = machine things ONLY: live traces, running indicators */
 
 :root {
-  /* Backgrounds */
-  --bg-primary: #09090b;
-  --bg-secondary: #18181b;
-  --bg-terminal: #0c0c0e;
-  --bg-input: #27272a;
-  --bg-surface: #1c1c1f;
+  /* Backgrounds — warm charcoal, not blue-zinc */
+  --bg-canvas: #0b0b09;
+  --bg-primary: #0d0c0a;
+  --bg-surface: #12110f;
+  --bg-elevated: #181613;
+  --bg-input: #161511;
+  --bg-terminal: #0b0b09;
 
-  /* Text */
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
+  /* Hairlines — dark cousins of the portfolio's #E3DDD2 */
+  --border: #26231e;
+  --border-bright: #37332b;
+  --border-soft: #1c1a16;
+
+  /* Text — warm off-white ramp */
+  --text-primary: #f2efe9;
+  --text-secondary: #a8a296;
+  --text-muted: #736d60;
+  --text-faint: #4a453c;
 
   /* Accents */
-  --accent: #22d3ee;
-  --accent-hover: #06b6d4;
+  --accent: #c9a35c; /* bronze — portfolio #8A6420 lifted for dark bg */
+  --accent-hover: #ddb877;
+  --accent-soft: rgba(201, 163, 92, 0.12);
+  --accent-line: rgba(201, 163, 92, 0.4);
 
-  /* Semantic — fit levels */
+  --machine: #6fc3d4; /* cooled cyan — the model is doing something NOW */
+  --machine-soft: rgba(111, 195, 212, 0.12);
+  --machine-line: rgba(111, 195, 212, 0.4);
+  --machine-glow: 0 0 8px rgba(111, 195, 212, 0.45);
+
+  /* Semantic — fit levels (unchanged) */
   --fit-strong: #4ade80;
   --fit-moderate: #facc15;
   --fit-borderline: #fb923c;
   --fit-poor: #f87171;
 
-  /* Terminal accents */
-  --terminal-green: #4ade80;
-  --terminal-text: #a1a1aa;
-  --terminal-prompt: #22d3ee;
-
-  /* Borders / surfaces */
-  --border: #27272a;
-  --border-bright: #3f3f46;
-
   /* Typography */
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -55,7 +63,11 @@
   --weight-semibold: 600;
   --weight-bold: 700;
 
-  /* Spacing */
+  /* Editorial signatures */
+  --eyebrow-tracking: 0.18em;
+  --underline-offset: 4px;
+
+  /* Spacing (unchanged) */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -68,14 +80,14 @@
   --space-16: 4rem;
   --space-20: 5rem;
 
-  /* Radii */
+  /* Radii (unchanged) */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-full: 9999px;
 
-  /* Transitions */
+  /* Transitions (unchanged) */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 400ms;
@@ -83,5 +95,13 @@
 
   /* Layout */
   --max-width: 72rem;
+  --sidebar-width: 232px;
+
+  /* Legacy aliases — keep old components compiling until deleted (Task 16
+     removes any that are then unused) */
+  --bg-secondary: var(--bg-elevated);
+  --terminal-green: var(--fit-strong);
+  --terminal-text: var(--text-secondary);
+  --terminal-prompt: var(--machine);
   --nav-height: 3.5rem;
 }
