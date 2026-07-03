@@ -79,4 +79,4 @@ def test_run_generator_calls_api_and_returns_structured_data() -> None:
         mock_client.messages.create.assert_called_once()
         call_kwargs = mock_client.messages.create.call_args[1]
         assert call_kwargs["model"] == "claude-sonnet-5"
-        assert call_kwargs["max_tokens"] == 4096
+        assert call_kwargs["max_tokens"] == 8192

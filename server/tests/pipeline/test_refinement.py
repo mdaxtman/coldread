@@ -101,6 +101,6 @@ def test_run_refinement_calls_api_and_returns_refined_content() -> None:
         # Verify API call parameters
         call_kwargs = mock_client.messages.create.call_args[1]
         assert call_kwargs["model"] == "claude-sonnet-5"
-        assert call_kwargs["max_tokens"] == 4096
+        assert call_kwargs["max_tokens"] == 8192
         assert "job_description" in call_kwargs["messages"][0]["content"]
         assert "generated_resume" in call_kwargs["messages"][0]["content"]

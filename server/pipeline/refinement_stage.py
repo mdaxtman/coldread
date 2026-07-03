@@ -106,7 +106,9 @@ def run_refinement_stage(input_data: RefinementInput) -> RefinementOutput:
     result = call_model(
         "refine",
         model=PIPELINE_MODEL,
-        max_tokens=4096,
+        # 8192: refined full-resume output; 4096 truncated under the
+        # claude-sonnet-5 tokenizer (observed stop_reason=max_tokens)
+        max_tokens=8192,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
         tools=cast(

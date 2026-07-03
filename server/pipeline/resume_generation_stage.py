@@ -295,7 +295,9 @@ def run_resume_generation_stage(input_data: ResumeGenerationInput) -> ResumeGene
     resume_data = call_model(
         "generate",
         model=PIPELINE_MODEL,
-        max_tokens=4096,
+        # 8192: full-resume output; same shape as refinement, which truncated
+        # at 4096 under the claude-sonnet-5 tokenizer (stop_reason=max_tokens)
+        max_tokens=8192,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
         tools=cast(
