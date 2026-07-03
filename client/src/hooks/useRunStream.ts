@@ -1,7 +1,7 @@
 // SSE events → UI state. A reducer over a stream: same mental model as
 // replaying a Redux action log, which makes it trivially unit-testable.
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RunStreamEvent } from '../api/stream'
 import { streamRun } from '../api/stream'
 
@@ -136,5 +136,8 @@ export function useRunStream() {
   }, [])
 
   const reset = useCallback(() => setState(INITIAL_RUN_STREAM_STATE), [])
+
+  useEffect(() => () => abortRef.current?.abort(), [])
+
   return { state, start, reset }
 }

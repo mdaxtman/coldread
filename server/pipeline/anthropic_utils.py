@@ -75,5 +75,6 @@ def call_model(stage: str, **kwargs: Any) -> dict[str, Any]:
             latency_ms=latency_ms,
             request={k: v for k, v in kwargs.items()},
             response=[b.model_dump() for b in response.content],
+            fallback_model=kwargs.get("model"),
         )
     return result

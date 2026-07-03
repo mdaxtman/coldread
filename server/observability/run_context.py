@@ -9,6 +9,7 @@ The contextvar is Python's equivalent of Node's AsyncLocalStorage: ambient
 state visible to everything downstream without threading parameters through.
 """
 
+import logging
 import queue
 from collections.abc import Callable
 from contextvars import ContextVar
@@ -16,6 +17,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from observability.pricing import estimate_cost_usd
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -62,6 +65,7 @@ class RunContext:
         latency_ms: int,
         request: dict[str, Any],
         response: list[Any],
+        fallback_model: str | None = None,
     ) -> ModelCallRecord:
         record = ModelCallRecord(
             stage=stage,
@@ -71,13 +75,18 @@ class RunContext:
             tokens_out=tokens_out,
             stop_reason=stop_reason,
             latency_ms=latency_ms,
-            est_cost_usd=estimate_cost_usd(model, tokens_in, tokens_out),
+            est_cost_usd=estimate_cost_usd(
+                model, tokens_in, tokens_out, fallback_model=fallback_model
+            ),
             request=request,
             response=response,
         )
         self.records.append(record)
         if self.on_call is not None:
-            self.on_call(record)
+            try:
+                self.on_call(record)
+            except Exception:
+                logger.exception("model-call telemetry persistence failed")
         self.emit(
             "stage_finished",
             {

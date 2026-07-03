@@ -74,3 +74,51 @@ def test_totals_sums_records() -> None:
 
 def test_contextvar_defaults_to_none() -> None:
     assert current_run_context.get() is None
+
+
+def test_finish_call_uses_fallback_model_for_cost_when_response_model_unpriced() -> None:
+    ctx, events = _make_ctx()
+    seq = ctx.begin_stage("fit")
+    events.get_nowait()  # discard stage_started
+
+    record = ctx.finish_call(
+        seq=seq,
+        stage="fit",
+        model="claude-sonnet-5-20260315",
+        tokens_in=1000,
+        tokens_out=500,
+        stop_reason="tool_use",
+        latency_ms=100,
+        request={},
+        response=[],
+        fallback_model="claude-sonnet-5",
+    )
+
+    assert record.model == "claude-sonnet-5-20260315"
+    assert record.est_cost_usd == (1000 * 3.0 + 500 * 15.0) / 1_000_000
+
+
+def test_finish_call_survives_on_call_raising() -> None:
+    def boom(record: ModelCallRecord) -> None:
+        raise RuntimeError("db insert failed")
+
+    ctx, events = _make_ctx(on_call=boom)
+    seq = ctx.begin_stage("fit")
+    events.get_nowait()  # discard stage_started
+
+    record = ctx.finish_call(
+        seq=seq,
+        stage="fit",
+        model="claude-sonnet-5",
+        tokens_in=1000,
+        tokens_out=500,
+        stop_reason="tool_use",
+        latency_ms=100,
+        request={},
+        response=[],
+    )
+
+    assert record in ctx.records
+    finished = events.get_nowait()
+    assert finished is not None
+    assert finished["event"] == "stage_finished"

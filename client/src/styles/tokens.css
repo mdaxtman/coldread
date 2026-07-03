@@ -97,9 +97,11 @@
   --max-width: 72rem;
   --sidebar-width: 232px;
 
-  /* Legacy aliases — still referenced by components/terminal/* (PipelineLog,
-     DiffView, DataTable, CodeBlock) and ui/Card, ui/Tabs. --nav-height was
-     removed here in Task 16: NavBar.tsx (its only consumer) was deleted. */
+  /* Legacy aliases — still referenced by components/terminal/* (DataTable,
+     CodeBlock) and ui/Card, ui/Tabs. --nav-height was removed here in
+     Task 16: NavBar.tsx (its only consumer) was deleted. PipelineLog and
+     DiffView (also formerly listed here) were deleted in Task 17 as dead
+     code. */
   --bg-secondary: var(--bg-elevated);
   --terminal-green: var(--fit-strong);
   --terminal-text: var(--text-secondary);
