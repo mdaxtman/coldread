@@ -78,6 +78,7 @@ When formatted for display:
 
 ## BULLET POINT GUIDANCE
 
+- **Lead with the signal, follow with the mechanism.** Recruiters scan the first 4–6 words of each bullet. Put the outcome, capability, or result there — then follow with the context or technical detail that earns it. "Reduced bundle size by 95% — diagnosed Barrelsby-generated barrel files negating all dynamic import boundaries and eliminated them entirely" is more scannable than starting with the diagnosis. The grounding detail stays in; the scanner gets the headline first.
 - Start with action verbs when possible
 - Include context (team size, timeline, scope) when it adds credibility
 - Quantify impact (%, $, users, scale) where authentic numbers exist
