@@ -113,8 +113,10 @@ def stream_pipeline_run(
             )
             events.put({"event": "run_failed", "data": {"error": str(e), **totals}})
         finally:
-            current_run_context.reset(token)
-            events.put(None)  # sentinel: stream is done
+            try:
+                current_run_context.reset(token)
+            finally:
+                events.put(None)  # sentinel: stream is done — must ALWAYS happen
 
     async def generate() -> Any:
         yield sse_line("run_started", {"runId": run_id, "kind": kind, "jdId": jd_id})
