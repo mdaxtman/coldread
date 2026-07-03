@@ -1,8 +1,10 @@
 import type { FitLevel } from '../../types'
 import styles from './Badge.module.css'
 
+export type BadgeLevel = FitLevel | 'machine'
+
 interface BadgeProps {
-  level: FitLevel
+  level: BadgeLevel
   label?: string
 }
 
