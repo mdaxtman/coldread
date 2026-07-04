@@ -3,13 +3,17 @@
 Prompts are versioned in DB to allow iteration without redeployment.
 """
 
+import logging
+
 from db import prompts
+
+logger = logging.getLogger(__name__)
 
 
 def load_prompt(stage: str, user_id: str) -> str:
     row = prompts.get_active_prompt(stage, user_id)
     if row is None:
-        print(f"DEBUG: No prompt found for stage={stage!r}, user_id={user_id!r}")
+        logger.debug("No prompt found for stage=%r, user_id=%r", stage, user_id)
         raise ValueError(f"No active prompt found for stage: {stage!r}")
-    print(f"DEBUG: Loaded prompt for stage={stage!r}, version={row.get('version')}")
+    logger.debug("Loaded prompt for stage=%r, version=%s", stage, row.get("version"))
     return str(row["template"])

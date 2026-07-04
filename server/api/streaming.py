@@ -16,6 +16,7 @@ one-directional: `api.routes` -> `api.streaming`.
 
 import asyncio
 import json
+import logging
 import queue
 import time
 from collections.abc import Callable
@@ -29,6 +30,8 @@ from db import fit_reports, job_descriptions, pipeline_runs
 from features import fit_assessment, resume_generation
 from models import GenerateResumeRequest
 from observability.run_context import ModelCallRecord, RunContext, current_run_context
+
+logger = logging.getLogger(__name__)
 
 streaming_router = APIRouter(prefix="/jds", tags=["streaming"])
 
@@ -55,6 +58,30 @@ def _verify_jd_ownership(jd_id: str, user_id: str) -> None:
 
 def sse_line(event: str, data: dict[str, Any]) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+
+def public_error(kind: str, e: Exception) -> str:
+    """Translate an internal exception into a user-facing failure message.
+
+    Presentation boundary: without this, a bare KeyError surfaces in the UI
+    as its repr — literally `'refined_content'` — with no context at all.
+
+    Only exceptions the pipeline raises deliberately are echoed to the client:
+    KeyError (a known-shape model response missing a field) and ValueError
+    (raised with an intentionally user-facing message, e.g. "Fit report not
+    found"). Any *other* exception — a DB/driver error, a bug — could carry
+    internal detail (connection strings, table/column names, stack context),
+    so it is logged server-side and replaced with a generic message. This is a
+    single-user app today, but leaking internals to the browser is a habit
+    that becomes a real disclosure once the app is forked and deployed.
+    """
+    if isinstance(e, KeyError):
+        return f"The {kind} run failed — the model's response was missing the expected field {e}."
+    if isinstance(e, ValueError):
+        detail = str(e).strip() or type(e).__name__
+        return f"The {kind} run failed — {detail}"
+    logger.exception("Unexpected error during %s run", kind)
+    return f"The {kind} run failed due to an internal error."
 
 
 def stream_pipeline_run(
@@ -101,6 +128,7 @@ def stream_pipeline_run(
         except Exception as e:  # noqa: BLE001 — boundary: convert to run_failed
             totals = ctx.totals()
             duration_ms = int((time.perf_counter() - start) * 1000)
+            error = public_error(kind, e)
             pipeline_runs.finish_run(
                 run_id,
                 user_id,
@@ -109,9 +137,9 @@ def stream_pipeline_run(
                 tokens_in=totals["tokensIn"],
                 tokens_out=totals["tokensOut"],
                 est_cost_usd=totals["estCostUsd"],
-                error=str(e),
+                error=error,
             )
-            events.put({"event": "run_failed", "data": {"error": str(e), **totals}})
+            events.put({"event": "run_failed", "data": {"error": error, **totals}})
         finally:
             try:
                 current_run_context.reset(token)

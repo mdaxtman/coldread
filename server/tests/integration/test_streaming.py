@@ -50,7 +50,13 @@ def test_fit_stream_happy_path() -> None:
     assert finish.call_args.kwargs["status"] == "completed"
 
 
-def test_fit_stream_failure_emits_run_failed() -> None:
+def test_fit_stream_unexpected_error_does_not_leak_internals() -> None:
+    """An unexpected exception emits run_failed but a *generic* message.
+
+    Security boundary: raw internal detail (which could carry DB/driver text,
+    table names, or stack context once deployed) must not reach the client.
+    """
+
     def boom(jd_id: str, user_id: str) -> dict[str, Any]:
         raise RuntimeError("fit_assessment_failed: model exploded")
 
@@ -62,7 +68,28 @@ def test_fit_stream_failure_emits_run_failed() -> None:
         resp = client.post(f"/jds/{JD_ID}/fit/stream")
     events = _parse_sse(resp.text)
     assert events[-1][0] == "run_failed"
-    assert "model exploded" in events[-1][1]["error"]
+    error = events[-1][1]["error"]
+    assert "model exploded" not in error  # internal detail is not leaked
+    assert error == "The fit run failed due to an internal error."
+    assert finish.call_args.kwargs["status"] == "failed"
+
+
+def test_fit_stream_deliberate_valueerror_passes_through() -> None:
+    """ValueErrors are raised intentionally with user-facing messages, so they
+    are echoed to the client (unlike unexpected exceptions)."""
+
+    def boom(jd_id: str, user_id: str) -> dict[str, Any]:
+        raise ValueError("Fit report not found: abc")
+
+    with (
+        patch("api.streaming.fit_assessment.run_fit_assessment_workflow", boom),
+        patch("api.streaming.pipeline_runs.create_run", return_value={"id": "run-1"}),
+        patch("api.streaming.pipeline_runs.finish_run") as finish,
+    ):
+        resp = client.post(f"/jds/{JD_ID}/fit/stream")
+    events = _parse_sse(resp.text)
+    assert events[-1][0] == "run_failed"
+    assert "Fit report not found: abc" in events[-1][1]["error"]
     assert finish.call_args.kwargs["status"] == "failed"
 
 
