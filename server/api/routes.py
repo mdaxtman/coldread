@@ -20,6 +20,7 @@ from models import (
     PromptResponse,
     ResumeVariantResponse,
     RunDetailResponse,
+    UpdateJdRequest,
     UsageSummaryResponse,
 )
 
@@ -121,6 +122,24 @@ def get_jd(
     user_id: str = Depends(get_current_user_id),
 ) -> JobDescriptionResponse:
     row = job_descriptions.get_jd(jd_id, user_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Job description not found")
+    return JobDescriptionResponse(**row)
+
+
+@jds.patch("/{jd_id}", response_model=JobDescriptionResponse)
+def update_jd(
+    jd_id: str,
+    body: UpdateJdRequest,
+    user_id: str = Depends(get_current_user_id),
+) -> JobDescriptionResponse:
+    title = body.title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="Title cannot be empty")
+    if len(title) > 200:
+        raise HTTPException(status_code=400, detail="Title exceeds maximum length (200 characters)")
+    _verify_jd_ownership(jd_id, user_id)
+    row = job_descriptions.update_jd_title(jd_id, user_id, title)
     if row is None:
         raise HTTPException(status_code=404, detail="Job description not found")
     return JobDescriptionResponse(**row)
