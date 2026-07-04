@@ -7,7 +7,13 @@
   padding: var(--space-4);
   border-right: 1px solid var(--border);
   background: var(--bg-canvas);
-  min-height: 100vh;
+  /* Pin the sidebar to the viewport: without an explicit height, the
+     flex-row shell stretches it to full document height on tall pages,
+     pushing the status footer thousands of px below the fold. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .brand {
@@ -99,8 +105,8 @@
 
 .usage {
   display: flex;
-  justify-content: space-between;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: 2px;
 }
 
 .usageValue {
