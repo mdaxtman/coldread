@@ -7,9 +7,40 @@
   gap: var(--space-6);
 }
 
+@media (max-width: 34rem) {
+  .page {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .header h1 {
+    font-size: var(--text-xl);
+  }
+}
+
 .loading {
-  padding: var(--space-8);
-  color: var(--text-secondary);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.back {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.back:hover {
+  color: var(--accent);
 }
 
 .header {
@@ -101,4 +132,37 @@
 
 .call details + details {
   margin-top: var(--space-2);
+}
+
+/* Nested payload sections inside request/response */
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 0 var(--space-4);
+}
+
+.sections details {
+  border-top: none;
+  padding-top: 0;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.role {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--machine);
+}
+
+/* Payloads run to thousands of lines — cap them and scroll inside. */
+.sections pre {
+  max-height: 420px;
+  overflow-y: auto;
+  font-size: var(--text-xs);
 }

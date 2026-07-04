@@ -7,7 +7,7 @@ interface AnnotatedJdProps {
 }
 
 /**
- * Renders JD text with keyword highlights — green for covered, red for uncovered.
+ * Renders JD text with keyword highlights — bronze for covered, rust for missing.
  * Uses word-boundary regex for case-insensitive matching.
  */
 export const AnnotatedJd = ({ content, keywordCoverage }: AnnotatedJdProps) => {
@@ -48,5 +48,17 @@ export const AnnotatedJd = ({ content, keywordCoverage }: AnnotatedJdProps) => {
     parts.push(content.slice(lastIndex))
   }
 
-  return <pre className={styles.jd}>{parts}</pre>
+  return (
+    <div>
+      <div className={styles.legend}>
+        <span className={styles.legendItem}>
+          <i className={styles.swatchCovered} aria-hidden /> in your experience
+        </span>
+        <span className={styles.legendItem}>
+          <i className={styles.swatchUncovered} aria-hidden /> gap
+        </span>
+      </div>
+      <pre className={styles.jd}>{parts}</pre>
+    </div>
+  )
 }

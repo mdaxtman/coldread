@@ -17,6 +17,13 @@ interface FitReportViewProps {
   jobDescription?: JobDescription | null
 }
 
+// Signal qualities arrive as machine keys/lowercase phrases; render them as a
+// sentence, not Title Case Every Word.
+const formatSignalQuality = (quality: string): string => {
+  const plain = quality.replace(/_/g, ' ').toLowerCase()
+  return plain.charAt(0).toUpperCase() + plain.slice(1)
+}
+
 export const FitReportView = ({
   jdId,
   fitReport,
@@ -29,28 +36,43 @@ export const FitReportView = ({
   const blocked = hardGaps > 0 || fitReport.fitLevel === 'poor'
   const score = fitReport.overallScore != null ? Math.round(fitReport.overallScore * 100) : null
   const gateVisible = resume === null && blocked
-  // Once a resume exists, the gate copy is gone — surface the hard-gap count
-  // in the chip row instead so it isn't lost entirely.
-  const showHardGapsChip = hardGaps > 0 && !gateVisible
+
+  // Screener coverage (post-generation) is richer; before a resume exists,
+  // annotate the JD from the fit report itself so the section earns its name.
+  const screenerCoverage = resume?.screenerReport.screenerAnalysis.keywordCoverage
+  const fitCoverage: Record<string, boolean> = {}
+  for (const gap of fitReport.gaps) fitCoverage[gap.requirement] = false
+  for (const match of fitReport.matches) fitCoverage[match.requirement] = true
+  for (const term of fitReport.terminology) fitCoverage[term.jdTerm] = true
+  const coverage =
+    screenerCoverage && Object.keys(screenerCoverage).length > 0 ? screenerCoverage : fitCoverage
 
   return (
     <div className={styles.report} data-jd-id={jdId}>
       <section className={styles.hero}>
-        <div className={styles.score} data-level={fitReport.fitLevel}>
-          {score ?? '—'}
+        <div
+          className={styles.scoreRing}
+          data-level={fitReport.fitLevel}
+          style={{ '--score-pct': `${score ?? 0}%` } as React.CSSProperties}
+        >
+          <div className={styles.score}>{score ?? '—'}</div>
+          <span className={styles.scoreScale}>/ 100</span>
         </div>
         <div className={styles.heroBody}>
           <div className={styles.chips}>
             <Badge level={fitReport.fitLevel} />
             <span className={styles.chip}>{fitReport.matches.length} matches</span>
-            <span className={styles.chip}>
-              {softGaps} soft gap{softGaps === 1 ? '' : 's'}
-            </span>
-            {showHardGapsChip && (
+            {softGaps > 0 && (
+              <span className={styles.chip}>
+                {softGaps} soft gap{softGaps === 1 ? '' : 's'}
+              </span>
+            )}
+            {hardGaps > 0 && (
               <span className={styles.chipDanger}>
                 {hardGaps} hard gap{hardGaps === 1 ? '' : 's'}
               </span>
             )}
+            {gateVisible && <span className={styles.chipDanger}>recommend: pass</span>}
           </div>
           <p className={styles.reasoning}>{fitReport.reasoning}</p>
         </div>
@@ -92,10 +114,7 @@ export const FitReportView = ({
       {jobDescription && (
         <section className={styles.panel}>
           <h3 className={styles.panelTitle}>Annotated JD</h3>
-          <AnnotatedJd
-            content={jobDescription.content}
-            keywordCoverage={resume?.screenerReport.screenerAnalysis.keywordCoverage ?? {}}
-          />
+          <AnnotatedJd content={jobDescription.content} keywordCoverage={coverage} />
         </section>
       )}
 
@@ -104,7 +123,7 @@ export const FitReportView = ({
           <h3 className={styles.panelTitle}>Cultural signals</h3>
           {fitReport.culturalSignals.map((s) => (
             <div key={s.quality} className={styles.signal}>
-              <span className={styles.signalQuality}>{s.quality}</span>
+              <span className={styles.signalQuality}>{formatSignalQuality(s.quality)}</span>
               <span className={styles.signalJd}>&ldquo;{s.jdSignal}&rdquo;</span>
               <span className={styles.signalHint}>{s.evidenceHint}</span>
             </div>

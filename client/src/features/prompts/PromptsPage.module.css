@@ -4,6 +4,12 @@
   padding: var(--space-12) var(--space-8);
 }
 
+@media (max-width: 34rem) {
+  .page {
+    padding: var(--space-6) var(--space-4);
+  }
+}
+
 .header {
   margin-bottom: var(--space-6);
 }
@@ -17,7 +23,15 @@
   margin: 0 0 var(--space-2);
 }
 
-.loading,
+.loading {
+  padding: var(--space-8) 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .empty {
   padding: var(--space-8);
   border: 1px solid var(--border);
@@ -65,6 +79,13 @@
   color: var(--text-primary);
 }
 
+.note {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin: var(--space-1) 0 0;
+}
+
 .template {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
@@ -73,9 +94,45 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
-  max-height: 480px;
-  overflow-y: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
   margin: 0;
+}
+
+/* Clamped preview — overflow hidden (no wheel trap), fade hints at more. */
+.templateClamped {
+  position: relative;
+  max-height: 16rem;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.templateOpen {
+  position: relative;
+}
+
+.fade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 5rem;
+  background: linear-gradient(to bottom, transparent, var(--bg-terminal));
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  pointer-events: none;
+}
+
+.toggle {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  color: var(--accent-hover);
 }

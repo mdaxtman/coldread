@@ -34,11 +34,12 @@
   --machine-line: rgba(111, 195, 212, 0.4);
   --machine-glow: 0 0 8px rgba(111, 195, 212, 0.45);
 
-  /* Semantic — fit levels (unchanged) */
-  --fit-strong: #4ade80;
-  --fit-moderate: #facc15;
-  --fit-borderline: #fb923c;
-  --fit-poor: #f87171;
+  /* Semantic — fit levels. Warmed from stock Tailwind green/red toward
+     moss/ochre/rust so status color sits inside the bronze palette. */
+  --fit-strong: #a3c57d;
+  --fit-moderate: #d9b23f;
+  --fit-borderline: #d98a4a;
+  --fit-poor: #e0715a;
 
   /* Typography */
   --font-display: 'IBM Plex Sans', system-ui, sans-serif;

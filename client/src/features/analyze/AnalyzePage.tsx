@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useNavigate, useSearch } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { createJobDescription } from '../../api/client'
 import { useRuns } from '../../hooks/useRuns'
 import { Button } from '../../components/ui/Button'
@@ -69,13 +69,20 @@ export const AnalyzePage = () => {
 
       <aside className={styles.rail}>
         <p className={styles.eyebrow}>Recent runs</p>
+        {runs.data?.length === 0 && <p className={styles.railEmpty}>No reads yet.</p>}
         {(runs.data ?? []).slice(0, 5).map((r) => (
-          <a key={r.id} href={`/runs/${r.id}`} className={styles.runCard}>
+          <Link
+            key={r.id}
+            to="/runs/$runId"
+            params={{ runId: r.id }}
+            className={styles.runCard}
+            data-status={r.status}
+          >
             <span className={styles.runTitle}>{r.jdTitle ?? 'Untitled JD'}</span>
             <span className={styles.runMeta}>
               {r.kind} · {r.status} · ${r.estCostUsd.toFixed(3)}
             </span>
-          </a>
+          </Link>
         ))}
       </aside>
     </div>

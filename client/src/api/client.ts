@@ -25,6 +25,9 @@ export const getJobDescriptions = () => request<JobDescription[]>('/jds')
 export const createJobDescription = (data: Pick<JobDescription, 'content'>) =>
   request<JobDescription>('/jds', { method: 'POST', body: JSON.stringify(data) })
 
+export const updateJobDescription = (jdId: string, title: string) =>
+  request<JobDescription>(`/jds/${jdId}`, { method: 'PATCH', body: JSON.stringify({ title }) })
+
 // Single-resource fetchers
 export const getJobDescription = (jdId: string) => request<JobDescription>(`/jds/${jdId}`)
 

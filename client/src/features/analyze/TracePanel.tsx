@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { TraceLine } from '../../hooks/useRunStream'
 import styles from './TracePanel.module.css'
 
@@ -9,17 +9,43 @@ const TONE_CLASS: Record<TraceLine['tone'], string> = {
   error: styles.error,
 }
 
-export const TracePanel = ({ trace, live }: { trace: TraceLine[]; live: boolean }) => {
+/** Ticking elapsed clock — proof of life while the model call gives us no events. */
+const Heartbeat = ({ since }: { since: number }) => {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 100)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div className={styles.line}>
+      <span className={styles.at}>+{((now - since) / 1000).toFixed(1)}s</span>
+      <span className={styles.label} />
+      <span className={styles.heartbeat}>
+        <span className={styles.cursor} aria-hidden /> working…
+      </span>
+    </div>
+  )
+}
+
+export const TracePanel = ({
+  trace,
+  live,
+  startedAt,
+}: {
+  trace: TraceLine[]
+  live: boolean
+  startedAt?: number
+}) => {
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: 'end' })
-  }, [trace.length])
+    if (live) bottomRef.current?.scrollIntoView({ block: 'end' })
+  }, [trace.length, live])
 
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
         <span className={live ? styles.liveDot : styles.idleDot} aria-hidden />
-        <span>Live trace</span>
+        <span>{live ? 'Live trace' : 'Trace'}</span>
       </div>
       <div className={styles.log}>
         {trace.map((line, i) => (
@@ -29,7 +55,8 @@ export const TracePanel = ({ trace, live }: { trace: TraceLine[]; live: boolean 
             <span className={TONE_CLASS[line.tone]}>{line.message}</span>
           </div>
         ))}
-        {live && <span className={styles.cursor} aria-hidden />}
+        {live && startedAt != null && <Heartbeat since={startedAt} />}
+        {live && startedAt == null && <span className={styles.cursor} aria-hidden />}
         <div ref={bottomRef} />
       </div>
     </div>

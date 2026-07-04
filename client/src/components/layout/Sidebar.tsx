@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { useUsageSummary } from '../../hooks/useRuns'
 import styles from './Sidebar.module.css'
 
@@ -8,8 +8,16 @@ const NAV = [
   { to: '/prompts', label: 'Prompts' },
 ] as const
 
+// TanStack's activeProps can't mark "Analyze" active on /analyze/$jdId
+// (its `to` is '/'), so compute active state from the pathname directly.
+const isNavActive = (to: string, pathname: string): boolean => {
+  if (to === '/') return pathname === '/' || pathname.startsWith('/analyze')
+  return pathname === to || pathname.startsWith(`${to}/`)
+}
+
 export const Sidebar = () => {
   const usage = useUsageSummary()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brand}>
@@ -32,9 +40,11 @@ export const Sidebar = () => {
           <Link
             key={item.to}
             to={item.to}
-            className={styles.navLink}
-            activeProps={{ className: `${styles.navLink} ${styles.navLinkActive}` }}
-            activeOptions={{ exact: item.to === '/' }}
+            className={
+              isNavActive(item.to, pathname)
+                ? `${styles.navLink} ${styles.navLinkActive}`
+                : styles.navLink
+            }
           >
             {item.label}
           </Link>

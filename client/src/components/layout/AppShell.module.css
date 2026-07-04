@@ -8,3 +8,11 @@
   flex: 1;
   min-width: 0;
 }
+
+/* Below the layout breakpoint the sidebar becomes a top bar, so the shell
+   stacks vertically instead of running side-by-side. */
+@media (max-width: 52rem) {
+  .shell {
+    flex-direction: column;
+  }
+}

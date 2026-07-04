@@ -14,29 +14,58 @@
   border-radius: var(--radius-lg);
 }
 
-.score {
-  font-family: var(--font-serif);
-  font-size: var(--text-4xl);
-  line-height: 1;
+/* Thin conic ring that fills to the score — gives the number its scale. */
+.scoreRing {
+  position: relative;
   flex-shrink: 0;
-  min-width: 4rem;
-  text-align: center;
+  width: 6.5rem;
+  height: 6.5rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  background: conic-gradient(currentColor var(--score-pct, 0%), var(--border-soft) 0);
 }
 
-.score[data-level='strong'] {
+.scoreRing::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+}
+
+.scoreRing[data-level='strong'] {
   color: var(--fit-strong);
 }
 
-.score[data-level='moderate'] {
+.scoreRing[data-level='moderate'] {
   color: var(--fit-moderate);
 }
 
-.score[data-level='borderline'] {
+.scoreRing[data-level='borderline'] {
   color: var(--fit-borderline);
 }
 
-.score[data-level='poor'] {
+.scoreRing[data-level='poor'] {
   color: var(--fit-poor);
+}
+
+.score {
+  position: relative;
+  font-family: var(--font-serif);
+  font-size: var(--text-3xl);
+  line-height: 1;
+  text-align: center;
+}
+
+.scoreScale {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
 }
 
 .heroBody {
@@ -153,7 +182,6 @@
 .signalQuality {
   font-weight: var(--weight-semibold);
   color: var(--accent);
-  text-transform: capitalize;
   min-width: 8rem;
 }
 
@@ -199,5 +227,19 @@
   .cta {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  /* Score ring sits above the reasoning instead of beside it. */
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+
+  .gate,
+  .panel,
+  .connection {
+    padding: var(--space-5);
   }
 }

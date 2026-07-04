@@ -59,7 +59,8 @@ export function runStreamReducer(state: RunStreamState, e: RunStreamEvent): RunS
         runId: d.runId as string,
         startedAt: Date.now(),
       }
-      return { ...next, trace: [traceLine(next, 'system', `run ${d.runId} · ${d.kind}`, 'info')] }
+      // Run UUIDs are internal — the trace narrates for a human.
+      return { ...next, trace: [traceLine(next, 'system', `${d.kind} run started`, 'info')] }
     }
     case 'stage_started': {
       const stage: StageInfo = { stage: d.stage as string, seq: d.seq as number, status: 'running' }

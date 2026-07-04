@@ -33,13 +33,16 @@ describe('FitReportView gate (#31)', () => {
       gaps: [{ requirement: 'iOS', type: 'hard', notes: 'none' }],
     }
     render(<FitReportView jdId="jd-1" fitReport={gated} resume={null} onGenerate={vi.fn()} />)
-    expect(screen.getByText(/1 hard gap/i)).toBeInTheDocument()
+    // Both the chip and the gate banner name the hard gap — they must agree.
+    expect(screen.getAllByText(/1 hard gap/i).length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('recommend: pass')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /generate anyway/i })).toBeInTheDocument()
   })
 
   it('renders cultural signals (#32)', () => {
     render(<FitReportView jdId="jd-1" fitReport={base} resume={null} onGenerate={vi.fn()} />)
-    expect(screen.getByText('ownership')).toBeInTheDocument()
+    // Qualities render sentence-cased, not raw machine keys.
+    expect(screen.getByText('Ownership')).toBeInTheDocument()
   })
 
   it('renders the annotated JD when jobDescription is provided', () => {

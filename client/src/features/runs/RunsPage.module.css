@@ -4,6 +4,12 @@
   padding: var(--space-12) var(--space-8);
 }
 
+@media (max-width: 34rem) {
+  .page {
+    padding: var(--space-6) var(--space-4);
+  }
+}
+
 .header {
   margin-bottom: var(--space-6);
 }
@@ -17,7 +23,15 @@
   margin: 0 0 var(--space-2);
 }
 
-.loading,
+.loading {
+  padding: var(--space-8) 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .empty {
   padding: var(--space-8);
   border: 1px solid var(--border);
@@ -26,13 +40,19 @@
   color: var(--text-secondary);
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--bg-surface);
+/* Wide table stays readable on narrow screens by scrolling inside its own
+   box — the page body never scrolls sideways. */
+.tableScroll {
+  overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  background-color: var(--bg-surface);
   font-size: var(--text-sm);
 }
 
@@ -45,16 +65,22 @@
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .table td {
   padding: var(--space-3) var(--space-4);
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .table tr:last-child td {
   border-bottom: none;
+}
+
+.row {
+  cursor: pointer;
 }
 
 .table tr:hover td {
