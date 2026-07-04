@@ -69,7 +69,7 @@ def test_get_run_404() -> None:
 
 def test_usage_summary() -> None:
     with patch(
-        "api.routes.pipeline_runs.month_summary",
+        "api.routes.pipeline_runs.usage_summary",
         return_value={"tokens_in": 10, "tokens_out": 5, "est_cost_usd": 0.001, "run_count": 2},
     ):
         resp = client.get("/usage/summary")

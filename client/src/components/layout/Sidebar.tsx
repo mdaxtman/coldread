@@ -48,7 +48,7 @@ export const Sidebar = () => {
         </div>
         {usage.data && (
           <div className={styles.usage}>
-            <span>this month</span>
+            <span>all-time</span>
             <span className={styles.usageValue}>
               ${usage.data.estCostUsd.toFixed(2)} · {usage.data.runCount} runs
             </span>

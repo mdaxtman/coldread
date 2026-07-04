@@ -429,7 +429,7 @@ def list_prompts(user_id: str = Depends(get_current_user_id)) -> list[PromptResp
 
 @observability_router.get("/usage/summary", response_model=UsageSummaryResponse)
 def usage_summary(user_id: str = Depends(get_current_user_id)) -> UsageSummaryResponse:
-    return UsageSummaryResponse(**pipeline_runs.month_summary(user_id))
+    return UsageSummaryResponse(**pipeline_runs.usage_summary(user_id))
 
 
 router.include_router(jds)

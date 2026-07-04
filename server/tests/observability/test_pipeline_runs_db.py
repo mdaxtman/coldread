@@ -49,7 +49,7 @@ def test_add_model_call_serializes_record() -> None:
     assert inserted["request"] == {"model": "m"}
 
 
-def test_month_summary_sums_rows() -> None:
+def test_usage_summary_sums_all_rows() -> None:
     client = _mock_client(
         [
             {"tokens_in": 100, "tokens_out": 50, "est_cost_usd": 0.01},
@@ -57,7 +57,7 @@ def test_month_summary_sums_rows() -> None:
         ]
     )
     with patch.object(pipeline_runs, "get_client", return_value=client):
-        summary = pipeline_runs.month_summary("user-1")
+        summary = pipeline_runs.usage_summary("user-1")
     assert summary == {
         "tokens_in": 300,
         "tokens_out": 120,

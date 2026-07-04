@@ -102,14 +102,12 @@ def list_calls(run_id: str, user_id: str) -> list[dict[str, Any]]:
     return cast(list[dict[str, Any]], response.data)
 
 
-def month_summary(user_id: str) -> dict[str, Any]:
-    month_start = datetime.now(UTC).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+def usage_summary(user_id: str) -> dict[str, Any]:
     response = (
         get_client()
         .table("pipeline_runs")
         .select("tokens_in, tokens_out, est_cost_usd")
         .eq("user_id", user_id)
-        .gte("started_at", month_start.isoformat())
         .execute()
     )
     rows: list[dict[str, Any]] = cast(list[dict[str, Any]], response.data or [])
