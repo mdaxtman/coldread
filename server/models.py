@@ -134,21 +134,6 @@ class ResumeVariantResponse(CamelModel):
 
 
 # ---------------------------------------------------------------------------
-# Job Queue Models
-# ---------------------------------------------------------------------------
-
-
-class JobResponse(CamelModel):
-    """Response for async job endpoints."""
-
-    job_id: str
-    job_type: str
-    status: str
-    created_at: datetime
-    metadata: dict[str, str | int | float | bool | None] | None = None
-
-
-# ---------------------------------------------------------------------------
 # Response models — Observability (Runs / Prompts / Usage)
 # ---------------------------------------------------------------------------
 

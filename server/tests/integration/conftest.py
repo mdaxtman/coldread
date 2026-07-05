@@ -36,7 +36,7 @@ SAMPLE_FIT_REPORT = {
 
 @pytest.fixture(autouse=True)
 def mock_db_layer() -> Generator[None, None, None]:
-    """Patch DB lookups used by /jobs routes so tests don't need Supabase credentials.
+    """Patch DB lookups used by the pipeline/stream routes so tests don't need Supabase credentials.
 
     Returns valid data for the known sample IDs; None for all other IDs
     (which triggers the same 404 the real DB would return for unknown records).

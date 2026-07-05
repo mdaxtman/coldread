@@ -8,13 +8,11 @@ from api.dependencies import get_current_user_id
 from db import fit_reports, job_descriptions, pipeline_runs, resume_variants
 from db import prompts as prompts_db
 from features import fit_assessment, resume_generation
-from jobs.models import Job, JobQueue, JobType
 from models import (
     CreateJdRequest,
     FitReportResponse,
     GenerateResumeRequest,
     JobDescriptionResponse,
-    JobResponse,
     ModelCallResponse,
     PipelineRunResponse,
     PromptResponse,
@@ -25,9 +23,6 @@ from models import (
 )
 
 router = APIRouter()
-
-# Global job queue instance
-_job_queue = JobQueue()
 
 
 # ---------------------------------------------------------------------------
@@ -60,33 +55,6 @@ def _verify_jd_ownership(jd_id: str, user_id: str) -> None:
         # Handle database errors (e.g., invalid UUID format)
         if "invalid input syntax" in str(e) or "uuid" in str(e).lower():
             raise HTTPException(status_code=404, detail="Job description not found")
-        raise
-
-
-def _get_fit_report_safe(fit_report_id: str, user_id: str) -> Any:
-    """Get a fit report with proper error handling.
-
-    Args:
-        fit_report_id: Fit report ID
-        user_id: Current user ID
-
-    Returns:
-        Fit report record
-
-    Raises:
-        HTTPException: If fit report not found or invalid ID format
-    """
-    try:
-        fit_report = fit_reports.get_fit_report_by_id(fit_report_id, user_id)
-        if fit_report is None:
-            raise HTTPException(status_code=404, detail="Fit report not found")
-        return fit_report
-    except HTTPException:
-        raise
-    except Exception as e:
-        # Handle database errors (e.g., invalid UUID format)
-        if "invalid input syntax" in str(e) or "uuid" in str(e).lower():
-            raise HTTPException(status_code=404, detail="Fit report not found")
         raise
 
 
@@ -253,164 +221,6 @@ def list_resume_variants(
 
 
 # ---------------------------------------------------------------------------
-# Async Job Endpoints
-# ---------------------------------------------------------------------------
-
-jobs_router = APIRouter(prefix="/jobs", tags=["jobs"])
-
-
-@jobs_router.post("/fit-assessment/{jd_id}", response_model=JobResponse, status_code=202)
-def queue_fit_assessment(
-    jd_id: str,
-    user_id: str = Depends(get_current_user_id),
-) -> JobResponse:
-    """Queue a fit assessment job for a job description.
-
-    Returns immediately with job_id and status (pending).
-    The job will be processed asynchronously.
-
-    Args:
-        jd_id: Job description ID
-        user_id: Current user ID
-
-    Returns:
-        Job response with job_id and status
-
-    Raises:
-        HTTPException: If JD not found or user doesn't own the JD
-    """
-    # Verify JD exists and belongs to user before queuing
-    try:
-        _verify_jd_ownership(jd_id, user_id)
-    except HTTPException:
-        raise
-
-    job = Job.create(JobType.FIT_ASSESSMENT, user_id, jd_id=jd_id)
-    _job_queue.add_job(job)
-
-    return JobResponse(
-        job_id=job.job_id,
-        job_type=job.job_type.value,
-        status=job.status.value,
-        created_at=job.created_at,
-        metadata=job.metadata,
-    )
-
-
-@jobs_router.post("/resume-generation", response_model=JobResponse, status_code=202)
-def queue_resume_generation(
-    body: GenerateResumeRequest,
-    user_id: str = Depends(get_current_user_id),
-) -> JobResponse:
-    """Queue a resume generation job from a completed fit assessment.
-
-    Returns immediately with job_id and status (pending).
-    The job will be processed asynchronously.
-
-    Args:
-        body: Resume generation request with fit_report_id
-        user_id: Current user ID
-
-    Returns:
-        Job response with job_id and status
-
-    Raises:
-        HTTPException: If fit report not found or user doesn't own it
-    """
-    # Verify the fit report exists and belongs to the user
-    fit_report = _get_fit_report_safe(body.fit_report_id, user_id)
-
-    job = Job.create(
-        JobType.RESUME_GENERATION,
-        user_id,
-        fit_report_id=body.fit_report_id,
-        jd_id=fit_report["job_description_id"],
-    )
-    _job_queue.add_job(job)
-
-    return JobResponse(
-        job_id=job.job_id,
-        job_type=job.job_type.value,
-        status=job.status.value,
-        created_at=job.created_at,
-        metadata=job.metadata,
-    )
-
-
-@jobs_router.post("/refinement/{variant_id}", response_model=JobResponse, status_code=202)
-def queue_refinement(
-    variant_id: str,
-    body: GenerateResumeRequest,
-    user_id: str = Depends(get_current_user_id),
-) -> JobResponse:
-    """Queue a resume refinement job for an existing resume variant.
-
-    Returns immediately with job_id and status (pending).
-    The job will be processed asynchronously.
-
-    Args:
-        variant_id: Resume variant ID to refine
-        body: Refinement request with fit_report_id
-        user_id: Current user ID
-
-    Returns:
-        Job response with job_id and status
-
-    Raises:
-        HTTPException: If variant or fit report not found
-    """
-    # Verify the fit report exists and belongs to the user
-    fit_report = _get_fit_report_safe(body.fit_report_id, user_id)
-
-    job = Job.create(
-        JobType.REFINEMENT,
-        user_id,
-        fit_report_id=body.fit_report_id,
-        variant_id=variant_id,
-        jd_id=fit_report["job_description_id"],
-    )
-    _job_queue.add_job(job)
-
-    return JobResponse(
-        job_id=job.job_id,
-        job_type=job.job_type.value,
-        status=job.status.value,
-        created_at=job.created_at,
-        metadata=job.metadata,
-    )
-
-
-@jobs_router.get("/{job_id}", response_model=JobResponse)
-def get_job(
-    job_id: str,
-    user_id: str = Depends(get_current_user_id),
-) -> JobResponse:
-    """Get the status of a queued job.
-
-    Args:
-        job_id: Job ID to retrieve
-        user_id: Current user ID
-
-    Returns:
-        Job response with status and metadata
-
-    Raises:
-        HTTPException: If job not found or user doesn't own it
-    """
-    job = _job_queue.get_job(job_id)
-    if job is None or job.user_id != user_id:
-        raise HTTPException(status_code=404, detail="Job not found")
-
-    return JobResponse(
-        job_id=job.job_id,
-        job_type=job.job_type.value,
-        status=job.status.value,
-        created_at=job.created_at,
-        metadata=job.metadata,
-    )
-
-
-# ---------------------------------------------------------------------------
 # Observability (Runs / Prompts / Usage)
 # ---------------------------------------------------------------------------
 
@@ -452,7 +262,6 @@ def usage_summary(user_id: str = Depends(get_current_user_id)) -> UsageSummaryRe
 
 
 router.include_router(jds)
-router.include_router(jobs_router)
 router.include_router(observability_router)
 
 from api.streaming import streaming_router  # noqa: E402 — avoids circular import at module load
