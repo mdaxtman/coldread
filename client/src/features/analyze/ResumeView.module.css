@@ -1,0 +1,125 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.scores {
+  display: flex;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  margin: 0;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.scoreLabel {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.scoreValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.content {
+  padding: var(--space-6);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.content :global(h1) {
+  font-size: 1.4em;
+  margin: 0 0 0.5em;
+}
+
+.content :global(h2) {
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-size: 1.25em;
+  font-weight: var(--weight-semibold);
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0.5em;
+}
+
+.content :global(h3) {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-size: 1.1em;
+  font-weight: var(--weight-semibold);
+}
+
+.content :global(p) {
+  margin: 0.5em 0;
+}
+
+.content :global(ul) {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.content :global(li) {
+  margin: 0.25em 0;
+}
+
+.content :global(strong) {
+  font-weight: var(--weight-semibold);
+}
+
+.changes {
+  padding: var(--space-6);
+}
+
+.changesTitle {
+  margin: 0 0 var(--space-4);
+}
+
+.changeList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.change {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.changeSection {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-right: var(--space-2);
+}
+
+.refineRow {
+  display: flex;
+  justify-content: flex-end;
+}

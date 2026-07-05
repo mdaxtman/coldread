@@ -4,8 +4,11 @@ This is for logging and monitoring suspicious patterns, not for blocking request
 The system prompt hardening is the primary defense.
 """
 
+import logging
 import re
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 # Common prompt injection red flags
 INJECTION_PATTERNS = [
@@ -52,11 +55,14 @@ def log_suspicious_jd(jd_content: str, user_id: str, patterns: list[str]) -> Non
     if not patterns:
         return
 
-    # In a real app, this would write to a structured log (Cloud Logging, DataDog, etc.)
-    # For now, just print for development visibility
-    print(
-        f"[SECURITY] Suspicious JD detected for user {user_id}. "
-        f"Matched {len(patterns)} pattern(s): {', '.join(patterns[:3])}"
+    # A security signal worth surfacing in production monitoring, so log at
+    # WARNING via the logging framework (a real deployment routes this to
+    # structured logging — Cloud Logging, DataDog, etc.) rather than stdout.
+    logger.warning(
+        "[SECURITY] Suspicious JD detected for user %s. Matched %d pattern(s): %s",
+        user_id,
+        len(patterns),
+        ", ".join(patterns[:3]),
     )
 
 

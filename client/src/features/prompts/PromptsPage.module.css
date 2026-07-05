@@ -1,0 +1,138 @@
+.page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8);
+}
+
+@media (max-width: 34rem) {
+  .page {
+    padding: var(--space-6) var(--space-4);
+  }
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 var(--space-2);
+}
+
+.loading {
+  padding: var(--space-8) 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.empty {
+  padding: var(--space-8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.eyebrowSmall {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--eyebrow-tracking);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.name {
+  margin: 0;
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+}
+
+.note {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin: var(--space-1) 0 0;
+}
+
+.template {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  background: var(--bg-terminal);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+/* Clamped preview — overflow hidden (no wheel trap), fade hints at more. */
+.templateClamped {
+  position: relative;
+  max-height: 16rem;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.templateOpen {
+  position: relative;
+}
+
+.fade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 5rem;
+  background: linear-gradient(to bottom, transparent, var(--bg-terminal));
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  pointer-events: none;
+}
+
+.toggle {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  color: var(--accent-hover);
+}

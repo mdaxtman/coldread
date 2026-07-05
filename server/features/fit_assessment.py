@@ -52,4 +52,8 @@ def run_fit_assessment_workflow(jd_id: str, user_id: str) -> Any:
         gaps=result["gaps"],
         terminology=result["terminology"],
         reasoning=result["reasoning"],
+        overall_score=result.get("overall_score"),
+        semantic_score=result.get("semantic_score"),
+        cultural_signals=result.get("cultural_signals", []),
+        product_connection=result.get("product_connection"),
     )

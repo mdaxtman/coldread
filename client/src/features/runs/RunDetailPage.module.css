@@ -1,0 +1,168 @@
+.page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+@media (max-width: 34rem) {
+  .page {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .header h1 {
+    font-size: var(--text-xl);
+  }
+}
+
+.loading {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.back {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.back:hover {
+  color: var(--accent);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: var(--text-2xl);
+  color: var(--text-primary);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+
+.totals {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: var(--space-1) 0 0;
+}
+
+.error {
+  color: var(--fit-poor);
+  font-weight: var(--weight-semibold);
+  margin: var(--space-2) 0 0;
+}
+
+.call {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.callHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.seq {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+}
+
+.stage {
+  font-weight: var(--weight-semibold);
+  text-transform: capitalize;
+  color: var(--text-primary);
+}
+
+.callMeta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.call details {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-2);
+}
+
+.call summary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--eyebrow-tracking);
+  color: var(--text-muted);
+}
+
+.call summary:hover {
+  color: var(--accent);
+}
+
+.call details + details {
+  margin-top: var(--space-2);
+}
+
+/* Nested payload sections inside request/response */
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 0 var(--space-4);
+}
+
+.sections details {
+  border-top: none;
+  padding-top: 0;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.role {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--machine);
+}
+
+/* Payloads run to thousands of lines — cap them and scroll inside. */
+.sections pre {
+  max-height: 420px;
+  overflow-y: auto;
+  font-size: var(--text-xs);
+}

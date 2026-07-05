@@ -2,14 +2,23 @@
 
 from typing import Any, cast
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from config import PIPELINE_MODEL
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
 _TOOL_NAME = "submit_fit_report"
 
-_FIT_REPORT_SCHEMA: dict[str, object] = {
+_FIT_REPORT_SCHEMA: dict[str, Any] = {
     "type": "object",
-    "required": ["fit_level", "matches", "gaps", "terminology", "reasoning"],
+    "required": [
+        "fit_level",
+        "matches",
+        "gaps",
+        "terminology",
+        "reasoning",
+        "overall_score",
+        "semantic_score",
+    ],
     "properties": {
         "fit_level": {
             "type": "string",
@@ -58,6 +67,21 @@ _FIT_REPORT_SCHEMA: dict[str, object] = {
             },
         },
         "reasoning": {"type": "string"},
+        "overall_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "semantic_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "cultural_signals": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["quality", "jd_signal", "evidence_hint"],
+                "properties": {
+                    "quality": {"type": "string"},
+                    "jd_signal": {"type": "string"},
+                    "evidence_hint": {"type": "string"},
+                },
+            },
+        },
+        "product_connection": {"type": ["string", "null"]},
     },
 }
 
@@ -84,8 +108,9 @@ def run_fit_assessment(jd_content: str, narratives_text: str, user_id: str) -> d
         "and submit your assessment using the submit_fit_report tool."
     )
 
-    response = _get_anthropic_client().messages.create(
-        model="claude-sonnet-4-20250514",
+    result = call_model(
+        "fit",
+        model=PIPELINE_MODEL,
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
@@ -101,8 +126,6 @@ def run_fit_assessment(jd_content: str, narratives_text: str, user_id: str) -> d
         ),
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
-
-    result = _extract_tool_response(response)
 
     # Filter terminology mappings: only keep those with confidence >= 0.8
     if "terminology" in result:

@@ -5,6 +5,7 @@ calls Anthropic Claude with proper schema, and returns RefinementOutput
 with refined resume content and list of changes made.
 """
 
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -45,7 +46,7 @@ class TestRefinementStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.refinement_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.refinement_stage.load_prompt") as mock_load_prompt,
         ):
             mock_client = MagicMock()
@@ -94,7 +95,7 @@ class TestRefinementStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.refinement_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.refinement_stage.load_prompt") as mock_load_prompt,
         ):
             mock_client = MagicMock()
@@ -139,7 +140,7 @@ class TestRefinementStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.refinement_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.refinement_stage.load_prompt") as mock_load_prompt,
         ):
             mock_client = MagicMock()
@@ -152,8 +153,8 @@ class TestRefinementStage:
             # Verify API was called with correct parameters
             mock_client.messages.create.assert_called_once()
             call_kwargs = mock_client.messages.create.call_args[1]
-            assert call_kwargs["model"] == "claude-sonnet-4-20250514"
-            assert call_kwargs["max_tokens"] == 4096
+            assert call_kwargs["model"] == "claude-sonnet-5"
+            assert call_kwargs["max_tokens"] == 8192
             assert call_kwargs["system"] == "System prompt"
             assert len(call_kwargs["messages"]) == 1
             assert "Senior engineer with 8+ years" in call_kwargs["messages"][0]["content"]
@@ -193,7 +194,7 @@ class TestRefinementStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.refinement_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.refinement_stage.load_prompt"),
         ):
             mock_client = MagicMock()
@@ -242,7 +243,7 @@ class TestRefinementStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.refinement_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.refinement_stage.load_prompt"),
         ):
             mock_client = MagicMock()
@@ -275,7 +276,7 @@ class TestRefinementStage:
             user_id="user-123",
         )
 
-        with patch("pipeline.refinement_stage._get_anthropic_client") as mock_client:
+        with patch("pipeline.anthropic_utils._get_anthropic_client") as mock_client:
             # Mock response with no tool_use block
             mock_response = MagicMock()
             mock_response.content = []  # Empty, no tool output
@@ -317,7 +318,7 @@ class TestRefinementStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.refinement_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.refinement_stage.load_prompt"),
         ):
             mock_client = MagicMock()
@@ -329,3 +330,50 @@ class TestRefinementStage:
             # Should not raise, and output should be valid
             assert isinstance(output, RefinementOutput)
             assert output.refined_content
+
+    def _run_with_tool_input(self, tool_input: dict[str, Any]) -> RefinementOutput:
+        """Run the stage with a mocked client returning the given tool input."""
+        fit_output = FitAssessmentOutput(
+            fit_level="moderate",
+            matches=[],
+            gaps=[],
+            terminology=[],
+            overall_score=0.65,
+            semantic_score=0.7,
+            keyword_coverage={},
+        )
+        input_data = RefinementInput(
+            resume_content="## Summary\nSenior engineer",
+            fit_assessment_output=fit_output,
+            jd_content="JD content",
+            user_id="user-123",
+        )
+
+        mock_response = MagicMock()
+        mock_tool_block = MagicMock()
+        mock_tool_block.type = "tool_use"
+        mock_tool_block.input = tool_input
+        mock_response.content = [mock_tool_block]
+
+        with (
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
+            patch("pipeline.refinement_stage.load_prompt"),
+        ):
+            mock_client = MagicMock()
+            mock_client.messages.create.return_value = mock_response
+            mock_get_client.return_value = mock_client
+
+            return run_refinement_stage(input_data)
+
+    def test_normalizes_refined_resume_key_drift(self) -> None:
+        """claude-sonnet-5 may return `refined_resume`; content must be preserved."""
+        output = self._run_with_tool_input(
+            {"refined_resume": "## Summary\nRefined engineer", "changes": ["Reworded"]}
+        )
+        assert output.refined_content == "## Summary\nRefined engineer"
+        assert output.changes_made == ["Reworded"]
+
+    def test_raises_when_no_refined_content_key(self) -> None:
+        """A tool response missing both keys raises RuntimeError naming the keys."""
+        with pytest.raises(RuntimeError, match=r"no refined_content \(keys: \['changes'\]\)"):
+            self._run_with_tool_input({"changes": []})

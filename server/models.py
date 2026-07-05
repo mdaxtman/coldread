@@ -1,7 +1,7 @@
 """Pydantic models for ColdRead API request/response serialization."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -20,6 +20,10 @@ class CamelModel(BaseModel):
 
 class CreateJdRequest(CamelModel):
     content: str
+
+
+class UpdateJdRequest(CamelModel):
+    title: str
 
 
 class GenerateResumeRequest(CamelModel):
@@ -55,6 +59,12 @@ class GapModel(CamelModel):
 class TerminologyAlignmentModel(CamelModel):
     my_term: str
     jd_term: str
+
+
+class CulturalSignalModel(CamelModel):
+    quality: str
+    jd_signal: str
+    evidence_hint: str
 
 
 class ScreenerAnalysisModel(CamelModel):
@@ -105,6 +115,10 @@ class FitReportResponse(CamelModel):
     terminology: list[TerminologyAlignmentModel]
     reasoning: str
     created_at: datetime
+    overall_score: float | None = None
+    semantic_score: float | None = None
+    cultural_signals: list[CulturalSignalModel] = []
+    product_connection: str | None = None
 
 
 class ResumeVariantResponse(CamelModel):
@@ -120,15 +134,57 @@ class ResumeVariantResponse(CamelModel):
 
 
 # ---------------------------------------------------------------------------
-# Job Queue Models
+# Response models — Observability (Runs / Prompts / Usage)
 # ---------------------------------------------------------------------------
 
 
-class JobResponse(CamelModel):
-    """Response for async job endpoints."""
-
-    job_id: str
-    job_type: str
+class PipelineRunResponse(CamelModel):
+    id: str
+    job_description_id: str
+    kind: str
     status: str
+    error: str | None = None
+    started_at: datetime
+    finished_at: datetime | None = None
+    duration_ms: int | None = None
+    tokens_in: int
+    tokens_out: int
+    est_cost_usd: float
+    jd_title: str | None = None
+    jd_company: str | None = None
+
+
+class ModelCallResponse(CamelModel):
+    id: str
+    stage: str
+    seq: int
+    model: str
+    latency_ms: int
+    tokens_in: int
+    tokens_out: int
+    stop_reason: str | None = None
+    est_cost_usd: float
+    request: dict[str, Any]
+    response: list[Any]
     created_at: datetime
-    metadata: dict[str, str | int | float | bool | None] | None = None
+
+
+class RunDetailResponse(CamelModel):
+    run: PipelineRunResponse
+    calls: list[ModelCallResponse]
+
+
+class PromptResponse(CamelModel):
+    id: str
+    stage: str
+    name: str
+    version: int
+    active: bool
+    template: str
+
+
+class UsageSummaryResponse(CamelModel):
+    tokens_in: int
+    tokens_out: int
+    est_cost_usd: float
+    run_count: int

@@ -239,3 +239,52 @@ def test_list_resume_variants_empty(mock_get_jd: Any, mock_list: Any) -> None:
     response = client.get(f"/jds/{JD_ID}/resume/variants")
     assert response.status_code == 200
     assert response.json() == []
+
+
+# ---------------------------------------------------------------------------
+# Title derivation + PATCH /jds/{jd_id}
+# ---------------------------------------------------------------------------
+
+
+def test_derive_title_first_sentence_of_first_line() -> None:
+    from db.job_descriptions import derive_title
+
+    content = "Staff Frontend Engineer — Growth Team. We're hiring a staff frontend engineer..."
+    assert derive_title(content) == "Staff Frontend Engineer — Growth Team"
+
+
+def test_derive_title_strips_markdown_and_blank_lines() -> None:
+    from db.job_descriptions import derive_title
+
+    assert derive_title("\n\n## Senior Backend Engineer\nAcme Corp") == "Senior Backend Engineer"
+
+
+def test_derive_title_caps_length() -> None:
+    from db.job_descriptions import derive_title
+
+    title = derive_title("engineer " * 40)
+    assert title is not None
+    assert len(title) <= 91  # cap + ellipsis
+    assert title.endswith("…")
+
+
+def test_derive_title_empty_content() -> None:
+    from db.job_descriptions import derive_title
+
+    assert derive_title("   \n\n") is None
+
+
+@patch("db.job_descriptions.update_jd_title")
+@patch("db.job_descriptions.get_jd")
+def test_update_jd_title(mock_get_jd: Any, mock_update: Any) -> None:
+    mock_get_jd.return_value = SAMPLE_JD
+    mock_update.return_value = {**SAMPLE_JD, "title": "Renamed"}
+    response = client.patch(f"/jds/{JD_ID}", json={"title": "Renamed"})
+    assert response.status_code == 200
+    assert response.json()["title"] == "Renamed"
+    mock_update.assert_called_once()
+
+
+def test_update_jd_title_rejects_empty() -> None:
+    response = client.patch(f"/jds/{JD_ID}", json={"title": "   "})
+    assert response.status_code == 400

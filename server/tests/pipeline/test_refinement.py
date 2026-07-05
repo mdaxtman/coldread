@@ -1,4 +1,7 @@
+from typing import Any
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from pipeline.refinement import _format_resume_for_screener, run_refinement
 
@@ -78,7 +81,7 @@ def test_run_refinement_calls_api_and_returns_refined_content() -> None:
     mock_response.content = [mock_tool_block]
 
     with (
-        patch("pipeline.refinement._get_anthropic_client") as mock_get_client,
+        patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
         patch("pipeline.refinement.load_prompt") as mock_load_prompt,
     ):
         mock_client = MagicMock()
@@ -100,7 +103,50 @@ def test_run_refinement_calls_api_and_returns_refined_content() -> None:
 
         # Verify API call parameters
         call_kwargs = mock_client.messages.create.call_args[1]
-        assert call_kwargs["model"] == "claude-sonnet-4-20250514"
-        assert call_kwargs["max_tokens"] == 4096
+        assert call_kwargs["model"] == "claude-sonnet-5"
+        assert call_kwargs["max_tokens"] == 8192
         assert "job_description" in call_kwargs["messages"][0]["content"]
         assert "generated_resume" in call_kwargs["messages"][0]["content"]
+
+
+def _run_refinement_with_tool_input(tool_input: dict[str, Any]) -> dict[str, Any]:
+    """Run run_refinement with a mocked client returning the given tool input."""
+    mock_response = MagicMock()
+    mock_tool_block = MagicMock()
+    mock_tool_block.type = "tool_use"
+    mock_tool_block.input = tool_input
+    mock_response.content = [mock_tool_block]
+
+    with (
+        patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
+        patch("pipeline.refinement.load_prompt") as mock_load_prompt,
+    ):
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+        mock_load_prompt.return_value = "System prompt"
+
+        return dict(
+            run_refinement(
+                resume_data={"summary": "", "experience": [], "skills": []},
+                screener_report={},
+                narratives_text="Narratives",
+                jd_content="JD",
+                user_id="user-123",
+            )
+        )
+
+
+def test_run_refinement_normalizes_refined_resume_key_drift() -> None:
+    """claude-sonnet-5 may return `refined_resume`; content must be preserved."""
+    result = _run_refinement_with_tool_input(
+        {"refined_resume": "Refined resume text", "changes_made": []}
+    )
+    assert result["refined_content"] == "Refined resume text"
+    assert "refined_resume" not in result
+
+
+def test_run_refinement_raises_when_no_refined_content_key() -> None:
+    """A tool response missing both keys raises RuntimeError naming the keys."""
+    with pytest.raises(RuntimeError, match=r"no refined_content \(keys: \['changes_made'\]\)"):
+        _run_refinement_with_tool_input({"changes_made": []})

@@ -1,0 +1,159 @@
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  border-right: 1px solid var(--border);
+  background: var(--bg-canvas);
+  /* Pin the sidebar to the viewport: without an explicit height, the
+     flex-row shell stretches it to full document height on tall pages,
+     pushing the status footer thousands of px below the fold. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+}
+
+.glyph {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.wordmark {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 0 var(--space-2);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navLink {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.navLinkActive {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--fit-strong);
+}
+
+.usage {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.usageValue {
+  color: var(--text-secondary);
+}
+
+/* Mobile: the sidebar collapses into a horizontal top bar — brand on the
+   left, nav inline, usage pushed to the right. No off-canvas/hamburger
+   needed for three destinations. */
+@media (max-width: 52rem) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+  }
+
+  /* "WORKSPACE" label is desktop chrome — noise in a top bar. */
+  .eyebrow {
+    display: none;
+  }
+
+  .nav {
+    flex-direction: row;
+    gap: var(--space-1);
+  }
+
+  /* Collapse the bordered usage card into a plain right-aligned figure. */
+  .footer {
+    margin: 0 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0;
+    border: none;
+    background: none;
+  }
+
+  .footer .statusRow,
+  .usage span:first-child {
+    display: none;
+  }
+}

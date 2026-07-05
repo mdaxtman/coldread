@@ -2,7 +2,8 @@
 
 from typing import Any, NotRequired, TypedDict, cast
 
-from pipeline.anthropic_utils import _extract_tool_response, _get_anthropic_client
+from config import PIPELINE_MODEL
+from pipeline.anthropic_utils import call_model
 from pipeline.prompt_loader import load_prompt
 
 
@@ -120,9 +121,12 @@ def run_refinement(
         "Use the submit_refined_resume tool to submit the refined resume and changes."
     )
 
-    response = _get_anthropic_client().messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4096,
+    result = call_model(
+        "refine",
+        model=PIPELINE_MODEL,
+        # 8192: refined full-resume output; 4096 truncated under the
+        # claude-sonnet-5 tokenizer (observed stop_reason=max_tokens)
+        max_tokens=8192,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
         tools=cast(
@@ -138,4 +142,14 @@ def run_refinement(
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
-    return cast(RefinementOutput, _extract_tool_response(response))
+    # claude-sonnet-5 occasionally drifts the key name despite the schema
+    # (tool schemas are not strictly enforced without strict mode, which
+    # our min/max constraints preclude for now). Normalize before use.
+    if "refined_content" not in result and "refined_resume" in result:
+        result["refined_content"] = result.pop("refined_resume")
+    if "refined_content" not in result:
+        raise RuntimeError(
+            f"refinement returned no refined_content (keys: {sorted(result.keys())})"
+        )
+
+    return cast(RefinementOutput, result)

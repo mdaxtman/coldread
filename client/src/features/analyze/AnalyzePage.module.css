@@ -1,0 +1,144 @@
+.page {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: var(--space-8);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8);
+}
+
+.main {
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 var(--space-3);
+}
+
+.headline {
+  font-family: var(--font-serif);
+  font-size: var(--text-4xl);
+  line-height: var(--leading-tight);
+  font-weight: var(--weight-normal);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4);
+}
+
+.headline em {
+  color: var(--accent);
+  font-style: italic;
+}
+
+.sub {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  max-width: 42rem;
+  margin: 0 0 var(--space-8);
+}
+
+.inputPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.inputMeta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.runRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.error {
+  font-size: var(--text-sm);
+  color: var(--fit-poor);
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-1);
+}
+
+.runCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  text-decoration: none;
+  transition: border-color var(--duration-fast) var(--ease-default);
+}
+
+.runCard:hover {
+  border-color: var(--accent-line);
+  text-decoration: none;
+}
+
+.runTitle {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.runMeta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Failed runs sit quieter, tinted rust, so the rail reads at a glance. */
+.runCard[data-status='failed'] {
+  border-color: color-mix(in srgb, var(--fit-poor) 25%, transparent);
+}
+
+.runCard[data-status='failed'] .runMeta {
+  color: var(--fit-poor);
+}
+
+.railEmpty {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+  margin: 0;
+}
+
+/* Single column: the rail drops below the input instead of colliding with
+   the hero (the 280px track has no room to sit beside it on a phone). */
+@media (max-width: 52rem) {
+  .page {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    padding: var(--space-8) var(--space-5);
+  }
+}
+
+@media (max-width: 34rem) {
+  .page {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .headline {
+    font-size: var(--text-3xl);
+  }
+
+  .sub {
+    margin-bottom: var(--space-6);
+  }
+}

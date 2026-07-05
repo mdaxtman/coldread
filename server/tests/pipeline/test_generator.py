@@ -59,7 +59,7 @@ def test_run_generator_calls_api_and_returns_structured_data() -> None:
     mock_response.content = [mock_tool_block]
 
     with (
-        patch("pipeline.generator._get_anthropic_client") as mock_get_client,
+        patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
         patch("pipeline.generator.load_prompt") as mock_load_prompt,
     ):
         mock_client = MagicMock()
@@ -78,5 +78,5 @@ def test_run_generator_calls_api_and_returns_structured_data() -> None:
         assert result["skills"] == ["Python", "Go"]
         mock_client.messages.create.assert_called_once()
         call_kwargs = mock_client.messages.create.call_args[1]
-        assert call_kwargs["model"] == "claude-sonnet-4-20250514"
-        assert call_kwargs["max_tokens"] == 4096
+        assert call_kwargs["model"] == "claude-sonnet-5"
+        assert call_kwargs["max_tokens"] == 8192

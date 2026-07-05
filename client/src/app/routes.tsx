@@ -1,32 +1,53 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import { AppShell } from '../components/layout/AppShell'
-import { LandingPage } from '../features/landing/LandingPage'
-import { ResultsDashboard } from '../features/results/ResultsDashboard'
-import { JobDetailPage } from '../features/job-detail/JobDetailPage'
+import { AnalyzePage } from '../features/analyze/AnalyzePage'
+import { RunView } from '../features/analyze/RunView'
+import { RunsPage } from '../features/runs/RunsPage'
+import { RunDetailPage } from '../features/runs/RunDetailPage'
+import { PromptsPage } from '../features/prompts/PromptsPage'
 
-const rootRoute = createRootRoute({
-  component: AppShell,
-})
+const rootRoute = createRootRoute({ component: AppShell })
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: LandingPage,
+  component: AnalyzePage,
+  validateSearch: (search: Record<string, unknown>): { jd?: string } => ({
+    jd: typeof search.jd === 'string' && search.jd.length > 0 ? search.jd : undefined,
+  }),
 })
 
-const resultsRoute = createRoute({
+const analyzeRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/results/$jdId',
-  component: ResultsDashboard,
+  path: '/analyze/$jdId',
+  component: RunView,
 })
 
-const jobDetailRoute = createRoute({
+const runsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/job/$jdId',
-  component: JobDetailPage,
+  path: '/runs',
+  component: RunsPage,
 })
 
-const routeTree = rootRoute.addChildren([indexRoute, resultsRoute, jobDetailRoute])
+const runDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/runs/$runId',
+  component: RunDetailPage,
+})
+
+const promptsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/prompts',
+  component: PromptsPage,
+})
+
+export const routeTree = rootRoute.addChildren([
+  indexRoute,
+  analyzeRoute,
+  runsRoute,
+  runDetailRoute,
+  promptsRoute,
+])
 
 export const router = createRouter({ routeTree })
 

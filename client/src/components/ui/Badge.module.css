@@ -27,3 +27,8 @@
   background-color: color-mix(in srgb, var(--fit-poor) 15%, transparent);
   color: var(--fit-poor);
 }
+
+.machine {
+  background-color: var(--machine-soft);
+  color: var(--machine);
+}

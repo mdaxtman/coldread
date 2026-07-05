@@ -41,7 +41,7 @@ class TestFitAssessmentStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.fit_assessment_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.fit_assessment_stage.load_prompt") as mock_load_prompt,
         ):
             mock_client = MagicMock()
@@ -92,7 +92,7 @@ class TestFitAssessmentStage:
             mock_response.content = [mock_tool_block]
 
             with (
-                patch("pipeline.fit_assessment_stage._get_anthropic_client") as mock_get_client,
+                patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
                 patch("pipeline.fit_assessment_stage.load_prompt"),
             ):
                 mock_client = MagicMock()
@@ -126,7 +126,7 @@ class TestFitAssessmentStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.fit_assessment_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.fit_assessment_stage.load_prompt") as mock_load_prompt,
         ):
             mock_client = MagicMock()
@@ -139,7 +139,7 @@ class TestFitAssessmentStage:
             # Verify API was called with correct parameters
             mock_client.messages.create.assert_called_once()
             call_kwargs = mock_client.messages.create.call_args[1]
-            assert call_kwargs["model"] == "claude-sonnet-4-20250514"
+            assert call_kwargs["model"] == "claude-sonnet-5"
             assert call_kwargs["max_tokens"] == 4096
             assert call_kwargs["system"] == "System prompt"
             assert len(call_kwargs["messages"]) == 1
@@ -173,7 +173,7 @@ class TestFitAssessmentStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.fit_assessment_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.fit_assessment_stage.load_prompt"),
         ):
             mock_client = MagicMock()
@@ -213,7 +213,7 @@ class TestFitAssessmentStage:
         mock_response.content = [mock_tool_block]
 
         with (
-            patch("pipeline.fit_assessment_stage._get_anthropic_client") as mock_get_client,
+            patch("pipeline.anthropic_utils._get_anthropic_client") as mock_get_client,
             patch("pipeline.fit_assessment_stage.load_prompt"),
         ):
             mock_client = MagicMock()
@@ -238,7 +238,7 @@ class TestFitAssessmentStage:
             user_id="user-123",
         )
 
-        with patch("pipeline.fit_assessment_stage._get_anthropic_client") as mock_client:
+        with patch("pipeline.anthropic_utils._get_anthropic_client") as mock_client:
             # Mock response with no tool_use block
             mock_response = MagicMock()
             mock_response.content = []  # Empty, no tool output
