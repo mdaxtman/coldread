@@ -10,7 +10,9 @@ Read `server/seeds/seed_narratives.py`.
 
 Extract the string content of these constants (text between the triple-quote delimiters, stripped of leading/trailing whitespace):
 - `CAREER_OVERVIEW`
-- `NARRATIVE_1` through `NARRATIVE_7`
+- `NARRATIVE_1` through `NARRATIVE_9`
+
+Do not assume this list is complete. Before writing, check `seed_narratives.py` for any `NARRATIVE_<n>` constant not covered above. If one exists, stop and print which constant is unaccounted for rather than silently dropping it — a missing narrative is invisible in the output and will quietly weaken every resume generated from it.
 
 Create directory `poc/input/` if it does not exist.
 
@@ -64,7 +66,21 @@ Write `poc/input/narratives.md` with this exact structure:
 ## Amazon Retail Consumables
 
 {NARRATIVE_7 content}
+
+---
+
+## Tesla
+
+{NARRATIVE_8 content}
+
+---
+
+## Additional Background (not employment — do not list as roles)
+
+{NARRATIVE_9 content}
 ```
+
+The final section is supplemental — self-directed projects, open source, community work. It mirrors the `supplemental` category the server pipeline separates out in `_format_narratives`, and must not be treated as a role.
 
 ### 2. Copy prompts
 
@@ -96,7 +112,7 @@ If it already exists, do not overwrite it — the user may have customized the w
 
 ```
 Setup complete.
-  poc/input/narratives.md  ← 8 sections extracted
+  poc/input/narratives.md  ← 10 sections extracted
   poc/prompts/             ← 4 prompt files copied
   poc/config.json          ← created (or already exists, not overwritten)
 
