@@ -1,3 +1,4 @@
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from pipeline.generator import _format_fit_report, _format_narratives, run_generator
@@ -26,6 +27,49 @@ def test_format_narratives_with_overview_and_roles() -> None:
     assert "### Senior Engineer at Acme" in result
     assert "10 years in software" in result
     assert "Led team of 5" in result
+
+
+def test_format_narratives_separates_supplemental_from_roles() -> None:
+    """Supplemental narratives get their own section, not the role section."""
+    narratives = [
+        {"title": "Overview", "content": "10 years", "category": "career_overview"},
+        {"title": "Engineer at Acme", "content": "Led team of 5", "category": "work_experience"},
+        {"title": "Side Projects", "content": "Built a meetup app", "category": "supplemental"},
+    ]
+    result = _format_narratives(narratives)
+
+    assert "## Additional Background (not employment — do not list as roles)" in result
+    assert "### Side Projects" in result
+    assert "Built a meetup app" in result
+
+    # The supplemental narrative must fall outside the role section.
+    roles_block = result.split("## Role Narratives")[1].split("## Additional Background")[0]
+    assert "Side Projects" not in roles_block
+    assert "Engineer at Acme" in roles_block
+
+
+def test_format_narratives_keeps_unknown_categories_as_roles() -> None:
+    """An unrecognized category is treated as a role rather than dropped."""
+    narratives: list[dict[str, Any]] = [
+        {"title": "Engineer at Acme", "content": "Led team of 5", "category": "role"},
+        {"title": "Contractor at Beta", "content": "Shipped a thing", "category": None},
+    ]
+    result = _format_narratives(narratives)
+
+    assert "## Role Narratives" in result
+    assert "### Engineer at Acme" in result
+    assert "### Contractor at Beta" in result
+    assert "Additional Background" not in result
+
+
+def test_format_narratives_supplemental_only() -> None:
+    """Supplemental-only input renders without an empty role section."""
+    narratives = [{"title": "Side Projects", "content": "Built things", "category": "supplemental"}]
+    result = _format_narratives(narratives)
+
+    assert "## Additional Background (not employment — do not list as roles)" in result
+    assert "## Role Narratives" not in result
+    assert "## Career Overview" not in result
 
 
 def test_format_fit_report_all_sections() -> None:

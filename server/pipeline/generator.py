@@ -59,23 +59,45 @@ def _format_note(notes: str | None) -> str:
     return f" ({notes})" if notes else ""
 
 
+_OVERVIEW_CATEGORY = "career_overview"
+_SUPPLEMENTAL_CATEGORY = "supplemental"
+
+
+def _section(heading: str, rows: list[dict[str, Any]]) -> str:
+    """Render one narrative group under a Markdown heading."""
+    return f"{heading}\n" + "\n\n".join(f"### {n['title']}\n{n['content']}" for n in rows)
+
+
 def _format_narratives(narrative_rows: list[dict[str, Any]]) -> str:
-    """Format narratives into Markdown sections."""
+    """Format narratives into Markdown sections grouped by category.
+
+    Supplemental narratives (side projects, community work) are kept out of the
+    role section so the generator does not render them as employment. Any other
+    category is treated as a role, so adding a new category never silently drops
+    a narrative from the prompt.
+    """
     if not narrative_rows:
         return "No candidate background narratives available."
 
-    overview = [n for n in narrative_rows if n.get("category") == "career_overview"]
-    roles = [n for n in narrative_rows if n.get("category") != "career_overview"]
+    overview = [n for n in narrative_rows if n.get("category") == _OVERVIEW_CATEGORY]
+    supplemental = [n for n in narrative_rows if n.get("category") == _SUPPLEMENTAL_CATEGORY]
+    roles = [
+        n
+        for n in narrative_rows
+        if n.get("category") not in (_OVERVIEW_CATEGORY, _SUPPLEMENTAL_CATEGORY)
+    ]
 
     sections: list[str] = []
     if overview:
-        sections.append(
-            "## Career Overview\n"
-            + "\n\n".join(f"### {n['title']}\n{n['content']}" for n in overview)
-        )
+        sections.append(_section("## Career Overview", overview))
     if roles:
+        sections.append(_section("## Role Narratives", roles))
+    if supplemental:
         sections.append(
-            "## Role Narratives\n" + "\n\n".join(f"### {n['title']}\n{n['content']}" for n in roles)
+            _section(
+                "## Additional Background (not employment — do not list as roles)",
+                supplemental,
+            )
         )
 
     return "\n\n".join(sections)
