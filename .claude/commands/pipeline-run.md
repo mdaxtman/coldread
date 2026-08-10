@@ -24,7 +24,7 @@ Read:
 - `poc/input/narratives.md` — candidate background
 - `poc/jobs/$ARGUMENTS/jd.md` — job description
 
-Apply the framework from `poc/prompts/fit_assessment.md` to evaluate fit. Produce JSON matching this schema:
+Apply the framework from `poc/prompts/fit_assessment.md` to evaluate fit — including its DIFFERENTIATING REQUIREMENTS, LEVEL GATE, and SCORING sections. Produce JSON matching this schema:
 
 ```json
 {
@@ -32,13 +32,25 @@ Apply the framework from `poc/prompts/fit_assessment.md` to evaluate fit. Produc
   "matches": [{ "requirement": "string", "priority": "<required|preferred|implied>", "notes": "string" }],
   "gaps": [{ "requirement": "string", "type": "<hard|soft>", "notes": "string" }],
   "terminology": [{ "my_term": "string", "jd_term": "string", "confidence": 0.0 }],
+  "cultural_signals": [{ "quality": "string", "jd_signal": "string", "evidence_hint": "string" }],
+  "product_connection": "string or null",
+  "overall_score": 0.0,
+  "semantic_score": 0.0,
   "reasoning": "string"
 }
 ```
 
-Only include terminology mappings with confidence ≥ 0.8. Write to `poc/jobs/$ARGUMENTS/runs/<run-dir-name>/fit_assessment.json`.
+This schema must stay in sync with the OUTPUT FORMAT section of `poc/prompts/fit_assessment.md`, which is authoritative. Stage 2 consumes `cultural_signals` and `product_connection` directly — the generator prompt requires a bullet of authentic evidence per cultural signal, and uses `product_connection` as the source for the summary's company-specific sentence. Omitting either field silently degrades the resume rather than raising an error.
 
-Print: `[1/4] Fit assessment → <fit_level>, <matches count> matches, <hard count> hard gaps, <soft count> soft gaps`
+Rules:
+- `terminology`: only include mappings with confidence ≥ 0.8; an empty array is correct if none qualify
+- `cultural_signals`: 2–3 entries
+- `product_connection`: a single concise sentence, or `null` if the parallel would need to be argued rather than named
+- `overall_score` / `semantic_score`: 0–1, applying the framework's scoring rules and caps on their merits
+
+Write to `poc/jobs/$ARGUMENTS/runs/<run-dir-name>/fit_assessment.json`.
+
+Print: `[1/4] Fit assessment → <fit_level> (<overall_score>), <matches count> matches, <hard count> hard gaps, <soft count> soft gaps`
 
 ## Stage 2 — Resume Generation
 
