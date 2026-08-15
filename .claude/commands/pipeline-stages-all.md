@@ -1,4 +1,6 @@
-Run the full resume pipeline for job: $ARGUMENTS
+Run all four generation stages — fit → generate → screen → refine — into a NEW dated run directory for job: $ARGUMENTS
+
+This command does not produce a control resume or a score. For the full scored workflow, use the `pipeline` skill instead.
 
 ## Precondition checks
 
@@ -135,6 +137,6 @@ Print:
 Done. Run saved to poc/jobs/$ARGUMENTS/runs/<run-dir-name>/
 
 Next steps:
-  /resume-control $ARGUMENTS    ← generate the control resume
-  /resume-evaluate $ARGUMENTS   ← score and compare both
+  /pipeline-control $ARGUMENTS    ← generate the control resume
+  /pipeline-evaluate $ARGUMENTS   ← score and compare both
 ```
