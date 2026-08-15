@@ -5,9 +5,9 @@ Score and compare the pipeline and control resumes for job: $ARGUMENTS
 Check these in order. Stop at the first failure.
 
 1. Read `poc/jobs/$ARGUMENTS/jd.md`. If it does not exist: print "Create `poc/jobs/$ARGUMENTS/jd.md` first." and stop.
-2. Use Bash to list `poc/jobs/$ARGUMENTS/runs/` sorted alphabetically descending; take the first result as the latest run directory. Save this name — it is `<latest>` everywhere below. If the directory does not exist or is empty: print "No run directory found. Run `/pipeline-run $ARGUMENTS` first." and stop.
-3. Read `poc/jobs/$ARGUMENTS/runs/<latest>/refined_resume.md`. If it does not exist: print "Run `/pipeline-run $ARGUMENTS` or `/pipeline-refine $ARGUMENTS` first." and stop.
-4. Read `poc/jobs/$ARGUMENTS/runs/<latest>/control_resume.md`. If it does not exist: print "Run `/resume-control $ARGUMENTS` first." and stop.
+2. Use Bash to list `poc/jobs/$ARGUMENTS/runs/` sorted alphabetically descending; take the first result as the latest run directory. Save this name — it is `<latest>` everywhere below. If the directory does not exist or is empty: print "No run directory found. Run `/pipeline-stages-all $ARGUMENTS` first." and stop.
+3. Read `poc/jobs/$ARGUMENTS/runs/<latest>/refined_resume.md`. If it does not exist: print "Run `/pipeline-stages-all $ARGUMENTS` or `/pipeline-refine $ARGUMENTS` first." and stop.
+4. Read `poc/jobs/$ARGUMENTS/runs/<latest>/control_resume.md`. If it does not exist: print "Run `/pipeline-control $ARGUMENTS` first." and stop.
 5. Read `poc/config.json`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 
 You now have the JD, both resumes, and the config in your context. Do not read `poc/input/narratives.md` yet — Phase 1 must be scored by isolated sub-agents with no knowledge of the candidate's background.

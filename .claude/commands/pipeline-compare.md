@@ -8,7 +8,7 @@ Show score trends across all runs for job: $ARGUMENTS
 
 Use Bash to list all directories under `poc/jobs/$ARGUMENTS/runs/` sorted ascending. For each directory, check if `evaluation_report.json` exists inside it. Read each one that does.
 
-If no `evaluation_report.json` files are found: print "No evaluated runs found for `$ARGUMENTS`. Run `/resume-evaluate $ARGUMENTS` after a pipeline run." and stop.
+If no `evaluation_report.json` files are found: print "No evaluated runs found for `$ARGUMENTS`. Run `/pipeline-evaluate $ARGUMENTS` after a pipeline run." and stop.
 
 ## Table
 

@@ -6,7 +6,7 @@ Check these in order. Stop at the first failure.
 
 1. Read `poc/prompts/resume_screener.md`. If it does not exist: print "Run `/pipeline-setup` first." and stop.
 2. Read `poc/jobs/$ARGUMENTS/jd.md`. If it does not exist: print "Create `poc/jobs/$ARGUMENTS/jd.md` first." and stop.
-3. Use Bash to list `poc/jobs/$ARGUMENTS/runs/` sorted alphabetically descending; take the first result as the latest run directory. If the directory does not exist or is empty: print "No run directory found. Run `/pipeline-run $ARGUMENTS` first to create one." and stop.
+3. Use Bash to list `poc/jobs/$ARGUMENTS/runs/` sorted alphabetically descending; take the first result as the latest run directory. If the directory does not exist or is empty: print "No run directory found. Run `/pipeline-stages-all $ARGUMENTS` first to create one." and stop.
 4. Read `poc/jobs/$ARGUMENTS/runs/<latest>/resume_draft.md`. If it does not exist: print "Run `/pipeline-generate $ARGUMENTS` first." and stop.
 
 ## Screening

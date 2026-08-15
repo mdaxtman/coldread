@@ -118,5 +118,5 @@ Setup complete.
 
 To run the pipeline:
   1. Create poc/jobs/<job-slug>/jd.md with the job description
-  2. /pipeline-run <job-slug>
+  2. /pipeline-stages-all <job-slug>
 ```
