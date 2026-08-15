@@ -3,7 +3,7 @@
 from typing import Any, cast
 
 from config import PIPELINE_MODEL
-from pipeline.anthropic_utils import call_model
+from pipeline.anthropic_utils import call_model, dict_items
 from pipeline.prompt_loader import load_prompt
 
 # Tool schema for Claude tool_use
@@ -113,8 +113,11 @@ def _format_fit_report(fit_report: dict[str, Any]) -> str:
     """
     lines = []
 
+    # dict_items: tool input_schema is advisory, so scalar items can appear
+    # where objects were declared. See tests/test_tool_result_validation.py.
+
     # MATCHES section
-    matches = fit_report.get("matches", [])
+    matches = dict_items(fit_report.get("matches"))
     if matches:
         lines.append("MATCHES — requirements you clearly meet (emphasize these):")
         for match in matches:
@@ -125,7 +128,7 @@ def _format_fit_report(fit_report: dict[str, Any]) -> str:
             lines.append(f"  - [{priority}] {req}{notes_str}")
 
     # GAPS section (separated by type)
-    gaps = fit_report.get("gaps", [])
+    gaps = dict_items(fit_report.get("gaps"))
     soft_gaps = [g for g in gaps if g.get("type") == "soft"]
     hard_gaps = [g for g in gaps if g.get("type") == "hard"]
 
