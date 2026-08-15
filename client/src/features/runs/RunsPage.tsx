@@ -1,6 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useRuns } from '../../hooks/useRuns'
 import { Badge, type BadgeLevel } from '../../components/ui/Badge'
+import { formatRelativeTime } from '../../lib/format'
 import type { PipelineRun, RunStatus } from '../../types'
 import styles from './RunsPage.module.css'
 
@@ -8,23 +9,6 @@ const STATUS_BADGE: Record<RunStatus, BadgeLevel> = {
   completed: 'strong',
   failed: 'poor',
   running: 'machine',
-}
-
-const formatRelativeTime = (iso: string): string => {
-  const deltaMs = Date.now() - new Date(iso).getTime()
-  const deltaSec = Math.round(deltaMs / 1000)
-  const units: Array<[string, number]> = [
-    ['year', 31536000],
-    ['month', 2592000],
-    ['day', 86400],
-    ['hour', 3600],
-    ['minute', 60],
-  ]
-  for (const [unit, secs] of units) {
-    const value = Math.floor(Math.abs(deltaSec) / secs)
-    if (value >= 1) return `${value}${unit[0]} ago`
-  }
-  return 'just now'
 }
 
 const RunRow = ({ run }: { run: PipelineRun }) => {
