@@ -8,7 +8,7 @@ fit analysis from the ATS screener perspective.
 from typing import Any
 
 from config import PIPELINE_MODEL
-from pipeline.anthropic_utils import call_model
+from pipeline.anthropic_utils import call_model, dict_items
 from pipeline.prompt_loader import load_prompt
 from pipeline.stage_input import FitAssessmentInput, FitAssessmentOutput
 
@@ -90,7 +90,7 @@ def _score_to_level(score: float) -> str:
         return "poor"
 
 
-def _extract_keywords(matches: list[dict[str, Any]], gaps: list[dict[str, Any]]) -> dict[str, bool]:
+def _extract_keywords(matches: list[Any], gaps: list[Any]) -> dict[str, bool]:
     """Extract keywords from matches and gaps to build coverage map.
 
     Args:
@@ -102,14 +102,17 @@ def _extract_keywords(matches: list[dict[str, Any]], gaps: list[dict[str, Any]])
     """
     coverage = {}
 
+    # dict_items: tool input_schema is advisory, so scalar items can appear
+    # where objects were declared. See tests/test_tool_result_validation.py.
+
     # Add matched keywords as covered
-    for match in matches:
+    for match in dict_items(matches):
         requirement = match.get("requirement", "").lower()
         if requirement:
             coverage[requirement] = True
 
     # Add gap keywords as not covered
-    for gap in gaps:
+    for gap in dict_items(gaps):
         requirement = gap.get("requirement", "").lower()
         if requirement:
             coverage[requirement] = False
@@ -162,11 +165,10 @@ def run_fit_assessment_stage(input_data: FitAssessmentInput) -> FitAssessmentOut
     )
 
     # Filter terminology: only keep high-confidence mappings
-    terminology = result.get("terminology", [])
-    if terminology:
+    if "terminology" in result:
         result["terminology"] = [
             term
-            for term in terminology
+            for term in dict_items(result["terminology"])
             if term.get("confidence", 0) >= _TERMINOLOGY_CONFIDENCE_THRESHOLD
         ]
 
@@ -175,8 +177,8 @@ def run_fit_assessment_stage(input_data: FitAssessmentInput) -> FitAssessmentOut
     semantic_score = result.get("semantic_score", 0.5)
 
     # Build keyword coverage map from matches and gaps
-    matches = result.get("matches", [])
-    gaps = result.get("gaps", [])
+    matches = dict_items(result.get("matches"))
+    gaps = dict_items(result.get("gaps"))
     keyword_coverage = _extract_keywords(matches, gaps)
 
     # Determine fit level based on overall score

@@ -78,3 +78,18 @@ def call_model(stage: str, **kwargs: Any) -> dict[str, Any]:
             fallback_model=kwargs.get("model"),
         )
     return result
+
+
+def dict_items(value: object) -> list[dict[str, Any]]:
+    """Coerce a tool-result array field down to the objects it declared.
+
+    A tool's `input_schema` is advisory. The API guarantees a well-formed tool
+    call, not that nested items match their declared types — a fit run has
+    returned `terminology` as a list of bare strings despite the schema
+    requiring objects. Stages read these items with `.get()`, so drop anything
+    that is not a dict here rather than raising AttributeError mid-stage after
+    the model call has already been paid for.
+    """
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, dict)]

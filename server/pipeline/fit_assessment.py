@@ -3,7 +3,7 @@
 from typing import Any, cast
 
 from config import PIPELINE_MODEL
-from pipeline.anthropic_utils import call_model
+from pipeline.anthropic_utils import call_model, dict_items
 from pipeline.prompt_loader import load_prompt
 
 _TOOL_NAME = "submit_fit_report"
@@ -127,10 +127,12 @@ def run_fit_assessment(jd_content: str, narratives_text: str, user_id: str) -> d
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
 
-    # Filter terminology mappings: only keep those with confidence >= 0.8
+    # Filter terminology mappings: only keep those with confidence >= 0.8.
+    # dict_items guards the item type — the schema declares objects here but the
+    # model has returned bare strings (see tests/test_tool_result_validation.py).
     if "terminology" in result:
         result["terminology"] = [
-            term for term in result["terminology"] if term.get("confidence", 0) >= 0.8
+            term for term in dict_items(result["terminology"]) if term.get("confidence", 0) >= 0.8
         ]
 
     return result
