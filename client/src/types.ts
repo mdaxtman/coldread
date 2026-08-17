@@ -114,6 +114,32 @@ export interface PipelineRun {
   jdCompany: string | null
 }
 
+/**
+ * Wire contract for a stored model call, mirroring server/models.py.
+ *
+ * These are views, not the raw Anthropic payload. Message bodies and the system
+ * prompt arrive as size markers — the server never sends the narratives or the
+ * prompt template (#40, #59) — so nothing here needs a runtime shape guard.
+ */
+export interface MessageView {
+  role: string | null
+  content: string
+}
+
+export interface ContentBlockView {
+  type: string
+  text: string | null
+  name: string | null
+  input: Record<string, unknown> | null
+}
+
+export interface RequestView {
+  model: string | null
+  system: string | null
+  messages: MessageView[]
+  toolNames: string[]
+}
+
 export interface ModelCall {
   id: string
   stage: string
@@ -124,8 +150,8 @@ export interface ModelCall {
   tokensOut: number
   stopReason: string | null
   estCostUsd: number
-  request: Record<string, unknown>
-  response: unknown[]
+  request: RequestView
+  response: ContentBlockView[]
   createdAt: string
 }
 

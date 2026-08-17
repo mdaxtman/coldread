@@ -118,4 +118,6 @@ def test_get_run_detail_keeps_the_inspector_usable() -> None:
     assert len(request["messages"]) == 1
     assert request["messages"][0]["role"] == "user"
     assert request["model"] == "claude-sonnet-5"
-    assert request["tools"] == [{"name": "submit_fit_report"}]
+    # Tool schemas are reduced to names — the count and identity is what the
+    # inspector needs; the schema itself is prompt design (#59).
+    assert request["toolNames"] == ["submit_fit_report"]
