@@ -1,0 +1,28 @@
+-- 008_pin_update_updated_at_search_path.sql
+--
+-- WHAT: Pin an empty search_path on the update_updated_at() trigger function.
+--
+-- WHY:  Supabase's security advisor reports `function_search_path_mutable` (WARN,
+--       EXTERNAL) against public.update_updated_at. The function was created in
+--       001_initial_schema.sql without a search_path, so Postgres resolves the
+--       unqualified names in its body — notably now() — by walking the caller's
+--       search_path at execution time. Anyone able to create an object in a schema
+--       that sorts earlier than the intended one can shadow what those names
+--       resolve to. The function fires on every write to the core tables via the
+--       trg_*_updated_at triggers, so it is a wide, if shallow, surface.
+--
+--       This was the only remaining finding on the security advisor after RLS was
+--       enabled on the original tables in 007. Clearing it means a future advisory
+--       is signal rather than noise.
+--
+-- SAFETY: No functional impact. The body is `NEW.updated_at = now(); RETURN NEW;` —
+--       NEW.updated_at is a record field, not a name lookup, and now() lives in
+--       pg_catalog, which Postgres always searches implicitly regardless of
+--       search_path. Nothing in the body depends on the public schema being on the
+--       path, so pinning it to empty changes resolution for nothing that is used.
+--
+-- NOTE: ALTER FUNCTION ... SET search_path is the remediation Supabase documents
+--       for this lint. It rewrites only the function's configuration, not its body,
+--       so the existing triggers keep working without being recreated.
+
+ALTER FUNCTION public.update_updated_at() SET search_path = '';
