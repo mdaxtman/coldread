@@ -5,6 +5,7 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException
 
 from api.dependencies import get_current_user_id
+from api.redaction import redact_request
 from db import fit_reports, job_descriptions, pipeline_runs, resume_variants
 from db import prompts as prompts_db
 from features import fit_assessment, resume_generation
@@ -247,7 +248,12 @@ def get_run(run_id: str, user_id: str = Depends(get_current_user_id)) -> RunDeta
     row = pipeline_runs.get_run(run_id, user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="Run not found")
-    calls = [ModelCallResponse(**c) for c in pipeline_runs.list_calls(run_id, user_id)]
+    # The stored request envelope carries the narratives and the system prompt, and
+    # this API has no authentication — redact before it crosses the wire (#40).
+    calls = [
+        ModelCallResponse(**{**c, "request": redact_request(c.get("request") or {})})
+        for c in pipeline_runs.list_calls(run_id, user_id)
+    ]
     return RunDetailResponse(run=_run_response(row), calls=calls)
 
 

@@ -79,3 +79,43 @@ def test_usage_summary() -> None:
         "estCostUsd": 0.001,
         "runCount": 2,
     }
+
+
+_SENSITIVE_CALL_ROW = {
+    **_CALL_ROW,
+    "request": {
+        "model": "claude-sonnet-5",
+        "system": "You are analyzing how well a candidate's background matches a job.",
+        "messages": [{"role": "user", "content": "I built the entire looks shelf at Nordstrom."}],
+        "tools": [{"name": "submit_fit_report"}],
+    },
+}
+
+
+def test_get_run_detail_redacts_narratives_and_system_prompt() -> None:
+    """The API is unauthenticated, so the stored prompt envelope must not ship (#40)."""
+    with (
+        patch("api.routes.pipeline_runs.get_run", return_value=_RUN_ROW),
+        patch("api.routes.pipeline_runs.list_calls", return_value=[_SENSITIVE_CALL_ROW]),
+    ):
+        resp = client.get("/runs/run-1")
+
+    assert resp.status_code == 200
+    body = resp.text
+    assert "looks shelf" not in body
+    assert "analyzing how well a candidate" not in body
+
+
+def test_get_run_detail_keeps_the_inspector_usable() -> None:
+    """Redaction preserves shape — the client renders counts, roles and tool schema."""
+    with (
+        patch("api.routes.pipeline_runs.get_run", return_value=_RUN_ROW),
+        patch("api.routes.pipeline_runs.list_calls", return_value=[_SENSITIVE_CALL_ROW]),
+    ):
+        request = client.get("/runs/run-1").json()["calls"][0]["request"]
+
+    assert isinstance(request["system"], str)
+    assert len(request["messages"]) == 1
+    assert request["messages"][0]["role"] == "user"
+    assert request["model"] == "claude-sonnet-5"
+    assert request["tools"] == [{"name": "submit_fit_report"}]
