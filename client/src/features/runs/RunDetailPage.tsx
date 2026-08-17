@@ -2,78 +2,51 @@ import { Link, useParams } from '@tanstack/react-router'
 import { useRunDetail } from '../../hooks/useRuns'
 import { formatRunError } from '../../lib/format'
 import { CodeBlock } from '../../components/terminal/CodeBlock'
+import type { ContentBlockView, RequestView as RequestViewType } from '../../types'
 import styles from './RunDetailPage.module.css'
 
-interface ContentBlock {
-  type?: string
-  text?: string
-  name?: string
-  input?: unknown
-}
-
-interface RequestMessage {
-  role?: string
-  content?: string | ContentBlock[]
-}
-
-const textOfContent = (content: RequestMessage['content']): string => {
-  if (typeof content === 'string') return content
-  if (Array.isArray(content)) {
-    return content
-      .map((b) => (typeof b.text === 'string' ? b.text : JSON.stringify(b, null, 2)))
-      .join('\n\n')
-  }
-  return JSON.stringify(content, null, 2)
-}
-
 /**
- * The stored request is the raw Anthropic payload. Rendering its parts
- * separately (with real newlines) is the whole point — a JSON.stringify of
- * the payload shows prompts as one line of `\n` escapes.
+ * The server sends views, not the raw Anthropic payload (see RequestView in
+ * types.ts). Message bodies and the system prompt arrive as size markers, so
+ * this renders shape and scale — which is what the inspector is for — without
+ * the runtime type guards the old untyped passthrough required.
  */
-const RequestView = ({ request }: { request: Record<string, unknown> }) => {
-  const system = typeof request.system === 'string' ? request.system : null
-  const messages = Array.isArray(request.messages) ? (request.messages as RequestMessage[]) : []
-  const tools = Array.isArray(request.tools) ? (request.tools as unknown[]) : []
-
-  return (
-    <div className={styles.sections}>
-      {system && (
-        <details>
-          <summary>system prompt</summary>
-          <CodeBlock copyable>{system}</CodeBlock>
-        </details>
-      )}
-      {messages.length > 0 && (
-        <details open>
-          <summary>messages ({messages.length})</summary>
-          {messages.map((m, i) => (
-            <div key={i} className={styles.message}>
-              <span className={styles.role}>{m.role ?? 'message'}</span>
-              <CodeBlock copyable>{textOfContent(m.content)}</CodeBlock>
-            </div>
-          ))}
-        </details>
-      )}
-      {tools.length > 0 && (
-        <details>
-          <summary>tool schema ({tools.length})</summary>
-          <CodeBlock copyable>{JSON.stringify(tools, null, 2)}</CodeBlock>
-        </details>
-      )}
-      <details>
-        <summary>raw request</summary>
-        <CodeBlock copyable>{JSON.stringify(request, null, 2)}</CodeBlock>
-      </details>
-    </div>
-  )
-}
-
-const ResponseView = ({ response }: { response: unknown[] }) => (
+const RequestView = ({ request }: { request: RequestViewType }) => (
   <div className={styles.sections}>
-    {response.map((block, i) => {
-      const b = (block ?? {}) as ContentBlock
-      if (b.type === 'text' && typeof b.text === 'string') {
+    {request.system && (
+      <details>
+        <summary>system prompt</summary>
+        <CodeBlock copyable>{request.system}</CodeBlock>
+      </details>
+    )}
+    {request.messages.length > 0 && (
+      <details open>
+        <summary>messages ({request.messages.length})</summary>
+        {request.messages.map((m, i) => (
+          <div key={i} className={styles.message}>
+            <span className={styles.role}>{m.role ?? 'message'}</span>
+            <CodeBlock copyable>{m.content}</CodeBlock>
+          </div>
+        ))}
+      </details>
+    )}
+    {request.toolNames.length > 0 && (
+      <details>
+        <summary>tools ({request.toolNames.length})</summary>
+        <CodeBlock copyable>{request.toolNames.join('\n')}</CodeBlock>
+      </details>
+    )}
+    <details>
+      <summary>raw request</summary>
+      <CodeBlock copyable>{JSON.stringify(request, null, 2)}</CodeBlock>
+    </details>
+  </div>
+)
+
+const ResponseView = ({ response }: { response: ContentBlockView[] }) => (
+  <div className={styles.sections}>
+    {response.map((b, i) => {
+      if (b.type === 'text' && b.text) {
         return (
           <div key={i} className={styles.message}>
             <span className={styles.role}>text</span>
@@ -85,14 +58,14 @@ const ResponseView = ({ response }: { response: unknown[] }) => (
         return (
           <div key={i} className={styles.message}>
             <span className={styles.role}>tool_use{b.name ? ` · ${b.name}` : ''}</span>
-            <CodeBlock copyable>{JSON.stringify(b.input ?? block, null, 2)}</CodeBlock>
+            <CodeBlock copyable>{JSON.stringify(b.input ?? b, null, 2)}</CodeBlock>
           </div>
         )
       }
       return (
         <div key={i} className={styles.message}>
-          <span className={styles.role}>{b.type ?? 'block'}</span>
-          <CodeBlock copyable>{JSON.stringify(block, null, 2)}</CodeBlock>
+          <span className={styles.role}>{b.type || 'block'}</span>
+          <CodeBlock copyable>{JSON.stringify(b, null, 2)}</CodeBlock>
         </div>
       )
     })}
