@@ -81,13 +81,14 @@ When formatted for display:
 
 ## BULLET POINT GUIDANCE
 
-- **Lead with the signal, follow with the mechanism.** Recruiters scan the first 4–6 words of each bullet. Put the outcome, capability, or result there — then follow with the context or technical detail that earns it. "Reduced bundle size by 95% — diagnosed Barrelsby-generated barrel files negating all dynamic import boundaries and eliminated them entirely" is more scannable than starting with the diagnosis. The grounding detail stays in; the scanner gets the headline first.
+- **Lead with the signal, follow with the mechanism.** Recruiters scan the first 4–6 words of each bullet. Put the outcome, capability, or result there, then follow with the context or technical detail that earns it. "Reduced bundle size by 95% by eliminating Barrelsby-generated barrel files that were negating every dynamic import boundary" is more scannable than starting with the diagnosis. The grounding detail stays in; the scanner gets the headline first.
 - **Keep bullets to two lines (~30 words).** A bullet that runs three or more lines gets skimmed past regardless of content. When a bullet exceeds the cap, keep the outcome and the single strongest supporting detail — cut secondary mechanisms, chained clauses, and parenthetical asides. One idea per bullet.
+- **Punctuate with sentence breaks, not asides.** An em-dash aside interrupts the bullet and pushes the payoff past the point where a scanner stops reading; a *pair* of them nests an interruption inside an interruption and is never correct here. Rework the aside into the sentence with a comma, a "by", or a "so that" — or split it off and cut it. Use at most one em dash in the entire resume, and never two in one bullet.
 - **Cap each project at 4 bullets; less relevant projects get 2.** Keep the bullets that carry a matched requirement, a cultural signal, or a quantified outcome — drop the rest. Even, exhaustive coverage buries the best material; a recruiter who sees seven bullets on one project reads none of them.
 - Start with action verbs when possible
 - Include context (team size, timeline, scope) when it adds credibility
 - Quantify impact (%, $, users, scale) where authentic numbers exist
-- For technical projects: name specific technologies only if genuinely used
+- **Name technologies, not code.** Technology names are what a recruiter scans for and an ATS indexes: languages, frameworks, services, and platforms (React, TypeScript, Step Functions, GovCloud) belong in a bullet when genuinely used. Code-level constructs do not — identifiers, method calls, literals, and type values (`null`, `undefined`, `.filter(Boolean)`, `useEffect`, `Promise.all`) read as implementation notes rather than accomplishments, and nobody searches for them. Describe what a design made possible, not the code that expresses it. "Each step a hook returning a config or null, composed with .filter(Boolean)" is a code comment; "steps compose from independent hooks, so supporting a new control means adding one hook rather than changing the wizard" is a bullet.
 - For matched requirements: use the exact terminology from the fit report
 - For soft gaps: only include if definitionally entailed by stated experience; for hard gaps: omit entirely
 

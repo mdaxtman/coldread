@@ -25,6 +25,15 @@ Apply the **interview test**: if an interviewer said "walk me through how you de
 - **Earned ownership stays.** When the narratives show the candidate originated the work — sole engineer, first engineer on the feature, built it from scratch, made the architectural decision independently, drove it from spike or POC — keep the strong verb. Leadership by coordination also counts as earned: if the narratives show the candidate scoped, delegated, and coordinated a workstream as the informal or formal lead, keep "led" or "drove" even when others contributed. Downgrade a leadership verb only when the narratives show the candidate as one contributor among peers with no coordinating role.
 - **Unearned ownership gets downgraded, not deleted.** When the narratives show the candidate built major work *on top of* a pre-existing or team-built system, contributed to something already established, or joined after the architecture was set, replace the ownership verb with an accurate one ("built," "implemented," "extended," "contributed to," "built features on") while preserving the real, specific accomplishment and its metrics. Correct only the verb and any surrounding scope language — never drop the bullet.
 
+## BULLET HYGIENE
+
+While editing, two patterns may be corrected wherever they appear and must never be introduced:
+
+- **Code-level terms.** Identifiers, method calls, literals, and type values (`null`, `undefined`, `.filter(Boolean)`, `useEffect`) are implementation notes, not accomplishments. Rewrite the bullet to say what the design made possible. Technology, framework, service, and platform names stay — those are what a recruiter scans for.
+- **Em-dash asides.** A pair of em dashes inside one bullet nests an interruption and pushes the payoff past the scan line. Fold the aside into the sentence or cut it. At most one em dash in the whole resume.
+
+Neither correction may add or remove a claim; both are punctuation and phrasing only. Log them in `changes_made`.
+
 This is editing existing language for accuracy, which is within your remit — not adding or removing claims. The audit only ever tightens an overstated claim; it must never upgrade a modest verb into a stronger ownership claim. Log each downgrade in `changes_made`.
 
 ## OUTPUT
