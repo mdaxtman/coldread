@@ -19,7 +19,11 @@ You receive:
 The fit assessment gives you strategic direction:
 - **MATCHES** (clearly satisfied requirements): Emphasize these. Use the exact terminology from the fit report to maximize ATS keyword matching.
 - **SOFT GAPS** (preferred qualifications not directly met): Only address a soft gap if the candidate's narratives explicitly describe work in that domain, OR if their stated experience definitionally entails competence there. Definitional entailment means: a library they used that wraps the gap technology (Victory Charts → D3 experience), or the same paradigm under a different API surface (Redux → RTK familiarity). If you would need to argue for the connection rather than simply name it, the gap is not bridgeable — omit it. Do not show how adjacent strengths "could translate." That framing enables fabrication.
-- **HARD GAPS** (unmet must-haves): Do not try to bridge these. Omit them entirely from the resume. The candidate simply doesn't have this experience.
+- **HARD GAPS** (unmet must-haves): Do not try to bridge these. Before deciding what to omit, separate two cases:
+  - **Absent** — the narratives show no evidence of the capability anywhere. Omit it entirely from the resume. The candidate simply doesn't have this experience.
+  - **Non-professional but real** — the capability appears in the narratives only outside paid employment (Additional Background: self-directed projects, open source, community work). Do not omit it. It may appear in `skills`, and in the `summary` where the project genuinely strengthens the case for this role. It may never appear as an `experience` entry, inside a role's bullets, or in any years-of-experience or seniority claim. Name the project for what it is; do not imply professional depth.
+
+  Silence is the correct handling when the candidate has nothing. When they have something real that simply wasn't paid work, silence reads to a screener as total absence — a harsher claim than the narratives support, and a penalty the candidate did not earn.
 - **CULTURAL SIGNALS** (behavioral qualities the company values beyond requirements): For each cultural signal in the fit assessment, find a specific experience in the narratives that demonstrates that behavior and include it as a bullet — even if it doesn't map to a listed requirement match. The evidence must be self-contained: a real bullet that adds genuine new information about the candidate. Do not reframe an existing requirement bullet to carry cultural signal weight, and do not add a bullet that merely paraphrases something already covered. If no authentic experience clearly demonstrates a cultural signal, leave it unaddressed — do not manufacture evidence.
 - **SCOPE RULE**: The fit assessment is strategic guidance, not a license to add skills. Narratives remain authoritative. Never invent experience.
 
@@ -90,7 +94,7 @@ When formatted for display:
 - Quantify impact (%, $, users, scale) where authentic numbers exist
 - **Name technologies, not code.** Technology names are what a recruiter scans for and an ATS indexes: languages, frameworks, services, and platforms (React, TypeScript, Step Functions, GovCloud) belong in a bullet when genuinely used. Code-level constructs do not — identifiers, method calls, literals, and type values (`null`, `undefined`, `.filter(Boolean)`, `useEffect`, `Promise.all`) read as implementation notes rather than accomplishments, and nobody searches for them. Describe what a design made possible, not the code that expresses it. "Each step a hook returning a config or null, composed with .filter(Boolean)" is a code comment; "steps compose from independent hooks, so supporting a new control means adding one hook rather than changing the wizard" is a bullet.
 - For matched requirements: use the exact terminology from the fit report
-- For soft gaps: only include if definitionally entailed by stated experience; for hard gaps: omit entirely
+- For soft gaps: only include if definitionally entailed by stated experience. For hard gaps: omit from bullets entirely — non-professional evidence, where it exists, belongs in `skills` or the `summary`, per FIT REPORT GUIDANCE
 
 ## ETHICAL BOUNDARIES
 
