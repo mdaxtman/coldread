@@ -117,6 +117,76 @@ of the pipeline's apparent advantage. Report `claims_checked`, `untraceable`, an
 
 When assessing overstatement, apply the interview test: would this claim cause a problem if the interviewer asked about it directly? Terminology substitutions where the underlying capability is the same do not overstate — e.g., "Redux" when the resume shows RTK (RTK is Redux), or "SpringBoot" when the experience is Spring MVC (same programming model, same annotations, configuration wrapper differs). A substitution *does* overstate if the candidate would be exposed in an interview — e.g., claiming Zustand experience based on Jotai (different APIs, different mental models despite both being atomic state managers).
 
+## Phase 3 — Keyword coverage (arithmetic, not judged)
+
+Every axis above is a model's judgement, and each carries roughly half a point of judge noise
+per document. This one is arithmetic: a term appears in a document or it does not, and the
+answer is identical every time it is computed. On a sibling corpus it is also the axis where
+the pipeline's advantage is largest relative to its own noise (+4.7pp, 95% CI [+0.4, +9.1],
+excluding zero, across 50 archived documents) — while the composite's interval crossed zero.
+It measures the one mechanism the pipeline is actually built to move: the fit stage emits
+terminology mappings above a confidence threshold and the generator is instructed to use them,
+where the control prompt says nothing of the kind.
+
+**Do not score this with a sub-agent, and do not eyeball it.** Asking a model whether a term is
+"present" reintroduces exactly the variance this axis exists to avoid.
+
+**Step 1 — extract terms once per posting, and cache them.**
+
+If `poc/jobs/$ARGUMENTS/keywords.json` already exists, use it as-is. Do not re-extract: the
+delta is only trustworthy because both arms are matched against one identical list, and a list
+that drifts between runs makes runs incomparable with each other.
+
+If it does not exist, spawn ONE sub-agent that may read only `poc/jobs/$ARGUMENTS/jd.md` — no
+resume, no narratives, nothing under `runs/`. A term list chosen with any knowledge of what a
+resume contains is biased toward whichever arm was seen. Have it write:
+
+```json
+{ "slug": "$ARGUMENTS", "source": "poc/jobs/$ARGUMENTS/jd.md", "extracted": "YYYY-MM-DD", "terms": ["react", "typescript", "..."] }
+```
+
+Instruct it to extract 30–50 searchable terms of 1–4 words each: named technologies, named
+capabilities in the posting's own compact wording, and distinctive domain or problem-area terms.
+Prefer the shortest form a document would plausibly contain.
+
+The exclusions carry the measurement, so state them explicitly:
+
+- **The job title and seniority labels.** A title is not a searchable skill and is unmatchable
+  for both arms, so it adds noise without information.
+- **Behavioural qualities.** "High agency", "product instincts", "ambiguous environments",
+  "rapid iteration", "user empathy" are how a *posting* names a disposition. A resume
+  demonstrates these with evidence and essentially never writes the label, so they score false
+  for every candidate and depress both arms identically. The test: would a competent resume
+  plausibly contain this exact string? If not, it is not a keyword.
+- Company names, locations, salary, and EEO/benefits/arbitration boilerplate.
+- Research-paper or reading-list name-drops that are context rather than requirements.
+
+A term nobody would write in a resume is dead weight. Precision beats exhaustiveness: 30 terms
+that could appear beat 50 where a third cannot.
+
+Expect a substantial floor of terms the candidate's narratives genuinely cannot support — an
+AI-safety posting will name alignment and ML research that a frontend candidate has never
+done. Those correctly score false for both arms and no pipeline can produce them. They are why
+the absolute level is not a finding, and why the script separately reports terms missed by
+*both* arms (extraction artefacts plus genuine gaps) from terms missed by *one* (the real
+signal).
+
+**Step 2 — match, with the script.**
+
+```bash
+python3 tools/keyword_coverage.py $ARGUMENTS <run-dir-name>
+```
+
+It matches case-insensitively on whole tokens, collapsing whitespace first so a term broken
+across a line wrap still matches, and writes `poc/jobs/$ARGUMENTS/runs/keyword_coverage.json`.
+Take `pipeline.pct`, `control.pct`, and `delta_pp` from its output for the report.
+
+**Reading it honestly.** The *delta* is sound, because both arms are scored against one
+identical list. The *absolute level* is not a finding — it is bounded by extraction quality,
+and terms the narratives genuinely cannot support are unreachable for any pipeline. Coverage is
+a proxy for one real mechanism, whether a document surfaces in a recruiter's search over parsed
+records. It is not evidence about automated rejection, and it says nothing about parse fidelity.
+
 ## Scoring
 
 Use the weights from `poc/config.json`. The weight keys are `jd_alignment`, `recruiter_readability`, and `authenticity`. Weights sum to 1.0.
@@ -124,6 +194,10 @@ Use the weights from `poc/config.json`. The weight keys are `jd_alignment`, `rec
 `composite = (jd_alignment × weights.jd_alignment) + (recruiter_readability × weights.recruiter_readability) + (authenticity × weights.authenticity)`
 
 **Hire Intent is NOT part of the composite.** It is a standalone signal reported separately. The composite answers "how well does this resume perform on the rubric?" Hire Intent answers "would I actually hire this person?"
+
+**Keyword coverage is NOT part of the composite either**, for the same reason and one more: it
+is measured on a different scale (percentage points, not 0–10) and folding it in would silently
+change what every historical composite meant. Report it beside the composite, not inside it.
 
 ## Output
 
@@ -156,6 +230,11 @@ the orchestrator holding both documents rather than by an isolated judge. Re-sco
 Bump to 3 if any scoring rule, weight, or isolation property changes again. The number is
 worthless if it tracks edits to prose; it exists to mark runs whose numbers mean different
 things.
+
+Adding keyword coverage does **not** bump it. No scoring rule, weight, or isolation property
+changed — the composite is computed from the same three axes with the same weights by the same
+isolated judges, and coverage is reported alongside it. Composites remain comparable across the
+boundary, which is the whole reason it was added outside the composite rather than inside it.
 
 Write `poc/jobs/$ARGUMENTS/runs/<latest>/evaluation_report.json`:
 
