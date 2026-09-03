@@ -29,7 +29,7 @@ Distinguish carefully when assessing these:
 - "Made architectural decisions within a feature" ≠ "Set the architectural direction for a platform or team"
 - "Led a small team on a specific project" ≠ "Set technical strategy across multiple teams"
 
-If the candidate's highest-level role title is below the implied level (e.g., Amazon L5/Senior on a Staff role), and the candidate's narratives lack evidence of staff-scope operating patterns, classify the scope gap as **hard** and apply the `overall_score ≤ 0.5` cap from the scoring rules below.
+If the candidate's highest-level role title is below the implied level (e.g., a Senior title against a Staff role), and the candidate's narratives lack evidence of staff-scope operating patterns, classify the scope gap as **hard** and apply the `overall_score ≤ 0.5` cap from the scoring rules below.
 
 ## SCORING
 
@@ -76,7 +76,7 @@ Provide:
 - `gaps` (array): Requirements not met — `requirement`, `type` ("hard"|"soft"), `notes`
 - `terminology` (array): Genuine equivalences — `[{ my_term, jd_term, confidence }, ...]` — include only mappings with confidence ≥ 0.8
 - `cultural_signals` (array): Behavioral qualities the company values — `[{ quality, jd_signal, evidence_hint }, ...]` — 2–3 entries
-- `product_connection` (string or null): If the candidate's strongest experience has a genuine architectural or product parallel to what this company specifically builds — not just general domain alignment — document it here in one concise sentence. Name the candidate's project, the specific parallel, and the company's named product or product area. Use only when the connection is direct enough to name without argument; if you would need to argue for the parallel, omit this field entirely. Example: "QuickAutomate (AI-generated DSL → AST → interactive rendering layer with async execution monitoring) parallels Databricks's notebook and query execution surfaces (computation → structured output → rendered UI with job monitoring)."
+- `product_connection` (string or null): If the candidate's strongest experience has a genuine architectural or product parallel to what this company specifically builds — not just general domain alignment — document it here in one concise sentence. Name the candidate's project, the specific parallel, and the company's named product or product area. Use only when the connection is direct enough to name without argument; if you would need to argue for the parallel, omit this field entirely. Example: "Acme Flow (AI-generated DSL → AST → interactive rendering layer with async execution monitoring) parallels the target company's notebook and query execution surfaces (computation → structured output → rendered UI with job monitoring)."
 - `overall_score` (0–1)
 - `semantic_score` (0–1)
 - `reasoning` (string): Summary explaining the score, including which differentiating requirements are met or absent
