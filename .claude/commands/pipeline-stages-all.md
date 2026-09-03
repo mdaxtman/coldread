@@ -64,11 +64,17 @@ Read:
 
 Apply the framework from `poc/prompts/generator.md`. Emphasize matches, handle soft gaps only if definitionally supported by narratives, omit hard gaps entirely. Use JD terminology from the terminology mappings.
 
-Write the resume as markdown to `poc/jobs/$ARGUMENTS/runs/<run-dir-name>/resume_draft.md`:
+Write the resume as markdown to `poc/jobs/$ARGUMENTS/runs/<run-dir-name>/resume_draft.md`.
+
+Begin the document at `## Summary`. Do not add a title heading of any kind — no `# Resume
+Draft`, no `# Refined Resume`, no candidate name. The control arm is generated without one
+(see `/pipeline-control`), so a title here is not cosmetic: it is a label only one arm carries,
+and the blind scorers in `/pipeline-evaluate` read it off line one. Rubric v2 removed the
+`# Control Resume` title for exactly this reason and left this side untouched, which inverted
+the leak rather than closing it. Both arms must be structurally indistinguishable at the top of
+the document.
 
 ```
-# Resume Draft
-
 ## Summary
 [2–3 sentence professional summary]
 

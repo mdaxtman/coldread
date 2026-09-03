@@ -27,10 +27,13 @@ Apply the framework from `poc/prompts/generator.md`. From the fit assessment:
 
 Write the resume as markdown to `poc/jobs/$ARGUMENTS/runs/<latest>/resume_draft.md`.
 
+Begin the document at `## Summary`. Do not add a title heading of any kind — no `# Resume
+Draft`, no `# Refined Resume`, no candidate name. The control arm is generated without one, so a
+title here is a label only one arm carries and the blind scorers in `/pipeline-evaluate` read it
+off line one. Both arms must be structurally indistinguishable at the top of the document.
+
 Use this structure:
 ```
-# Resume Draft
-
 ## Summary
 [2–3 sentence professional summary targeting the role]
 
