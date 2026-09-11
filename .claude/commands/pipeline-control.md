@@ -36,8 +36,6 @@ Constraint: every claim must be grounded in the candidate narratives above. Do n
 Format as markdown:
 
 ```
-# Control Resume
-
 ## Summary
 [2–3 sentence professional summary]
 
@@ -55,7 +53,12 @@ Format as markdown:
 [comma-separated list]
 ```
 
-Return the complete resume as markdown. Do not write to any files — return the content only.
+Return the complete resume as markdown, beginning at `## Summary`. Do not add a title
+heading of any kind — no `# Control Resume`, no candidate name. The scoring pass is
+supposed to be blind to which arm produced a document, and a title that names the arm
+defeats that on line one no matter what the scorer is instructed to ignore.
+
+Do not write to any files — return the content only.
 ---
 
 ## Output
