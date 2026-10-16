@@ -1,7 +1,16 @@
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from pipeline.generator import _format_fit_report, _format_narratives, run_generator
+from pipeline import generator
+from pipeline.generator import (
+    _format_fit_report,
+    _format_narratives,
+    draft_is_usable,
+    run_generator,
+)
+
+_ROLE = {"company": "Acme", "title": "Engineer", "dates": "2020 – 2024", "projects": []}
+_DRAFT = {"summary": "Experienced engineer", "experience": [_ROLE], "skills": ["Python", "Go"]}
 
 
 def test_format_narratives_empty_list() -> None:
@@ -95,11 +104,7 @@ def test_run_generator_calls_api_and_returns_structured_data() -> None:
     mock_response = MagicMock()
     mock_tool_block = MagicMock()
     mock_tool_block.type = "tool_use"
-    mock_tool_block.input = {
-        "summary": "Experienced engineer",
-        "experience": [],
-        "skills": ["Python", "Go"],
-    }
+    mock_tool_block.input = _DRAFT
     mock_response.content = [mock_tool_block]
 
     with (
@@ -124,3 +129,53 @@ def test_run_generator_calls_api_and_returns_structured_data() -> None:
         call_kwargs = mock_client.messages.create.call_args[1]
         assert call_kwargs["model"] == "claude-sonnet-5"
         assert call_kwargs["max_tokens"] == 8192
+
+
+# Real drafts, all stop_reason=tool_use: the rest of the tool call serialised
+# into `summary`, so `experience` or `skills` is missing from the result.
+_EXPERIENCE_IN_SUMMARY = {
+    "summary": 'Engineer.</summary>\n<parameter name="experience">[{"company": "Acme"}]',
+    "skills": ["Python"],
+}
+_SKILLS_IN_SUMMARY = {
+    "summary": 'Engineer.</summary>\n<parameter name="skills">["Python", "Go"]',
+    "experience": [_ROLE],
+}
+
+
+def test_draft_is_usable_accepts_a_complete_draft() -> None:
+    """A draft with roles, skills and no markup is usable."""
+    assert draft_is_usable(_DRAFT)
+
+
+def test_draft_is_usable_rejects_experience_folded_into_summary() -> None:
+    """Roles serialised into the summary leave the resume with no roles."""
+    assert not draft_is_usable(_EXPERIENCE_IN_SUMMARY)
+
+
+def test_draft_is_usable_rejects_skills_folded_into_summary() -> None:
+    """Skills serialised into the summary leave the resume with no Skills section."""
+    assert not draft_is_usable(_SKILLS_IN_SUMMARY)
+
+
+def test_draft_is_usable_rejects_markup_even_with_every_field_present() -> None:
+    """Leaked markup is rejected even when no field is missing."""
+    assert not draft_is_usable({**_DRAFT, "summary": "Engineer.</summary>"})
+
+
+def test_draft_is_usable_rejects_empty_roles_or_skills() -> None:
+    """A draft without roles or skills is not a resume."""
+    assert not draft_is_usable({**_DRAFT, "experience": []})
+    assert not draft_is_usable({**_DRAFT, "skills": []})
+
+
+def test_run_generator_validates_the_draft_and_retries() -> None:
+    """The generator rejects an unusable draft and samples again."""
+    with (
+        patch.object(generator, "call_model", return_value=_DRAFT) as mock_call,
+        patch.object(generator, "load_prompt", return_value="System prompt"),
+    ):
+        run_generator("Narrative text", {"matches": []}, None, "user-123")
+
+    assert mock_call.call_args.kwargs["validate"] is draft_is_usable
+    assert mock_call.call_args.kwargs["attempts"] > 1

@@ -1,5 +1,7 @@
 """Generator stage — produce tailored resume draft guided by fit assessment."""
 
+import json
+import re
 from typing import Any, cast
 
 from config import PIPELINE_MODEL
@@ -52,6 +54,28 @@ _GENERATOR_SCHEMA = {
         },
     },
 }
+
+# Tool-call syntax inside a field's value, e.g. `</summary>` followed by
+# `<parameter name="experience">` and the roles as raw JSON text.
+_LEAKED_MARKUP = re.compile(
+    r"<parameter name=|</(?:summary|experience|skills|contact|parameter|invoke)>"
+)
+
+
+def draft_is_usable(result: dict[str, Any]) -> bool:
+    """Check that a draft has roles and skills and no leaked tool-call markup.
+
+    The schema requires `experience` and `skills`, but tool input_schema is
+    advisory. Drafts have arrived with the rest of the tool call serialised
+    into `summary`, leaving the resume with no roles or no Skills section.
+    """
+    skills = result.get("skills")
+    return (
+        bool(dict_items(result.get("experience")))
+        and isinstance(skills, list)
+        and bool(skills)
+        and not _LEAKED_MARKUP.search(json.dumps(result))
+    )
 
 
 def _format_note(notes: str | None) -> str:
@@ -207,7 +231,7 @@ def run_generator(
         Structured resume data: {summary, experience, skills, contact, ...}
 
     Raises:
-        RuntimeError: If API call fails or no tool response found
+        RuntimeError: If API call fails or no usable draft is returned
     """
     system_prompt = load_prompt("generator", user_id)
     fit_guidance = _format_fit_report(fit_report)
@@ -232,6 +256,8 @@ def run_generator(
     # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints
     return call_model(
         "generate",
+        validate=draft_is_usable,
+        attempts=3,
         model=PIPELINE_MODEL,
         # 8192: full-resume output; same shape as refinement, which truncated
         # at 4096 under the claude-sonnet-5 tokenizer (stop_reason=max_tokens)
