@@ -1,5 +1,6 @@
 """Generator stage — produce tailored resume draft guided by fit assessment."""
 
+import re
 from typing import Any, cast
 
 from config import PIPELINE_MODEL
@@ -250,3 +251,42 @@ def run_generator(
         ),
         tool_choice={"type": "tool", "name": _TOOL_NAME},
     )
+
+
+_MONTHS = ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
+_DATE_POINT = re.compile(
+    r"\b(?:(" + "|".join(_MONTHS) + r")[a-z]*\.?\s+)?((?:19|20)\d\d)\b|\b(present|current|now)\b",
+    re.IGNORECASE,
+)
+_OPEN_END = 10**6
+
+
+def _date_span(dates: str) -> tuple[int, int] | None:
+    """A role's (start, end) in months, with an open end as the latest.
+    None when the dates name no year."""
+    points = [
+        _OPEN_END if open_end else int(year) * 12 + (_MONTHS.index(month.lower()) if month else 0)
+        for month, year, open_end in _DATE_POINT.findall(dates)
+    ]
+    return (points[0], points[-1]) if points else None
+
+
+def order_roles(resume_data: dict[str, Any]) -> dict[str, Any]:
+    """Put the roles most recent first, by their dates.
+
+    The generator prompt requires reverse chronological order, and the
+    generator copies its dates from the career overview, but in resume-bench
+    one draft in 39 listed the current role second. The dates already settle
+    the order, so it is set here rather than asked for again. If any role's
+    dates name no year, the order is left as it is.
+    """
+    roles = resume_data.get("experience")
+    if not isinstance(roles, list) or not all(isinstance(role, dict) for role in roles):
+        return resume_data
+    spans = [_date_span(str(role.get("dates", ""))) for role in roles]
+    known = [span for span in spans if span is not None]
+    if len(known) != len(roles):
+        return resume_data
+    # Latest end first, then latest start; sorted() keeps ties in the given order.
+    order = sorted(range(len(roles)), key=lambda i: (known[i][1], known[i][0]), reverse=True)
+    return {**resume_data, "experience": [roles[i] for i in order]}
