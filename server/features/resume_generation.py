@@ -148,7 +148,9 @@ def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -
 
     # Step 1: Generate (guided by fit report)
     try:
-        resume_data = order_roles(run_generator(narratives_text, fit_report, contact_info, user_id))
+        resume_data = order_roles(
+            run_generator(narratives_text, fit_report, contact_info, jd["content"], user_id)
+        )
     except Exception as e:
         raise RuntimeError(f"generator_failed: {str(e)}")
 

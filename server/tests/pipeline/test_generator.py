@@ -121,6 +121,7 @@ def test_run_generator_calls_api_and_returns_structured_data() -> None:
             fit_report={"matches": [], "gaps": [], "terminology": []},
             user_id="user-123",
             contact_info=None,
+            jd="the posting",
         )
 
         assert result["summary"] == "Experienced engineer"
@@ -175,7 +176,25 @@ def test_run_generator_validates_the_draft_and_retries() -> None:
         patch.object(generator, "call_model", return_value=_DRAFT) as mock_call,
         patch.object(generator, "load_prompt", return_value="System prompt"),
     ):
-        run_generator("Narrative text", {"matches": []}, None, "user-123")
+        run_generator("Narrative text", {"matches": []}, None, "the posting", "user-123")
 
     assert mock_call.call_args.kwargs["validate"] is draft_is_usable
     assert mock_call.call_args.kwargs["attempts"] > 1
+
+
+def test_run_generator_reads_the_posting_and_states_the_bullet_budget() -> None:
+    """The generator reads the posting itself, not only the fit report's paraphrase
+    of it, and its bullet budget is the last thing it reads."""
+    with (
+        patch.object(generator, "call_model", return_value=_DRAFT) as mock_call,
+        patch.object(generator, "load_prompt", return_value="System prompt"),
+    ):
+        run_generator("Narrative text", {"matches": []}, None, "the posting", "user-123")
+
+    message = mock_call.call_args.kwargs["messages"][0]["content"]
+    posting = message.index("<job_description>\nthe posting\n</job_description>")
+    assert message.index("<candidate_background>") < posting < message.index("<fit_assessment>")
+    assert message.endswith(
+        f"at most {generator.BULLET_BUDGET} bullets in total across every role and project. "
+        "Count them before you submit."
+    )
