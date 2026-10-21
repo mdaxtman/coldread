@@ -411,7 +411,9 @@ def test_generator_includes_contact_in_output(
             mock_get_client.return_value = mock_client
             mock_load_prompt.return_value = "System prompt"
 
-            result = run_generator(narratives_text, mock_fit_report, contact_info, "user-1")
+            result = run_generator(
+                narratives_text, mock_fit_report, contact_info, "the posting", "user-1"
+            )
 
             assert "contact" in result
             assert result["contact"]["email"] == "test@example.com"
@@ -580,7 +582,9 @@ def test_generator_with_contact_info_none() -> None:
             mock_get_client.return_value = mock_client
             mock_load_prompt.return_value = "System prompt"
 
-            result = run_generator(narratives_text, fit_report, contact_info, "user-1")
+            result = run_generator(
+                narratives_text, fit_report, contact_info, "the posting", "user-1"
+            )
 
             # Should still include contact field, but it will be empty or not present
             assert "contact" in result or result.get("contact") == {}
@@ -631,7 +635,9 @@ def test_generator_with_empty_contact_dict() -> None:
             mock_get_client.return_value = mock_client
             mock_load_prompt.return_value = "System prompt"
 
-            result = run_generator(narratives_text, fit_report, contact_info, "user-1")
+            result = run_generator(
+                narratives_text, fit_report, contact_info, "the posting", "user-1"
+            )
 
             assert "contact" in result
             # Empty dict should pass through
@@ -683,7 +689,9 @@ def test_generator_with_partial_contact_info() -> None:
             mock_get_client.return_value = mock_client
             mock_load_prompt.return_value = "System prompt"
 
-            result = run_generator(narratives_text, fit_report, contact_info, "user-1")
+            result = run_generator(
+                narratives_text, fit_report, contact_info, "the posting", "user-1"
+            )
 
             assert "contact" in result
             assert result["contact"]["email"] == "test@example.com"

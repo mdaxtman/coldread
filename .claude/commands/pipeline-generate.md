@@ -20,8 +20,8 @@ You now have:
 
 Apply the framework from `poc/prompts/generator.md`. From the fit assessment:
 - **matches**: emphasize these requirements; use terminology from the `terminology` mappings
-- **soft gaps**: only address if definitionally supported by the narratives (same paradigm, wrapping library — not inferred similarity)
-- **hard gaps**: omit entirely; do not attempt to bridge
+- **gaps** (soft or hard): name lighter-but-real work at the depth the narratives give it, and omit only what is absent; never bridge with adjacent work
+- **bullet budget**: at most 18 bullets in total across every role and project — the app states this limit in the generator's request (`BULLET_BUDGET`). Count them before writing.
 
 ## Output
 
@@ -48,7 +48,7 @@ Use this structure:
 [repeat for each role and project]
 
 ## Skills
-[comma-separated list of 5–10 skills prioritizing matched requirements]
+[every skill the narratives show that a reader of this posting would look for, matched requirements first]
 ```
 
 Print one line: `[generate] resume draft written`

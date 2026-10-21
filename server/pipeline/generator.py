@@ -83,6 +83,12 @@ def _format_note(notes: str | None) -> str:
     return f" ({notes})" if notes else ""
 
 
+# Stated in the request rather than only in the system prompt: a resume-bench
+# pilot found the generator ignores a length rule inside its ~18k-character
+# prompt (25-28 bullets against 18) and mostly keeps one restated as the last
+# thing it reads.
+BULLET_BUDGET = 18
+
 _OVERVIEW_CATEGORY = "career_overview"
 _SUPPLEMENTAL_CATEGORY = "supplemental"
 
@@ -157,7 +163,9 @@ def _format_fit_report(fit_report: dict[str, Any]) -> str:
     hard_gaps = [g for g in gaps if g.get("type") == "hard"]
 
     if soft_gaps:
-        lines.append("\nGAPS — soft (position adjacent strengths if relevant):")
+        lines.append(
+            "\nGAPS — soft (name lighter-but-real work at its true depth; omit only if absent):"
+        )
         for gap in soft_gaps:
             req = gap.get("requirement", "")
             notes = gap.get("notes", "")
@@ -165,7 +173,10 @@ def _format_fit_report(fit_report: dict[str, Any]) -> str:
             lines.append(f"  - [SOFT] {req}{notes_str}")
 
     if hard_gaps:
-        lines.append("\nGAPS — hard (leave as gap, do not bridge):")
+        lines.append(
+            "\nGAPS — hard (name lighter-but-real work at its true depth; "
+            "omit only if absent; do not bridge):"
+        )
         for gap in hard_gaps:
             req = gap.get("requirement", "")
             notes = gap.get("notes", "")
@@ -228,14 +239,14 @@ def run_generator(
     narratives_text: str,
     fit_report: dict[str, Any],
     contact_info: dict[str, Any] | None,
+    jd: str,
     user_id: str,
 ) -> dict[str, Any]:
     """Step 1: Generator perspective — create strategic resume guided by fit assessment.
 
     Receives pre-computed fit report (matches/gaps/terminology) to inform strategic choices:
     - Emphasize matched requirements
-    - Handle soft gaps by positioning adjacent strengths
-    - Omit hard gaps entirely
+    - Name lighter-but-real gap work at its true depth; omit only what is absent
     - Use exact terminology from the JD where applicable
 
     Args:
@@ -243,6 +254,8 @@ def run_generator(
         fit_report: Pre-computed fit assessment
         contact_info: Optional contact information (email, phone, location,
             linkedin, github, website)
+        jd: The posting itself. Without it the generator knows the posting
+            only through the fit assessment's paraphrase of it.
         user_id: Current user ID
 
     Returns:
@@ -257,6 +270,7 @@ def run_generator(
 
     user_message = (
         f"<candidate_background>\n{narratives_text}\n</candidate_background>\n\n"
+        f"<job_description>\n{jd}\n</job_description>\n\n"
         f"<fit_assessment>\n{fit_guidance}\n</fit_assessment>\n\n"
     )
 
@@ -268,7 +282,9 @@ def run_generator(
         "Use the fit assessment above to guide emphasis, handle gaps appropriately, and use the "
         "exact terminology from the JD. "
         "Include your contact information in the contact field if provided. "
-        "Use the submit_resume_draft tool to submit your output."
+        "Use the submit_resume_draft tool to submit your output.\n\n"
+        f"Hard limit: at most {BULLET_BUDGET} bullets in total across every role and project. "
+        "Count them before you submit."
     )
 
     # cast needed: Anthropic SDK requires Any type for tools parameter despite static type hints

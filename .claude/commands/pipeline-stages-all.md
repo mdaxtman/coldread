@@ -62,7 +62,7 @@ Read:
 - `poc/jobs/$ARGUMENTS/jd.md` — for role title, company name, and targeted emphasis
 - `fit_assessment.json` just written
 
-Apply the framework from `poc/prompts/generator.md`. Emphasize matches, handle soft gaps only if definitionally supported by narratives, omit hard gaps entirely. Use JD terminology from the terminology mappings.
+Apply the framework from `poc/prompts/generator.md`. Emphasize matches. For gaps, soft or hard, name lighter-but-real work at the depth the narratives give it and omit only what is absent; never bridge with adjacent work. Use JD terminology from the terminology mappings. Use at most 18 bullets in total across every role and project — the app states this limit in the generator's request (`BULLET_BUDGET`).
 
 Write the resume as markdown to `poc/jobs/$ARGUMENTS/runs/<run-dir-name>/resume_draft.md`.
 
