@@ -12,9 +12,10 @@ from pipeline import anthropic_utils
 from pipeline.anthropic_utils import call_model
 
 
-def _fake_response() -> SimpleNamespace:
-    tool_block = SimpleNamespace(type="tool_use", input={"fit_level": "strong"})
-    tool_block.model_dump = lambda: {"type": "tool_use", "input": {"fit_level": "strong"}}
+def _fake_response(tool_input: dict[str, Any] | None = None) -> SimpleNamespace:
+    tool_input = tool_input or {"fit_level": "strong"}
+    tool_block = SimpleNamespace(type="tool_use", input=tool_input)
+    tool_block.model_dump = lambda: {"type": "tool_use", "input": tool_input}
     return SimpleNamespace(
         content=[tool_block],
         model="claude-sonnet-5",
@@ -128,3 +129,42 @@ def test_explicit_thinking_is_not_overwritten(fake_client: MagicMock) -> None:
     )
     call_kwargs = fake_client.messages.create.call_args.kwargs
     assert call_kwargs["thinking"] == {"type": "adaptive"}
+
+
+def _has_fit_level(result: dict[str, Any]) -> bool:
+    return "fit_level" in result
+
+
+def test_rejected_tool_input_is_sampled_again(fake_client: MagicMock) -> None:
+    fake_client.messages.create.side_effect = [_fake_response({"fit": "strong"}), _fake_response()]
+    events: queue.Queue[dict[str, Any] | None] = queue.Queue()
+    ctx = RunContext(run_id="r", jd_id="j", kind="fit", user_id="u", events=events)
+    token = current_run_context.set(ctx)
+    try:
+        result = call_model(
+            "fit", validate=_has_fit_level, attempts=3, model="m", max_tokens=10, messages=[]
+        )
+    finally:
+        current_run_context.reset(token)
+
+    assert result == {"fit_level": "strong"}
+    assert fake_client.messages.create.call_count == 2
+    # The rejected call was paid for, so it is recorded like any other.
+    assert [(r.stage, r.seq) for r in ctx.records] == [("fit", 1), ("fit", 2)]
+    assert ctx.records[0].response == [{"type": "tool_use", "input": {"fit": "strong"}}]
+
+
+def test_raises_when_no_attempt_passes_validation(fake_client: MagicMock) -> None:
+    fake_client.messages.create.return_value = _fake_response({"fit": "strong"})
+    with pytest.raises(RuntimeError, match="no usable tool response in 3 attempt"):
+        call_model(
+            "fit", validate=_has_fit_level, attempts=3, model="m", max_tokens=10, messages=[]
+        )
+    assert fake_client.messages.create.call_count == 3
+
+
+def test_validator_without_attempts_does_not_retry(fake_client: MagicMock) -> None:
+    fake_client.messages.create.return_value = _fake_response({"fit": "strong"})
+    with pytest.raises(RuntimeError):
+        call_model("fit", validate=_has_fit_level, model="m", max_tokens=10, messages=[])
+    fake_client.messages.create.assert_called_once()

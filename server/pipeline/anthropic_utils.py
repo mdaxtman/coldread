@@ -1,6 +1,7 @@
 """Shared Anthropic integration utilities."""
 
 import time
+from collections.abc import Callable
 from typing import Any, cast
 
 import anthropic
@@ -40,7 +41,12 @@ def _extract_tool_response(response: Message) -> dict[str, Any]:
     return cast(dict[str, Any], tool_block.input)
 
 
-def call_model(stage: str, **kwargs: Any) -> dict[str, Any]:
+Validator = Callable[[dict[str, Any]], bool]
+
+
+def call_model(
+    stage: str, validate: Validator | None = None, attempts: int = 1, **kwargs: Any
+) -> dict[str, Any]:
     """Call the Anthropic API and extract the forced-tool response.
 
     The single chokepoint for every pipeline model call. When a RunContext
@@ -48,7 +54,24 @@ def call_model(stage: str, **kwargs: Any) -> dict[str, Any]:
     full response envelope — usage, model, stop reason, latency, request
     and response snapshots — is recorded and emitted as events. With no
     active context this behaves exactly like the old inline pattern.
+
+    A tool's input_schema is advisory, so a stage can pass `validate` to
+    check the tool input itself. A response that fails it is sampled again,
+    up to `attempts` calls in all; every attempt is recorded as its own call.
+
+    Raises:
+        RuntimeError: If no tool_use block is found, or no attempt passes
+            `validate`
     """
+    for _ in range(attempts):
+        result = _call_once(stage, **kwargs)
+        if validate is None or validate(result):
+            return result
+    raise RuntimeError(f"{stage}: no usable tool response in {attempts} attempt(s)")
+
+
+def _call_once(stage: str, **kwargs: Any) -> dict[str, Any]:
+    """Make one recorded API call and return its tool input."""
     ctx = current_run_context.get()
     seq = ctx.begin_stage(stage) if ctx is not None else 0
 
