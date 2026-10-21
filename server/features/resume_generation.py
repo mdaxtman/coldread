@@ -7,7 +7,7 @@ from typing import Any
 
 from db import job_descriptions, narratives, resume_variants
 from pipeline.fit_assessment_stage import run_fit_assessment_stage
-from pipeline.generator import _format_narratives, run_generator
+from pipeline.generator import _format_narratives, order_roles, run_generator
 from pipeline.refinement import _format_resume_for_screener, run_refinement
 from pipeline.refinement_stage import run_refinement_stage
 from pipeline.resume_generation_stage import run_resume_generation_stage
@@ -148,7 +148,7 @@ def _run_full_regenerate(jd_id: str, user_id: str, fit_report: dict[str, Any]) -
 
     # Step 1: Generate (guided by fit report)
     try:
-        resume_data = run_generator(narratives_text, fit_report, contact_info, user_id)
+        resume_data = order_roles(run_generator(narratives_text, fit_report, contact_info, user_id))
     except Exception as e:
         raise RuntimeError(f"generator_failed: {str(e)}")
 

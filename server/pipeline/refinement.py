@@ -1,9 +1,10 @@
 """Refinement stage — improve resume while preserving voice."""
 
+import re
 from typing import Any, NotRequired, TypedDict, cast
 
 from config import PIPELINE_MODEL
-from pipeline.anthropic_utils import call_model
+from pipeline.anthropic_utils import call_model, dict_items
 from pipeline.prompt_loader import load_prompt
 
 
@@ -86,6 +87,51 @@ def _format_resume_for_screener(resume_data: dict[str, Any]) -> str:
     return "\n\n".join(lines)
 
 
+_MONTH = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+"
+_DATE_RANGE = re.compile(
+    rf"(?:{_MONTH})?\d{{4}}\s*[–—-]\s*(?:(?:{_MONTH})?\d{{4}}|present|current)", re.IGNORECASE
+)
+
+
+def keep_role_dates(resume_data: dict[str, Any], refined: str) -> str:
+    """Restore any role's dates that refinement changed.
+
+    Refinement edits wording; it has no reason to change a date, and the
+    generator copies each role's dates from the career overview. In
+    resume-bench, refinement took the current role's recent start for a typo
+    and moved it back a year or two in 4 of 39 resumes. A role line is a
+    heading or bold line that names one role's company and title, so a project
+    line is never taken for one; if its date range differs from that role's,
+    the generator's dates go back in its place. A role whose title refinement
+    reworded is left as it is.
+    """
+    roles = [
+        role
+        for role in dict_items(resume_data.get("experience"))
+        if role.get("company")
+        and role.get("title")
+        and _DATE_RANGE.fullmatch(str(role.get("dates", "")).strip())
+    ]
+    if not roles:
+        return refined
+    lines = refined.splitlines()
+    changed = False
+    for i, line in enumerate(lines):
+        if not line.lstrip().startswith(("#", "**")):
+            continue
+        named = [r for r in roles if str(r["company"]) in line and str(r["title"]) in line]
+        found = _DATE_RANGE.search(line)
+        if len(named) != 1 or found is None:
+            continue
+        dates = str(named[0]["dates"]).strip()
+        if found.group(0) != dates:
+            lines[i] = line[: found.start()] + dates + line[found.end() :]
+            changed = True
+    if not changed:
+        return refined
+    return "\n".join(lines) + ("\n" if refined.endswith("\n") else "")
+
+
 def run_refinement(
     resume_data: dict[str, Any],
     screener_report: dict[str, Any],
@@ -151,5 +197,7 @@ def run_refinement(
         raise RuntimeError(
             f"refinement returned no refined_content (keys: {sorted(result.keys())})"
         )
+    if isinstance(result["refined_content"], str):
+        result["refined_content"] = keep_role_dates(resume_data, result["refined_content"])
 
     return cast(RefinementOutput, result)
