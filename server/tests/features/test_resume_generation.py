@@ -950,3 +950,28 @@ def test_fit_output_to_dict() -> None:
     assert len(result["terminology"]) == 1
     assert result["keyword_coverage"]["react"] is True
     assert result["keyword_coverage"]["rust"] is False
+
+
+def test_run_full_pipeline_hands_the_posting_to_the_generation_stage() -> None:
+    """The generation stage gets the posting itself, not only the fit report's
+    paraphrase of it."""
+    fit_output = FitAssessmentOutput(
+        fit_level="strong",
+        matches=[],
+        gaps=[],
+        terminology=[],
+        overall_score=0.85,
+        semantic_score=0.88,
+        keyword_coverage={},
+    )
+    with (
+        patch("features.resume_generation.run_fit_assessment_stage", return_value=fit_output),
+        patch("features.resume_generation.run_resume_generation_stage") as mock_gen,
+    ):
+        mock_gen.return_value = ResumeGenerationOutput(content="# Resume", contact_info=None)
+
+        resume_generation.run_full_pipeline(
+            "the posting", "10 years experience.", None, "user-1", refine=False
+        )
+
+    assert mock_gen.call_args.args[0].jd_content == "the posting"

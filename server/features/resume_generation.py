@@ -90,6 +90,7 @@ def run_full_pipeline(
     try:
         gen_input = ResumeGenerationInput(
             narratives_text=narratives_text,
+            jd_content=jd_content,
             fit_assessment_output=fit_output,
             contact_info=contact_info,
             user_id=user_id,
