@@ -162,6 +162,7 @@ class TestResumeGenerationInput:
         )
         input_data = ResumeGenerationInput(
             narratives_text="Background text",
+            jd_content="JD text",
             fit_assessment_output=fit_output,
             contact_info={
                 "email": "test@example.com",
@@ -189,6 +190,7 @@ class TestResumeGenerationInput:
         )
         input_data = ResumeGenerationInput(
             narratives_text="Background text",
+            jd_content="JD text",
             fit_assessment_output=fit_output,
             contact_info=None,
             user_id="user-123",
@@ -208,6 +210,7 @@ class TestResumeGenerationInput:
         )
         input_data = ResumeGenerationInput(
             narratives_text="Text",
+            jd_content="JD text",
             fit_assessment_output=fit_output,
             contact_info=None,
             user_id="user-123",
@@ -371,6 +374,7 @@ class TestCrossStageDataFlow:
         # Use as input to generation
         gen_input = ResumeGenerationInput(
             narratives_text="Background",
+            jd_content="JD text",
             fit_assessment_output=fit_output,
             contact_info=None,
             user_id="user-123",

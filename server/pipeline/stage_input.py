@@ -55,12 +55,15 @@ class ResumeGenerationInput:
 
     Attributes:
         narratives_text: Formatted candidate background narratives
+        jd_content: The posting itself. Required: without it the generator
+            knows the posting only through the fit assessment's paraphrase.
         fit_assessment_output: Pre-computed fit assessment to guide generation
         contact_info: Optional contact information (email, phone, location, etc.)
         user_id: Current user ID (scoped for multi-user readiness)
     """
 
     narratives_text: str
+    jd_content: str
     fit_assessment_output: FitAssessmentOutput
     contact_info: dict[str, str] | None
     user_id: str
